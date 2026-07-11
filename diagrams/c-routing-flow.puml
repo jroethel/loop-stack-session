@@ -1,0 +1,102 @@
+@startuml
+!pragma useVerticalIf on
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam ArrowColor #34495E
+skinparam ArrowFontSize 11
+skinparam ArrowFontColor #34495E
+skinparam RoundCorner 10
+skinparam ActivityBorderColor #2E86AB
+skinparam ActivityBackgroundColor #EAF2F8
+skinparam ActivityFontColor #1B2631
+skinparam ActivityDiamondBackgroundColor #FDEBD0
+skinparam ActivityDiamondBorderColor #E67E22
+skinparam ActivityDiamondFontColor #1B2631
+skinparam ActivityStartColor #2E86AB
+skinparam ActivityEndColor #2E86AB
+skinparam NoteBackgroundColor #FCF3CF
+skinparam NoteBorderColor #D4AC0D
+skinparam NoteFontColor #7D6608
+skinparam ComponentBackgroundColor #EAF2F8
+skinparam ComponentBorderColor #2E86AB
+skinparam ComponentFontColor #1B2631
+skinparam PackageBackgroundColor #F4F6F7
+skinparam PackageBorderColor #7F8C8D
+skinparam PackageFontColor #1B2631
+skinparam DatabaseBackgroundColor #D5F5E3
+skinparam DatabaseBorderColor #27AE60
+skinparam DatabaseFontColor #145A32
+skinparam ActorBackgroundColor #F9E79F
+skinparam ActorBorderColor #B7950B
+skinparam NodeBackgroundColor #EBDEF0
+skinparam NodeBorderColor #7D3C98
+skinparam NodeFontColor #1B2631
+skinparam RectangleBackgroundColor #EAF2F8
+skinparam RectangleBorderColor #2E86AB
+skinparam RectangleFontColor #1B2631
+skinparam TitleFontSize 18
+skinparam TitleFontColor #1B2631
+
+title Canonical Routing Flow
+
+start
+:Plan / PRD in hand;
+
+if (/loop-which\nverdict?) then ( DON'T BOTHER )
+  :Human checklist. No AI.\n(Rare + sensitive + taste-judged work);
+  stop
+endif
+
+if (verdict?) then ( CHAT )
+  :Current session, one pass,\nhuman reviews;
+  stop
+endif
+
+if (verdict?) then ( ONE AGENT )
+  if (Checkable by a command?) then (yes)
+    :/loop-drive Step 0 emits\none-task ringer manifest\n(probe pattern);
+    note right #FCF3CF
+      **P6**: Checkability gate -- a check
+      that cannot fail is trusting the
+      worker with extra steps.
+    end note
+    stop
+  else (no)
+    :Session / subagent (frontier),\nhuman reviews;
+    stop
+  endif
+else ( AGENT TEAM )
+endif
+
+if (Units depend on\neach other?) then (no)
+  :/loop-drive Step 0 emits ONE manifest (W=1, T=N).\nJudgment units stay with orchestrator.\nReview artifact page at end.;
+  stop
+endif
+
+:/loop-drive compiles:\ndependency graph -> waves;
+note right #FCF3CF
+  **Per-unit routing** (applied to EACH
+  unit): checkable -> ringer task
+  (engine/model from scoreboard);
+  judgment -> orchestrator handles at
+  gate, or fresh-mind review task (check
+  enforces structure, human judges
+  substance).
+  **P7**: model = scoreboard posterior;
+  benchmark prior only for untested
+  models.
+end note
+repeat :WAVE LOOP\nwrite manifest -> lint -> run;
+  :gate\nreview raw logs, spot-check a pass,\nintegrate patches, run full suite,\ndistill lessons;
+  note right #FCF3CF
+    **P12**: Human gates at every wave
+    boundary + anything outward-facing.
+  end note
+repeat while (more waves?) is (yes) not (no)
+:Final verification wave +\nhuman on artifact page;
+stop
+
+@enduml

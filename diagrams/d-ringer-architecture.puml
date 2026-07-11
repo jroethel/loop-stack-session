@@ -1,0 +1,107 @@
+@startuml
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam ArrowColor #34495E
+skinparam ArrowFontSize 11
+skinparam ArrowFontColor #34495E
+skinparam RoundCorner 10
+skinparam ActivityBorderColor #2E86AB
+skinparam ActivityBackgroundColor #EAF2F8
+skinparam ActivityFontColor #1B2631
+skinparam ActivityDiamondBackgroundColor #FDEBD0
+skinparam ActivityDiamondBorderColor #E67E22
+skinparam ActivityDiamondFontColor #1B2631
+skinparam ActivityStartColor #2E86AB
+skinparam ActivityEndColor #2E86AB
+skinparam NoteBackgroundColor #FCF3CF
+skinparam NoteBorderColor #D4AC0D
+skinparam NoteFontColor #7D6608
+skinparam ComponentBackgroundColor #EAF2F8
+skinparam ComponentBorderColor #2E86AB
+skinparam ComponentFontColor #1B2631
+skinparam PackageBackgroundColor #F4F6F7
+skinparam PackageBorderColor #7F8C8D
+skinparam PackageFontColor #1B2631
+skinparam DatabaseBackgroundColor #D5F5E3
+skinparam DatabaseBorderColor #27AE60
+skinparam DatabaseFontColor #145A32
+skinparam ActorBackgroundColor #F9E79F
+skinparam ActorBorderColor #B7950B
+skinparam NodeBackgroundColor #EBDEF0
+skinparam NodeBorderColor #7D3C98
+skinparam NodeFontColor #1B2631
+skinparam RectangleBackgroundColor #EAF2F8
+skinparam RectangleBorderColor #2E86AB
+skinparam RectangleFontColor #1B2631
+skinparam TitleFontSize 18
+skinparam TitleFontColor #1B2631
+skinparam component<<planned>> {
+  BorderStyle dashed
+  BackgroundColor #F4F6F7
+  BorderColor #7F8C8D
+  FontColor #7F8C8D
+}
+
+title Ringer Architecture
+
+actor "Human\n(Jeremy)" as human #F9E79F
+
+node "Orchestrator: Claude Code session (Fable/Opus)\n--\nwrites manifest.json (tasks: spec, check,\nexpect_files, engine, model, task_type)\nruns CLI commands, reviews results\n--\n(the only LLM brain -- ringer itself\nmakes zero model calls)" as orchestrator #EBDEF0
+
+node "ringer.py (stdlib Python, zero-LLM)" as ringer #EAF2F8 {
+  component "lint" as lint
+  component "run\n(spawn N parallel workers)" as run
+  component "Verifier\nEXECUTES check cmd,\nexit 0 = PASS" as verifier
+  component "retry once\nw/ failure output injected" as retry
+  component "models / catalog / --explore\n(scoreboard + promotion ladder)" as scoreboard
+}
+
+package "Engine lanes (pluggable, per-task)" as lanes #F4F6F7 {
+  component "codex CLI\n(default; own sandbox\nworkspace-write)" as codex
+  component "grok CLI\n(flat plan; own macOS\nSeatbelt sandbox)" as grok
+  component "opencode-sandboxed.sh\n(Seatbelt wrapper)\n-> OpenCode" as opencode
+  component "claude-zai wrapper\n(PLANNED): claude -p with\nANTHROPIC_BASE_URL=z.ai" as claudezai <<planned>>
+}
+
+cloud "OpenAI / ChatGPT plan" as openai
+cloud "xAI" as xai
+cloud "OpenRouter: any model;\ndefault z-ai/glm-5.2\n(~1-3 cents/task)" as openrouter
+cloud "GLM coding plan\n(flat rate)" as glm
+
+folder "task dir / optional\ngit worktree (isolation)\nper worker" as taskdir #F4F6F7
+
+database "~/.ringer/\n--\nruns/<run_id>.json\n(durable run state)\n--\nruns.jsonl\n(model performance log: per-attempt\nverdict, tokens, duration, task_type)\n--\nartifacts/*.html\n(zero-LLM rendered pages)\n--\nopenrouter-catalog.json\n+ .changes.jsonl" as storage #D5F5E3
+
+node "Ringside dashboard\nlocal web page http://127.0.0.1:8700\n(auto-opens)\n--\nlive view of every swarm on the machine\n(per-worker status, briefs, token burn)\nversioned artifact library\nscoreboard page (models --open)" as ringside #EBDEF0
+
+orchestrator -down-> ringer : manifest.json
+lint -[hidden]-> run
+run --> codex
+run --> grok
+run --> opencode
+run ..> claudezai : "planned"
+
+codex --> openai
+grok --> xai
+opencode --> openrouter
+claudezai ..> glm : "planned"
+
+codex --> taskdir
+grok --> taskdir
+opencode --> taskdir
+claudezai ..> taskdir : "planned"
+
+taskdir --> verifier
+verifier --> retry : fail
+retry --> verifier : re-check
+verifier --> storage : pass/fail + evidence
+
+storage --> ringside
+ringside --> human : watches
+
+human --> orchestrator : approves / gates\n(writes next manifest)
+
+@enduml

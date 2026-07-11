@@ -1,0 +1,59 @@
+@startuml
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam ArrowColor #34495E
+skinparam ArrowFontSize 12
+skinparam ArrowFontColor #34495E
+skinparam RoundCorner 10
+skinparam ActivityBorderColor #2E86AB
+skinparam ActivityBackgroundColor #EAF2F8
+skinparam ActivityFontColor #1B2631
+skinparam ActivityDiamondBackgroundColor #FDEBD0
+skinparam ActivityDiamondBorderColor #E67E22
+skinparam ActivityDiamondFontColor #1B2631
+skinparam ActivityStartColor #2E86AB
+skinparam ActivityEndColor #2E86AB
+skinparam NoteBackgroundColor #FCF3CF
+skinparam NoteBorderColor #D4AC0D
+skinparam NoteFontColor #7D6608
+skinparam ComponentBackgroundColor #EAF2F8
+skinparam ComponentBorderColor #2E86AB
+skinparam ComponentFontColor #1B2631
+skinparam PackageBackgroundColor #F4F6F7
+skinparam PackageBorderColor #7F8C8D
+skinparam PackageFontColor #1B2631
+skinparam DatabaseBackgroundColor #D5F5E3
+skinparam DatabaseBorderColor #27AE60
+skinparam DatabaseFontColor #145A32
+skinparam ActorBackgroundColor #F9E79F
+skinparam ActorBorderColor #B7950B
+skinparam NodeBackgroundColor #EBDEF0
+skinparam NodeBorderColor #7D3C98
+skinparam NodeFontColor #1B2631
+skinparam RectangleBackgroundColor #EAF2F8
+skinparam RectangleBorderColor #2E86AB
+skinparam RectangleFontColor #1B2631
+skinparam RectangleFontSize 13
+skinparam TitleFontSize 18
+skinparam TitleFontColor #1B2631
+
+title Three Orthogonal Routing Axes (asked in order 1 -> 2 -> 3)
+
+rectangle "AXIS 1 -- SCALE\n----\n**Question:** How big / automatable is this job?\n**Answered by:** /loop-which\n(7 sliders: size, independence, separation,\ncheckability, judgment, access/consequence,\npayoff-vs-setup)\n**Answers:** DON'T BOTHER / CHAT / ONE AGENT / AGENT TEAM\n**Decides:** how much of the stack engages at all" as Axis1 #EAF2F8
+
+rectangle "AXIS 2 -- DEPENDENCIES (only if AGENT TEAM)\n----\n**Question:** Do units depend on each other?\n**Answered by:** the dependency graph in the plan/PRD\n**Answers:** flat (W=1) / dependent (W>1)\n**Decides:** one ringer manifest vs /loop-drive\ncompiling waves with gates" as Axis2 #FDEBD0
+
+rectangle "AXIS 3 -- CHECKABILITY (asked PER UNIT, not per project)\n----\n**Question:** Is checking this unit's output\ncheaper than producing it?\n**Answered by:** whether an executable check exists\n(exit code, test, render, citation)\n**Answers:** checkable / judgment\n**Decides:** ringer task on a cheap engine vs\nstaying in the orchestrator's frontier judgment lane" as Axis3 #D5F5E3
+
+Axis1 -down-> Axis2 : "2. asked next,\nonly if AGENT TEAM"
+Axis2 -down-> Axis3 : "3. asked per unit"
+
+note bottom of Axis3
+  **Key insight:** Real PRDs are mixtures --
+  Axis 3 routes each unit individually.
+end note
+
+@enduml

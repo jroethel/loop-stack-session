@@ -1,0 +1,75 @@
+@startuml
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam ArrowColor #34495E
+skinparam ArrowFontSize 11
+skinparam ArrowFontColor #34495E
+skinparam RoundCorner 10
+skinparam ActivityBorderColor #2E86AB
+skinparam ActivityBackgroundColor #EAF2F8
+skinparam ActivityFontColor #1B2631
+skinparam ActivityDiamondBackgroundColor #FDEBD0
+skinparam ActivityDiamondBorderColor #E67E22
+skinparam ActivityDiamondFontColor #1B2631
+skinparam ActivityStartColor #2E86AB
+skinparam ActivityEndColor #2E86AB
+skinparam NoteBackgroundColor #FCF3CF
+skinparam NoteBorderColor #D4AC0D
+skinparam NoteFontColor #7D6608
+skinparam ComponentBackgroundColor #EAF2F8
+skinparam ComponentBorderColor #2E86AB
+skinparam ComponentFontColor #1B2631
+skinparam PackageBackgroundColor #F4F6F7
+skinparam PackageBorderColor #7F8C8D
+skinparam PackageFontColor #1B2631
+skinparam DatabaseBackgroundColor #D5F5E3
+skinparam DatabaseBorderColor #27AE60
+skinparam DatabaseFontColor #145A32
+skinparam ActorBackgroundColor #F9E79F
+skinparam ActorBorderColor #B7950B
+skinparam NodeBackgroundColor #EBDEF0
+skinparam NodeBorderColor #7D3C98
+skinparam NodeFontColor #1B2631
+skinparam RectangleBackgroundColor #EAF2F8
+skinparam RectangleBorderColor #2E86AB
+skinparam RectangleFontColor #1B2631
+skinparam TitleFontSize 18
+skinparam TitleFontColor #1B2631
+
+title How the Conversation Evolved (9 Phases)
+
+start
+
+:**1. /workflows disabled**\nUser turned off the /workflows plugin (token cost).\nQuestions: does frontier-loop still work? can loops\nrun without it? what revisions are needed?;
+note right #FCF3CF: **C1** trigger question
+
+:**2. Native substrate found**\nBackground Agent calls + completion notifications +\nSendMessage reproduce pipeline() semantics; plan v1 drafted.;
+note right #FCF3CF: **C1** native substrate\n**P11** design for interruption
+
+:**3. Ringer discovered**\nExplored ~/repos/ringer: executed checks,\nretry-with-failure-context, worktrees, model\nscoreboard, Ringside dashboard. Plan v2: ringer =\nmixed-provider substrate.;
+note right #FCF3CF: **C2** adopt off the shelf\n**P1** executed checks\n**P9** isolation
+
+:**4. Why 3 skills?**\nComparison matrix of fable-orchestration /\nfrontier-loop / ringer. Verdict: 3 layers not\ncompetitors; minimal stack = ringer + one compile skill.;
+note right #FCF3CF: **C8** three layers, minimized\n**P4** split roles by price
+
+:**5. Can ringer eat a plan?**\nNo: flat manifests, stateless specs, every task needs\nan executable check. The translation IS frontier-loop's job.;
+note right #FCF3CF: **C4** wave compiler role\n**P6** checkability gate\n**P14** check craft
+
+:**6. One brain, zero models in ringer**\nRinger is 8300 lines of stdlib Python, no LLM inside;\nthe orchestrator is the user's own Claude session.\nOne brain through the whole pipeline.;
+note right #FCF3CF: **C3** ringer = muscle\n**P5** one brain orchestrates
+
+:**7. Prior vs posterior**\nPublic benchmarks = prior for untested models; local\nscoreboard (first_try_pass_rate per task_type) =\nposterior that overrides it. Promotion ladder:\nuntested -> probation -> proven.;
+note right #FCF3CF: **P7** evidence over vibes
+
+:**8. When NOT to use it**\nCheckability is the gate; works at W=1, T=1; at W=50\nhuman gate bandwidth binds. one-minute-test is the\nfront door router.;
+note right #FCF3CF: **P6** checkability gate\n**P13** gate bandwidth\n**C6** front door
+
+:**9. Convergence**\nThree questions on three axes (scale, dependencies,\ncheckability-per-unit); routing flowchart agreed;\nplan approved for detailing.;
+note right #FCF3CF: **C7** three axes\nconverge to plan
+
+stop
+
+@enduml

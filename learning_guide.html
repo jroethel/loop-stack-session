@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loop Stack Learning Guide - Agent Loop Engineering Without /workflows</title>
+<style>
+  :root {
+    --ink: #1c2430;
+    --ink-soft: #4a5568;
+    --paper: #fdfcfa;
+    --panel: #f4f6f8;
+    --line: #dde2e8;
+    --blue: #3b6ea5;
+    --blue-soft: #e8f0f8;
+    --orange: #c9762e;
+    --orange-soft: #faf1e6;
+    --green: #4a7c59;
+    --green-soft: #edf5ee;
+    --purple: #7458a3;
+    --purple-soft: #f2eef8;
+    --max: 52rem;
+    --max-wide: 74rem;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+    line-height: 1.65;
+    font-size: 17px;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-weight: 650;
+    line-height: 1.25;
+    color: var(--ink);
+  }
+
+  code, pre, .mono {
+    font-family: "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  }
+
+  a { color: var(--blue); text-decoration-thickness: 1px; }
+  a:hover { color: var(--orange); }
+
+  /* ---------- Header / TOC ---------- */
+
+  header.masthead {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 3rem 1.5rem 1.5rem;
+  }
+
+  header.masthead .kicker {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.78rem;
+    color: var(--blue);
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  header.masthead h1 {
+    font-size: 2.1rem;
+    margin: 0 0 0.6rem;
+  }
+
+  header.masthead p.dek {
+    color: var(--ink-soft);
+    font-size: 1.05rem;
+    max-width: 42rem;
+    margin: 0 0 0.5rem;
+  }
+
+  header.masthead p.meta {
+    color: var(--ink-soft);
+    font-size: 0.88rem;
+  }
+
+  nav.toc {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: rgba(253, 252, 250, 0.96);
+    border-bottom: 1px solid var(--line);
+    backdrop-filter: blur(4px);
+  }
+
+  nav.toc .toc-inner {
+    max-width: var(--max-wide);
+    margin: 0 auto;
+    padding: 0.65rem 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.9rem;
+    align-items: baseline;
+  }
+
+  nav.toc .toc-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-soft);
+    font-weight: 700;
+    margin-right: 0.3rem;
+  }
+
+  nav.toc a {
+    font-size: 0.85rem;
+    color: var(--ink);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  nav.toc a:hover { color: var(--blue); text-decoration: underline; }
+
+  /* ---------- Layout ---------- */
+
+  main {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 0 1.5rem 4rem;
+  }
+
+  section {
+    padding-top: 2.75rem;
+    scroll-margin-top: 3.25rem;
+  }
+
+  section > h2 {
+    font-size: 1.5rem;
+    border-bottom: 2px solid var(--line);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.1rem;
+  }
+
+  section > h2 .num {
+    color: var(--blue);
+    font-variant-numeric: tabular-nums;
+    margin-right: 0.4rem;
+  }
+
+  h3 {
+    font-size: 1.15rem;
+    margin-top: 1.6rem;
+  }
+
+  p { margin: 0.9rem 0; }
+
+  .wide {
+    max-width: var(--max-wide);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* ---------- Aha moment cards ---------- */
+
+  .aha {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--blue);
+    border-radius: 6px;
+    padding: 1.1rem 1.3rem;
+    margin: 1rem 0 1.5rem;
+  }
+
+  .aha .aha-label {
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--blue);
+    margin-bottom: 0.35rem;
+  }
+
+  .aha p { margin: 0.5rem 0; }
+
+  .quote {
+    font-style: italic;
+    color: var(--ink-soft);
+    border-left: 3px solid var(--orange);
+    padding-left: 0.9rem;
+    margin: 1rem 0;
+  }
+
+  .speaker {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 1.2rem 0 0.2rem;
+  }
+
+  blockquote.exchange {
+    margin: 0.3rem 0 1.1rem;
+    padding: 0.7rem 1rem;
+    background: var(--panel);
+    border-left: 3px solid var(--line);
+    border-radius: 4px;
+    font-size: 0.95rem;
+  }
+
+  /* ---------- Badges ---------- */
+
+  .badge {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 0.14rem 0.5rem;
+    border-radius: 999px;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  .badge-inherited { background: var(--blue-soft); color: var(--blue); border: 1px solid #c3d7e8; }
+  .badge-hybrid { background: var(--orange-soft); color: var(--orange); border: 1px solid #ecd0ab; }
+  .badge-ours { background: var(--green-soft); color: var(--green); border: 1px solid #bcdac4; }
+  .badge-jeremy { background: var(--purple-soft); color: var(--purple); border: 1px solid #ddd0ec; }
+
+  .id-chip {
+    display: inline-block;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.78rem;
+    font-weight: 700;
+    background: var(--purple-soft);
+    color: var(--purple);
+    border: 1px solid #ddd0ec;
+    border-radius: 4px;
+    padding: 0.05rem 0.4rem;
+    margin-right: 0.3rem;
+  }
+
+  /* ---------- Diagrams ---------- */
+
+  figure.diagram {
+    max-width: var(--max-wide);
+    margin: 1.5rem auto;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 1.25rem;
+    text-align: center;
+  }
+
+  figure.diagram img {
+    max-width: 100%;
+    height: auto;
+    background: #fff;
+    border-radius: 4px;
+  }
+
+  figure.diagram figcaption {
+    text-align: left;
+    margin-top: 0.9rem;
+    font-size: 0.92rem;
+    color: var(--ink-soft);
+  }
+
+  figure.diagram figcaption .cap-title {
+    font-weight: 700;
+    color: var(--ink);
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.95rem;
+  }
+
+  figure.diagram figcaption .how-to-read {
+    display: block;
+    margin-top: 0.6rem;
+    padding-top: 0.6rem;
+    border-top: 1px dashed var(--line);
+  }
+
+  figure.diagram figcaption .how-to-read strong {
+    color: var(--ink);
+  }
+
+  /* ---------- Tables ---------- */
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1.2rem 0;
+    font-size: 0.88rem;
+  }
+
+  .wide table { font-size: 0.85rem; }
+
+  th, td {
+    border: 1px solid var(--line);
+    padding: 0.5rem 0.65rem;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    background: var(--panel);
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--ink-soft);
+  }
+
+  tr:nth-child(even) td { background: #fafafa; }
+
+  /* ---------- Reference list ---------- */
+
+  .ref-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .ref-list li {
+    display: flex;
+    gap: 0.6rem;
+    align-items: baseline;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.93rem;
+  }
+
+  .ref-list li:last-child { border-bottom: none; }
+
+  .ref-list .ref-text { flex: 1; color: var(--ink-soft); }
+  .ref-list .ref-text strong { color: var(--ink); font-weight: 600; }
+
+  /* ---------- Pre / code blocks ---------- */
+
+  pre {
+    background: #1c2430;
+    color: #e8ecf1;
+    padding: 1.2rem 1.4rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 0.82rem;
+    line-height: 1.55;
+    max-width: var(--max-wide);
+    margin: 1.2rem auto;
+  }
+
+  .wide pre { max-width: 100%; }
+
+  code.inline {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 0.05rem 0.35rem;
+    font-size: 0.86rem;
+  }
+
+  /* ---------- Callout / next steps ---------- */
+
+  .callout {
+    background: var(--green-soft);
+    border: 1px solid #bcdac4;
+    border-radius: 6px;
+    padding: 1rem 1.3rem;
+    margin: 1rem 0;
+  }
+
+  .callout-open {
+    background: var(--orange-soft);
+    border: 1px solid #ecd0ab;
+    border-radius: 6px;
+    padding: 1rem 1.3rem;
+    margin: 1rem 0;
+  }
+
+  ul, ol { padding-left: 1.4rem; }
+  li { margin: 0.3rem 0; }
+
+  footer {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+    color: var(--ink-soft);
+    font-size: 0.82rem;
+    border-top: 1px solid var(--line);
+  }
+
+  /* ---------- Print ---------- */
+
+  @media print {
+    nav.toc { position: static; }
+    body { font-size: 12pt; }
+    .aha, .callout, .callout-open { break-inside: avoid; }
+    figure.diagram { break-inside: avoid; }
+    a { color: var(--ink); text-decoration: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="kicker">Session Learning Guide</div>
+  <h1>Agent Loop Engineering, Without /workflows</h1>
+  <p class="dek">
+    How a nine-exchange conversation converged on a single architecture for running verified agent loops,
+    across Anthropic-only and mixed-provider scope, with no dependency on the /workflows primitive.
+  </p>
+  <p class="meta">Session date: 2026-07-10 &middot; Updated 2026-07-11 with the execution session (sections 11-13) &middot; Participants: Jeremy and Claude Fable 5 &middot; Source: <code class="inline">~/loops/loop-stack-session/</code></p>
+</header>
+
+<nav class="toc" aria-label="Table of contents">
+  <div class="toc-inner">
+    <span class="toc-label">Jump to</span>
+    <a href="#overview">Overview</a>
+    <a href="#aha-1">1. No /workflows needed</a>
+    <a href="#aha-2">2. Ringer has no model</a>
+    <a href="#aha-3">3. Checkability gate</a>
+    <a href="#aha-4">4. Prior vs posterior</a>
+    <a href="#aha-5">5. Three axes</a>
+    <a href="#aha-6">6. Gate bandwidth</a>
+    <a href="#aha-7">7. Layers not competitors</a>
+    <a href="#pipeline">Wave loop</a>
+    <a href="#reference">Reference: P1-C8</a>
+    <a href="#routing">Routing flowchart</a>
+    <a href="#execution">11. Execution day</a>
+    <a href="#gotchas">12. Harness gotchas</a>
+    <a href="#packaging">13. Names &amp; packaging</a>
+  </div>
+</nav>
+
+<main>
+
+<section id="overview">
+  <h2><span class="num">0</span>Overview</h2>
+  <p>
+    Jeremy turned <code class="inline">/workflows</code> off after it burned too many tokens, then asked whether
+    <code class="inline">frontier-loop</code> would still work and whether agent-team loops were possible without it.
+    Nine exchanges later, the session had converged on a three-layer architecture (router, compiler, executor), found
+    an off-the-shelf execution substrate (<strong>Ringer</strong>, by Nate B. Jones - 8,300 lines of zero-LLM
+    stdlib Python) that made building a fourth layer unnecessary, and produced a full implementation plan. The
+    routing front door, the one-minute-test, is also Nate B. Jones's framework; frontier-loop and fable-sandwich
+    are Jeremy's own skills.
+  </p>
+  <p>
+    This guide is organized around the session's seven <strong>aha moments</strong>, backed by a compact reference
+    of every principle (P1-P14) and critical-path choice (C1-C8) the session named. Each principle carries a
+    provenance badge, because the reader should know at a glance what came from prior materials versus what this
+    session actually invented:
+  </p>
+  <p>
+    <span class="badge badge-inherited">inherited</span> drawn from Nate B. Jones's work (Ringer, the
+    one-minute-test framework) or the ~loops articles by their named authors -
+    <span class="badge badge-jeremy">jeremy's</span> from Jeremy's own pre-session skills (frontier-loop,
+    fable-sandwich), built on his workflow and architecture -
+    <span class="badge badge-hybrid">hybrid</span> an existing idea this session elevated or reframed -
+    <span class="badge badge-ours">ours</span> generated in this session, with no prior source.
+  </p>
+  <figure class="diagram">
+    <img src="diagrams/a-conversation-evolution.svg" alt="Diagram of the nine-exchange conversation evolution, with callouts to the principles and choices each exchange produced" loading="lazy">
+    <figcaption>
+      <span class="cap-title">Diagram A - How the conversation evolved</span>
+      Nine phases, one per exchange, from the opening trigger question through the final archive request. Each
+      phase is annotated with the principle or choice IDs it produced.
+      <span class="how-to-read"><strong>How to read this:</strong> follow the phases top to bottom in
+      conversation order. The callout labels (native substrate, executed checks, isolation, one brain
+      orchestrates, evidence over vibes, checkability gate, and so on) are the ideas that got locked in at that
+      point and did not change again - later exchanges built on top of them rather than revisiting them.</span>
+    </figcaption>
+  </figure>
+</section>
+
+<section id="aha-1">
+  <h2><span class="num">1</span>Aha moment: "Loops don't need /workflows"</h2>
+  <div class="aha">
+    <div class="aha-label">Exchange 1</div>
+    <p>
+      Turning off <code class="inline">/workflows</code> did not remove the ability to orchestrate agent teams. The
+      primitives it wrapped were already native: parallel <strong>background Agent calls</strong> (each with its
+      own model override and worktree isolation), <strong>completion notifications</strong> that reproduce
+      <code class="inline">pipeline()</code> semantics (a validator launches the moment its implementer finishes,
+      with no artificial barrier between units), and <strong>SendMessage</strong> to carry a repair pass back to
+      the same implementer with full context intact.
+    </p>
+  </div>
+  <p>
+    The one real loss: no detached, durable pipeline. The orchestrating session has to stay alive for the whole
+    run, which makes the loop's own interruption-and-resume design load-bearing rather than optional
+    <span class="id-chip">P11</span>. That single tradeoff is <span class="id-chip">C1</span>: native primitives
+    replace <code class="inline">pipeline()</code>, at the cost of session liveness.
+  </p>
+</section>
+
+<section id="aha-2">
+  <h2><span class="num">2</span>Aha moment: "Ringer has NO model in it"</h2>
+  <div class="aha">
+    <div class="aha-label">Exchange 5</div>
+    <p>
+      The correction that closed the loop: when Ringer's own documentation says "the orchestrator," it means
+      whatever process is typing <code class="inline">./ringer.py run</code>. Ringer itself is 8,300 lines of
+      stdlib Python with <strong>zero LLM calls of its own</strong>. It is muscle, not brain
+      <span class="id-chip">C3</span>.
+    </p>
+    <p>
+      There is exactly <strong>one brain through the whole pipeline</strong>: the same Claude Code session that
+      brainstorms, researches, drafts the PRD, compiles it into waves, drives each wave, and reads the gate -
+      never a different model judging a different model's work <span class="id-chip">P5</span>.
+    </p>
+  </div>
+  <p>
+    This reframed what "adopting Ringer" actually meant. It wasn't adding a fourth orchestrator to compete with
+    the Claude session; it was adding a verified execution substrate underneath a session that was already the
+    only brain in the room <span class="id-chip">C2</span>.
+  </p>
+  <figure class="diagram">
+    <img src="diagrams/d-ringer-architecture.svg" alt="Diagram of Ringer's architecture: manifest, verifier, engine lanes, and scoreboard, all driven by the orchestrating Claude session" loading="lazy">
+    <figcaption>
+      <span class="cap-title">Diagram D - Ringer model deployment and dashboard architecture</span>
+      The full shape of the execution substrate: a manifest goes in, parallel engine lanes (Codex, Grok, OpenCode
+      via OpenRouter, the z.ai/GLM wrapper) do the typing, and the Verifier executes each task's check command
+      - exit 0 is the only PASS, one retry with the failure output injected.
+      <span class="how-to-read"><strong>How to read this:</strong> the human and the Claude orchestrator sit
+      outside the ringer.py package, at the bottom right; everything inside it is zero-LLM stdlib Python.
+      Follow a task around the loop: the orchestrator's manifest enters ringer.py, run fans it out to an engine
+      lane and an isolated task dir, the Verifier executes the check (fail &rarr; one retry), and the verdict
+      lands in state/logs and on the Ringside page the human watches. No arrow inside the package represents a
+      model making a judgment call - that only happens outside, at the gate.</span>
+    </figcaption>
+  </figure>
+</section>
+
+<section id="aha-3">
+  <h2><span class="num">3</span>Aha moment: "Checkability is the routing gate"</h2>
+  <div class="aha">
+    <div class="aha-label">Exchange 7</div>
+    <p>
+      Work only enters the swarm when checking the output is cheaper than producing it <span class="id-chip">P6</span>.
+      That's a property of the work's <em>shape</em>, not its size. Taste-only work - naming, strategy,
+      "is this good?" - fails the test outright: judging it costs as much as making it, so adding more
+      agents just produces a larger pile of fluent options.
+    </p>
+    <p class="quote">
+      "A check that cannot fail is trusting the worker with extra steps." - P1, echoed again in P6's framing
+      of the routing gate.
+    </p>
+  </div>
+  <h3>When NOT to use the stack</h3>
+  <ul>
+    <li>Taste- or judgment-dominant work (naming, strategy, "is this good?").</li>
+    <li>Work coupled to the live session that needs real back-and-forth.</li>
+    <li>When writing the check would cost more than just doing the task inline.</li>
+    <li>Rare, sensitive work that a human reviews anyway regardless of what produced it (the one-minute-test's tax-folder example).</li>
+  </ul>
+  <p>
+    This is also why validators never fix and implementers never grade <span class="id-chip">P3</span>: the model
+    that wrote the code is too close to it to be the one deciding whether the check should pass.
+  </p>
+</section>
+
+<section id="aha-4">
+  <h2><span class="num">4</span>Aha moment: "Benchmarks are the prior; your scoreboard is the posterior"</h2>
+  <div class="aha">
+    <div class="aha-label">Exchange 6</div>
+    <p>
+      Two routing signals, opposite ends of the evidence spectrum, and they compose <span class="id-chip">P7</span>:
+    </p>
+  </div>
+  <table>
+    <tr><th></th><th><code class="inline">model-benchmarks.md</code> (fable-sandwich)</th><th><code class="inline">./ringer.py models</code></th></tr>
+    <tr><td><strong>Evidence</strong></td><td>Public benchmark suite, someone else's task categories</td><td>Your own executed-check outcomes, per model and task type</td></tr>
+    <tr><td><strong>Nature</strong></td><td>A prior - signal about models you've never run</td><td>A posterior - ground truth on your tasks, your specs, your machine</td></tr>
+    <tr><td><strong>Freshness</strong></td><td>Manual refresh</td><td>Every attempt appends a row</td></tr>
+    <tr><td><strong>Portability</strong></td><td>Portable across users</td><td>Deliberately not portable</td></tr>
+  </table>
+  <p>
+    The promotion ladder ties the two together: benchmarks decide which untested model earns an audition slot; the
+    scoreboard decides when it's proven - three or more tasks, first-try pass rate at or above 0.67. A small
+    slice of every suitable run keeps auditioning cheap or free candidates so the local bench refills itself.
+    Numbers are not portable between users, which is exactly why the local log has to exist at all.
+  </p>
+</section>
+
+<section id="aha-5">
+  <h2><span class="num">5</span>Aha moment: "Three questions on three axes"</h2>
+  <div class="aha">
+    <div class="aha-label">Exchange 8</div>
+    <p>
+      The flowchart Jeremy sketched was 90% right, but it conflated two verdicts (DON'T BOTHER versus CHAT) and
+      merged two independent axes (dependencies and checkability) into one question. The fix, unfolded into three
+      separate axes each owning one decision <span class="id-chip">C7</span>:
+    </p>
+    <ol>
+      <li><strong>Scale</strong> (one-minute-test): none / chat / one agent / team.</li>
+      <li><strong>Dependencies</strong> (only if team): flat &rarr; one manifest; dependent &rarr; compile into waves.</li>
+      <li><strong>Checkability</strong> (asked <em>per unit</em>, not per project): executable check &rarr; ringer task; judgment &rarr; orchestrator's own lane.</li>
+    </ol>
+  </div>
+  <p>
+    That last correction is the important one: real PRDs are mixtures of checkable and judgment-shaped work.
+    Routing per unit, at the compile step, is what resolves a mixed PRD instead of forcing the whole project into
+    one bucket.
+  </p>
+  <figure class="diagram">
+    <img src="diagrams/b-three-axes.svg" alt="Diagram of the three independent decision axes: scale, dependencies, and checkability" loading="lazy">
+    <figcaption>
+      <span class="cap-title">Diagram B - Three decisions on three axes</span>
+      Scale, dependencies, and checkability drawn as three separate swim lanes, each with its own question,
+      its own answering mechanism, and what it decides downstream.
+      <span class="how-to-read"><strong>How to read this:</strong> the axes are independent, not sequential
+      sub-branches of a single tree. Scale is answered once per project by /loop-which (then named
+      one-minute-test). Dependencies is answered once per project, but only if scale resolved to team.
+      Checkability is answered separately for every unit of work, no matter what scale or dependency answer
+      the project got.</span>
+    </figcaption>
+  </figure>
+</section>
+
+<section id="aha-6">
+  <h2><span class="num">6</span>Aha moment: "Marginal overhead is flat; gate bandwidth is the constraint"</h2>
+  <div class="aha">
+    <div class="aha-label">Exchange 7</div>
+    <p>
+      The stack works at W=1, T=1 by design - Ringer's own framing is that a single task is a one-task
+      manifest. Per-task overhead is just a spec and a check, roughly 1-3k orchestrator tokens, and that cost
+      curve stays nearly flat as task count grows <span class="id-chip">P13</span>.
+    </p>
+    <p>
+      What does <em>not</em> stay flat is the top end. At W=50 the binding constraint isn't compute, it's the
+      human: every wave gate is a review sitting, and a loop that buries the human in thirty unreviewed PRs is a
+      failed loop with good throughput <span class="id-chip">P12</span>. Practical ceilings back this up too
+      (opencode's sqlite locking under simultaneous spawns).
+    </p>
+    <p class="quote">"W=50 is almost always a mis-compiled W=8." - the session's conclusion, P13.</p>
+  </div>
+  <p>
+    Practically: big jobs want fewer, fatter waves, not more, thinner ones. This is also why C6 (one-minute-test as
+    the front door) matters - low marginal overhead is exactly what makes "everything looks agent-shaped"
+    tempting, and DON'T BOTHER has to remain a legitimate, frequent verdict to guard against it.
+  </p>
+</section>
+
+<section id="aha-7">
+  <h2><span class="num">7</span>Aha moment: "The skills are layers, not competitors"</h2>
+  <div class="aha">
+    <div class="aha-label">Exchange 3</div>
+    <p>
+      Asked why three skills instead of one, the answer split them into three layers with almost no overlap:
+      router &rarr; compiler &rarr; executor <span class="id-chip">C8</span>.
+    </p>
+  </div>
+  <table>
+    <tr><th></th><th>fable-orchestration</th><th>frontier-loop</th><th>ringer</th></tr>
+    <tr><td><strong>What it is</strong></td><td>A prompting style-guide</td><td>A plan compiler</td><td>An execution substrate</td></tr>
+    <tr><td><strong>Layer</strong></td><td>Prompting discipline</td><td>Planning / structuring</td><td>Execution / verification</td></tr>
+    <tr><td><strong>Runs anything?</strong></td><td>No</td><td>No (emits a plan doc)</td><td>Yes, real workers</td></tr>
+    <tr><td><strong>Trigger frequency</strong></td><td>Passive, every session</td><td>Rare, once per project</td><td>Constant, every batch</td></tr>
+    <tr><td><strong>Unique contribution</strong></td><td>Fable footguns (reasoning-extraction reroute, effort caps)</td><td>Dependency waves + validator tier + resume design</td><td>Executed verification + evidence scoreboard</td></tr>
+  </table>
+  <p>
+    fable-orchestration turned out to be about 30% inside frontier-loop; frontier-loop's implementer/validator/retry
+    structure is about 70% of what Ringer does natively out of the box. The minimal-stack verdict: if only one
+    survives, keep Ringer. Keep frontier-loop only if multi-wave dependent builds are real for you. Fold
+    fable-orchestration's roughly ten unique lines into CLAUDE.md and skip it as a standalone skill
+    <span class="id-chip">P4</span>.
+  </p>
+</section>
+
+<section id="pipeline">
+  <h2><span class="num">8</span>The pipeline: one brain, a wave loop underneath</h2>
+  <p>
+    From Exchange 5, the full shape once "one brain" and "Ringer has no model" both land. Everything above the
+    wave loop happens once; the wave loop repeats until the job is done.
+  </p>
+  <div class="wide">
+<pre>YOUR CLAUDE CODE SESSION (Fable or Opus - the only orchestrator anywhere)
+│
+├─ brainstorm ──────────── superpowers:brainstorming
+├─ research ────────────── subagents (or a ringer research-with-proof run)
+├─ plan / PRD ──────────── writing-plans / fable-sandwich
+├─ compile to waves ────── frontier-loop: deps -&gt; waves, steps -&gt; specs+checks
+│
+└─ THE WAVE LOOP (same session, repeating):
+     write wave-N manifest
+     ./ringer.py lint &amp;&amp; ./ringer.py run     &lt;- ringer: dumb, verified muscle
+     ── wave gate (this is the session again) ──
+     read run JSON + raw logs of any retry/fail
+     spot-check one PASSING artifact
+     apply patches to integration branch, run full suite
+     fold lessons into next wave's specs
+     write wave-N+1 manifest from wave-N's results</pre>
+  </div>
+  <p>
+    Verification happens in three nested layers: per task (the executed check), per wave (the gate - a
+    post-run ritual plus the full suite on the integration branch), and once at the end of the job (a final
+    verification wave of adversarial-review tasks plus a cold end-to-end task, then the session, then the human
+    on the Ringside artifact page) <span class="id-chip">P12</span>.
+  </p>
+</section>
+
+<section id="reference">
+  <h2><span class="num">9</span>Reference: every principle and choice</h2>
+  <p>
+    All fourteen principles and eight critical-path choices, one line each, with provenance. Full text lives in
+    <code class="inline">principles.md</code>.
+  </p>
+  <h3>Principles</h3>
+  <ul class="ref-list">
+    <li><span class="id-chip">P1</span><span class="badge badge-inherited">inherited</span><span class="ref-text"><strong>Verification is the heart of the loop.</strong> An executed check beats a model's opinion of a diff.</span></li>
+    <li><span class="id-chip">P2</span><span class="badge badge-inherited">inherited</span><span class="ref-text"><strong>Worker self-reports are worthless.</strong> Judge raw evidence, not the implementer's narrative.</span></li>
+    <li><span class="id-chip">P3</span><span class="badge badge-inherited">inherited</span><span class="ref-text"><strong>Maker and checker must be separate minds.</strong> Validators never fix; implementers never grade.</span></li>
+    <li><span class="id-chip">P4</span><span class="badge badge-inherited">inherited</span><span class="ref-text"><strong>Split roles by the price of judgment.</strong> Frontier plans and arbitrates; cheap workers type.</span></li>
+    <li><span class="id-chip">P5</span><span class="badge badge-inherited">inherited</span><span class="ref-text"><strong>One brain orchestrates, or evaluation drifts.</strong> One model owns planning and scoring throughout.</span></li>
+    <li><span class="id-chip">P6</span><span class="badge badge-hybrid">hybrid</span><span class="ref-text"><strong>Checkability is the routing gate.</strong> Work enters the swarm only when checking beats producing.</span></li>
+    <li><span class="id-chip">P7</span><span class="badge badge-hybrid">hybrid</span><span class="ref-text"><strong>Route models by evidence, not vibes.</strong> Public benchmarks are the prior; the local log is the posterior.</span></li>
+    <li><span class="id-chip">P8</span><span class="badge badge-inherited">inherited</span><span class="ref-text"><strong>Bounded failure, isolated blast radius.</strong> One retry with context; a second failure stops that unit only.</span></li>
+    <li><span class="id-chip">P9</span><span class="badge badge-inherited">inherited</span><span class="ref-text"><strong>Isolation is what makes parallelism safe.</strong> One worktree per worker; deliverables must be exported.</span></li>
+    <li><span class="id-chip">P10</span><span class="badge badge-inherited">inherited</span><span class="ref-text"><strong>State is memory; distill or repeat forever.</strong> Durable state stays small; logs only ever get longer.</span></li>
+    <li><span class="id-chip">P11</span><span class="badge badge-jeremy">jeremy's</span><span class="ref-text"><strong>Design for interruption.</strong> The loop must die safely at any moment and never resume a half-done unit. The graceful-resume design is Jeremy's, from his frontier-loop skill.</span></li>
+    <li><span class="id-chip">P12</span><span class="badge badge-inherited">inherited</span><span class="ref-text"><strong>Human gates scale with risk, not with size.</strong> Autonomy is earned per lane by evidence, not granted globally.</span></li>
+    <li><span class="id-chip">P13</span><span class="badge badge-ours">ours</span><span class="ref-text"><strong>Marginal overhead is flat; gate bandwidth is the constraint.</strong> W=50 is almost always a mis-compiled W=8.</span></li>
+    <li><span class="id-chip">P14</span><span class="badge badge-inherited">inherited</span><span class="ref-text"><strong>Check craft is as important as spec craft.</strong> Checks were the top failure source in practice.</span></li>
+  </ul>
+
+  <h3>Critical-path choices</h3>
+  <ul class="ref-list">
+    <li><span class="id-chip">C1</span><span class="badge badge-ours">ours</span><span class="ref-text"><strong>/workflows off; native primitives replace pipeline().</strong> Costs a durable detached pipeline; the session must stay alive.</span></li>
+    <li><span class="id-chip">C2</span><span class="badge badge-ours">ours</span><span class="ref-text"><strong>Adopt Ringer off the shelf</strong> rather than build an execution layer that would duplicate ~70% of it, worse.</span></li>
+    <li><span class="id-chip">C3</span><span class="badge badge-ours">ours</span><span class="ref-text"><strong>Ringer has no model in it; the orchestrator is your own session.</strong> Ringer is muscle, not brain.</span></li>
+    <li><span class="id-chip">C4</span><span class="badge badge-ours">ours</span><span class="ref-text"><strong>frontier-loop becomes the wave compiler,</strong> not a parallel orchestrator: plan &rarr; waves &rarr; manifests.</span></li>
+    <li><span class="id-chip">C5</span><span class="badge badge-ours">ours</span><span class="ref-text"><strong>Provider mix is config, not skills.</strong> GLM and OpenRouter are engine blocks, not new skills.</span></li>
+    <li><span class="id-chip">C6</span><span class="badge badge-ours">ours</span><span class="ref-text"><strong>one-minute-test is the front door.</strong> DON'T BOTHER is a legitimate, frequent verdict.</span></li>
+    <li><span class="id-chip">C7</span><span class="badge badge-ours">ours</span><span class="ref-text"><strong>The architecture decision is three questions on three axes:</strong> scale, dependencies, checkability per unit.</span></li>
+    <li><span class="id-chip">C8</span><span class="badge badge-ours">ours</span><span class="ref-text"><strong>Keep three skills as three layers, minimized:</strong> router &rarr; compiler &rarr; executor.</span></li>
+  </ul>
+</section>
+
+<section id="routing">
+  <h2><span class="num">10</span>The canonical routing flowchart</h2>
+  <p>
+    This is the converged flow from Exchange 8: /loop-which (then named one-minute-test) decides scale first,
+    dependencies decide wave structure second, and checkability is asked separately for every unit of work.
+  </p>
+  <figure class="diagram">
+    <img src="diagrams/c-routing-flow.svg" alt="Routing flowchart: PRD goes through one-minute-test, then dependency check, then per-unit checkability, ending in ringer tasks or orchestrator judgment lanes" loading="lazy">
+    <figcaption>
+      <span class="cap-title">Diagram C - Canonical routing flow</span>
+      A PRD or plan enters at the top and /loop-which resolves it to DON'T BOTHER, CHAT, ONE AGENT, or AGENT
+      TEAM. Team-scale work then answers the dependency question, and every individual unit answers the
+      checkability question on its own.
+      <span class="how-to-read"><strong>How to read this:</strong> follow the diagram top to bottom as a
+      decision tree, but note that the bottom-most branch point (checkable vs. judgment) is not a one-time
+      fork - it repeats once per unit of work inside a wave. A single wave can and usually does contain
+      both ringer tasks and orchestrator judgment lanes side by side.</span>
+    </figcaption>
+  </figure>
+  <p>
+    Two corrections mattered here: DON'T BOTHER (no AI, human checklist) is not the same verdict as CHAT (one pass
+    in the current session, human reviews). And "do units depend on each other" is a genuinely separate axis from
+    checkability - a judgment-heavy team need usually resolves to a fresh-mind review task inside Ringer,
+    whose check enforces structure while the human judges substance, rather than routing through /loop-drive on
+    the judgment axis at all.
+  </p>
+</section>
+
+<section id="execution">
+  <h2><span class="num">11</span>Execution day: what the build proved (2026-07-11)</h2>
+  <p>
+    The plan was executed the day after it was written - and the session executing it <em>was itself the loop pattern</em>:
+    an Opus 4.8 agent did the keystrokes, the Fable session validated evidence at each gate, and the two decisions the
+    plan reserved for the human came back to the human. Frontier judgment before and after cheap execution, applied to
+    building the thing that does exactly that.
+  </p>
+  <div class="aha">
+    <div class="aha-label">Aha: the sandbox that wasn't there</div>
+    <p>
+      The plan's WI-4 "verify first" flag paid for itself. The claude engine's sketch said
+      <code class="inline">sandbox_args = []</code>, and verification showed that on this machine a bare
+      <code class="inline">claude -p</code> has <strong>full filesystem and bash access with no flags at all</strong>,
+      because the global <code class="inline">~/.claude/settings.json</code> sets
+      <code class="inline">defaultMode: bypassPermissions</code>. An empty sandbox_args wasn't a sandbox - it was
+      silent inheritance of an invisible global.
+    </p>
+    <p>
+      The decision: make bypass <strong>explicit</strong>
+      (<code class="inline">sandbox_args = ["--permission-mode", "bypassPermissions"]</code>) rather than pretend to
+      confinement. The real isolation layer for workers was never their permission mode - it is run-level worktrees,
+      disjoint file ownership, and the executed check (P9). Config should document reality, not hide behind defaults.
+    </p>
+  </div>
+  <h3>What landed, all evidence-backed</h3>
+  <ul>
+    <li><strong>Three engine lanes, all probes PASS</strong>: <code class="inline">claude</code> (haiku/sonnet workers on the subscription), <code class="inline">claude-zai</code> (GLM flat-rate via a 5-line wrapper), <code class="inline">opencode</code> (anything on OpenRouter). Each probe's check demanded an exact computed string, so it could genuinely fail.</li>
+    <li><strong>Verified mechanics</strong>: ringer sets each subprocess's cwd to the task dir itself, so claude engines need no <code class="inline">{taskdir}</code> placeholder; stdin arrives closed; raw logs land per task. For flat-rate lanes, <code class="inline">token_regex</code> is a deliberate no-match - cost is on-plan, so token accounting is noise.</li>
+    <li><strong>RED-GREEN skill revision worked as designed</strong>: the frozen pre-edit skill demonstrably emitted <code class="inline">pipeline()</code> plans (the /workflows-off failure); the revised skill emitted correct plans on both substrates, including a lint-clean ringer manifest.</li>
+    <li><strong>Two-wave end-to-end dry run</strong>: all three engines in one job, one Ringside entry across rounds, and a wave-2 check that independently recomputed wave-1 facts - a worker that hadn't read the upstream artifacts would have failed it.</li>
+  </ul>
+  <p class="quote">
+    "Ground all progress claims in actual tool output, not summaries." - the single most load-bearing line in every
+    agent brief this session sent. The orchestrator then re-verified the key claims itself before relaying them.
+  </p>
+</section>
+
+<section id="gotchas">
+  <h2><span class="num">12</span>Harness gotchas discovered while building</h2>
+  <p>Four operational facts about Claude Code that no document in the stack predicted, found the hard way:</p>
+  <ul>
+    <li>
+      <strong>Every subdir of <code class="inline">skills/</code> loads as a skill.</strong> The plan said "back up
+      the old skill to <code class="inline">frontier-loop.bak</code>" - and the backup immediately loaded as a live,
+      stale duplicate skill. Backups must live <em>outside</em> any skills/ scan path. The plan was amended.
+    </li>
+    <li>
+      <strong>Skills may really live in <code class="inline">~/.agents/skills/</code></strong> with symlinks from
+      <code class="inline">~/.claude/skills/</code> - a harness-neutral home, one symlink per harness. A naive
+      <code class="inline">cp -R</code> of a "skill directory" can copy a symlink instead of content. install.sh now
+      offers this as its default style.
+    </li>
+    <li>
+      <strong>Deferred tools bite silently.</strong> SendMessage (continue a background agent with context intact)
+      exists but must be schema-loaded before use; calling the Agent tool instead spawns a fresh, context-free agent
+      that can only report "I have no idea what you're talking about." The recovery pattern: a self-contained
+      re-brief carrying the completed agent's findings - which worked, because the checkpoint report had captured
+      everything that mattered. Reports that survive their author are what make handoffs recoverable (P11, applied
+      to agents rather than quota).
+    </li>
+    <li>
+      <strong>Surface coverage is binary, not graded.</strong> CLI, desktop app, and IDE extensions share the same
+      <code class="inline">~/.claude/</code> engine and config - the whole stack works identically in all three.
+      The web (claude.ai/code) is a cloud sandbox that sees only repo-committed config: skills could travel via a
+      project's <code class="inline">.claude/skills/</code>, but the machine-local substrate (CLIs, tokens, ringer)
+      cannot. Native Windows needs admin for symlinks; WSL behaves like Linux.
+    </li>
+  </ul>
+</section>
+
+<section id="packaging">
+  <h2><span class="num">13</span>Names and packaging: the stack gets its own identity</h2>
+  <div class="aha">
+    <div class="aha-label">Aha: names describe jobs; descriptions do the triggering</div>
+    <p>
+      <code class="inline">one-minute-test</code> became <strong>loop-which</strong> (it answers "which approach do
+      I need?" - and DON'T BOTHER is one of the answers, so "which" includes "none"). <code class="inline">frontier-loop</code>
+      became <strong>loop-drive</strong> (it compiles waves <em>and</em> drives them; the orchestrator being a
+      frontier model is an implementation detail, not the identity). With the package already named loop-stack,
+      <code class="inline">/loop-which &rarr; /loop-drive &rarr; ringer</code> reads as one pipeline.
+    </p>
+    <p>
+      The rename cost nothing in triggering because skill <em>names</em> don't trigger - descriptions do. The old
+      phrases ("one-minute test", "Fable Sandwich") stay in the descriptions as aliases; muscle memory and provenance
+      survive the rebrand. "Fable Sandwich" became the model-agnostic "Frontier Sandwich" the same way.
+    </p>
+  </div>
+  <p>
+    loop-which's verdict now ends with a <strong>Map</strong>: a compact flow diagram of where the verdict sits and
+    what command comes next - always plain monospace text in a fenced code block, never Mermaid, never a generated
+    image, so it renders identically everywhere. The handoff model ("each skill's output names the next command")
+    became literally visible.
+  </p>
+  <h3>Distribution: why the repo + install.sh wins</h3>
+  <p>
+    Plugin research settled the packaging question for now. Claude Code plugins carry skills beautifully (a git repo
+    with <code class="inline">.claude-plugin/marketplace.json</code> <em>is</em> a marketplace), but they have no
+    install phase: they cannot append the managed CLAUDE.md block, write <code class="inline">~/.config/ringer/</code>,
+    run doctor checks, or offer symlink styles. Of the installer's six jobs, a plugin does one. An npx-style installer
+    adds npm overhead to what <code class="inline">git clone &amp;&amp; ./install.sh</code> already does. So: the repo
+    stays the source of truth, install.sh stays the installer (two styles, agents default; doctor warns about missing
+    engine CLIs but never fails), and the plugin split - skills in a marketplace, machine setup as a documented
+    prerequisite - waits until the stack survives its first real project, per the plan's own deferral decision.
+  </p>
+  <div class="callout">
+    <strong>Where this leaves the stack:</strong> installed, probed, dry-run-proven, renamed, and one small JSON file
+    away from marketplace-ready. Next step is the real thing: bring a PRD, run
+    <code class="inline">/loop-which</code>, and let the verdict route it.
+  </div>
+</section>
+
+</main>
+
+<footer>
+  Source materials: <code class="inline">principles.md</code>, <code class="inline">conversation-archive.md</code>,
+  <code class="inline">PLAN.md</code>, and <code class="inline">diagrams/</code> in
+  <code class="inline">~/loops/loop-stack-session/</code>. Generated as part of the 2026-07-10 session archive;
+  sections 11-13 added 2026-07-11 after plan execution. Skill names in sections 0-10 are the historical
+  (pre-rename) names; see section 13 for the mapping.
+</footer>
+
+</body>
+</html>
