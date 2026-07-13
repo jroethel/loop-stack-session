@@ -410,7 +410,7 @@
     How a nine-exchange conversation converged on a single architecture for running verified agent loops,
     across Anthropic-only and mixed-provider scope, with no dependency on the /workflows primitive.
   </p>
-  <p class="meta">Session date: 2026-07-10 &middot; Updated 2026-07-11 with the execution session (sections 11-13) &middot; Participants: Jeremy and Claude Fable 5 &middot; Source: <code class="inline">~/loops/loop-stack-session/</code></p>
+  <p class="meta">Session date: 2026-07-10 &middot; Updated 2026-07-11 with the execution session (sections 11-13) and 2026-07-12 with the loop-drive launch UX revision (section 14) &middot; Participants: Jeremy and Claude Fable 5 &middot; Source: <code class="inline">~/loops/loop-stack-session/</code></p>
 </header>
 
 <nav class="toc" aria-label="Table of contents">
@@ -430,6 +430,7 @@
     <a href="#execution">11. Execution day</a>
     <a href="#gotchas">12. Harness gotchas</a>
     <a href="#packaging">13. Names &amp; packaging</a>
+    <a href="#launch-ux">14. Launch UX</a>
   </div>
 </nav>
 
@@ -878,14 +879,63 @@
   </div>
 </section>
 
+<section id="launch-ux">
+  <h2><span class="num">14</span>Launch UX: see the "go" before it fires (2026-07-12)</h2>
+  <p>
+    A short revision session on loop-drive, driven by one instinct of Jeremy's: the moment between "plan approved"
+    and "workers launched" was invisible. You said go, things fired, and the first feedback was a completed (or
+    failed) worker. Two additions close that gap.
+  </p>
+  <div class="aha">
+    <div class="aha-label">Aha: the "go" itself is checkable</div>
+    <p>
+      A dashboard <em>describes</em> what will run; a <strong>dry run proves it</strong>. The distinction came from
+      Jeremy's reaction to the first draft ("love the idea of a test run or verification of what actually will kick
+      off when you say go!"). loop-drive's Step 7 now executes the pre-flight checklist for real -
+      <code class="inline">./ringer.py lint</code>, engine presence, clean tree, worktree-able state - and prints
+      the exact wave-1 launches (commands and Agent briefs) <em>without starting any worker</em>. The same
+      checkability principle that gates the workers (P6) now gates the launch button.
+    </p>
+  </div>
+  <h3>What landed in loop-drive</h3>
+  <ul>
+    <li><strong>Topology diagrams with every recommendation</strong> (Step 0): a fast text sketch - ASCII or fenced
+      mermaid, never a rendered export - of orchestrator, waves, workers, validators. Same plain-text-only rule as
+      loop-which's Map (section 13), for the same reason: renders identically everywhere, costs nothing.</li>
+    <li><strong>Close calls get both diagrams</strong>: if two shapes or substrates are roughly 60/40 or tighter,
+      diagram both, name the lean and why, let the user pick.</li>
+    <li><strong>Step 7 "Drive dashboard, then launch"</strong>: one multi-select prompt at execution approval -
+      Dashboard (condensed routing table + topology diagram), Dry run (above), Watch points (native: per-unit logs
+      and the run-state artifact; ringer: <code class="inline">tail -f &lt;workdir&gt;/logs/</code> and the run JSON
+      in <code class="inline">~/.ringer/runs/</code>). Nothing selected means launch immediately. Once per run,
+      never per wave - a visibility feature that fired every wave would become the nag it replaced.</li>
+    <li><strong>The example skeleton moved in lockstep</strong>: <code class="inline">example-output-plan.md</code>
+      got the diagram and a watch-live line, because emitted plans are compiled from the skeleton as much as from
+      the rules.</li>
+  </ul>
+  <h3>Skill-weight learnings</h3>
+  <ul>
+    <li><strong>A conciseness pass is also a consistency audit.</strong> Jeremy asked that the skill "not falter
+      under its own weight"; the trim pass netted out roughly 110 words of prose while <em>adding</em> the dry-run
+      feature - and caught a real error on the way (the intro cited P13 where the body cites P12).</li>
+    <li><strong>Weight control is structural, not editorial.</strong> The durable defense against skill bloat is the
+      existing split - SKILL.md keeps decisions, the three references files keep substrate detail - not ever-tighter
+      prose. Steps 1-5 were left dense on purpose: each line is a distinct hazard or contract earned from real runs.</li>
+  </ul>
+  <div class="callout-open">
+    <strong>Open:</strong> no live drive has exercised Step 7 yet. The first real run tests whether
+    Dashboard / Dry run / Watch points is the right granularity, and whether once-per-run is the right frequency.
+  </div>
+</section>
+
 </main>
 
 <footer>
   Source materials: <code class="inline">principles.md</code>, <code class="inline">conversation-archive.md</code>,
   <code class="inline">PLAN.md</code>, and <code class="inline">diagrams/</code> in
   <code class="inline">~/loops/loop-stack-session/</code>. Generated as part of the 2026-07-10 session archive;
-  sections 11-13 added 2026-07-11 after plan execution. Skill names in sections 0-10 are the historical
-  (pre-rename) names; see section 13 for the mapping.
+  sections 11-13 added 2026-07-11 after plan execution; section 14 added 2026-07-12 after the loop-drive
+  launch UX revision. Skill names in sections 0-10 are the historical (pre-rename) names; see section 13 for the mapping.
 </footer>
 
 </body>
