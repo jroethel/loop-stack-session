@@ -15,7 +15,7 @@ There are two execution substrates, chosen per wave:
 - **Ringer (mixed-provider)**: workers are ringer manifest tasks on any engine (claude/haiku, claude-zai/GLM, opencode/OpenRouter); isolation and checks are ringer's. See `references/ringer-substrate.md`.
 
 A full worked skeleton of the emitted plan is `references/example-output-plan.md`.
-The principle IDs cited below (P2, P6, P7, P10, P13, P14) are defined in the loop-stack `principles.md`; short glosses are inline so this skill stands alone.
+The principle IDs cited below (P2, P6, P7, P10, P12, P14) are defined in the loop-stack `principles.md`; short glosses are inline so this skill stands alone.
 
 ## Step 0 - Route and scope
 
@@ -27,12 +27,13 @@ Run the loop-which verdict (the One-Minute Test router; or reference it if the u
 - **ONE AGENT** or **single-wave TEAM**: skip the wave machinery entirely. Emit one artifact directly:
   - native scope: one Agent-tool brief (the subagent prompt from Step 4), and name the exact launch.
   - mixed scope: one ringer manifest, and name the exact command: `./ringer.py lint <manifest> && ./ringer.py run <manifest>`.
-- **Multi-wave dependent build**: proceed through Steps 1-6.
+- **Multi-wave dependent build**: proceed through Steps 1-6; Step 7 fires at launch on every route.
 
-Apply the checkability gate here and keep applying it per unit (P6: a unit only belongs on a worker if its output can be checked more cheaply than it can be produced).
-Units whose output cannot be cheaply checked never route to a worker; they stay in the orchestrator's own judgment lane (the session decides them directly, never dispatched).
+Apply the checkability gate here and per unit (P6: a unit belongs on a worker only if its output can be checked more cheaply than produced); anything that fails it stays in the orchestrator's own judgment lane, never dispatched.
 
 Every Step 0 exit must name the concrete next command or launch, so the user never has to guess which skill or command comes next.
+Ship every run-something exit with a topology diagram: a fast text sketch (ASCII or fenced mermaid, never a rendered export) of orchestrator, waves, workers, and validators.
+If two shapes or substrates are close (roughly 60/40 or tighter), diagram both, name your lean and why, and let the user pick.
 
 ## Step 1 - Extract the plan's skeleton
 
@@ -86,7 +87,7 @@ Which hazards you must mitigate depends on the substrate.
 **Ringer mode:** worktree isolation, per-task directories, and log separation are handled for you by run-level `"worktrees": true`; do not re-specify them.
 What you MUST carry into the plan are ringer's own footguns:
 
-- **Deliverables die with a passing worktree.** A passing task's worktree is deleted. Land deliverables outside the task worktree, or have the check export them first (the patch-export pattern: `git add -A && git diff --cached > <path-outside-worktree>.patch`, applied on your branch after review).
+- **Deliverables die with a passing worktree** (it is deleted on pass). Land them outside the task worktree, or have the check export them first (the patch-export pattern: `git add -A && git diff --cached > <path-outside-worktree>.patch`, applied on your branch after review).
 - **Gitignored outputs vanish from patch exports.** `git add -A` cannot stage ignored paths (`dist/`, build dirs), so the check must `cp` those files to a path outside the worktree explicitly, and you verify the patch AND the copies.
 - **Stagger opencode spawns.** Concurrent OpenCode workers contend on its shared sqlite state store (WAL); launch them with a small stagger rather than all at once, or cap parallelism, to avoid lock errors.
 
@@ -136,7 +137,7 @@ Ringer: consume the run JSON in `~/.ringer/runs/` and the raw worker logs in `<w
 Native: skim diffs of Opus-tier units and test files of Sonnet-tier units.
 Merge passing branches (or apply reviewed patches) into the integration branch; run the full suite there.
 Resolve stopped units: a small spec issue means edit the spec artifact and relaunch that unit; a design issue is recorded for the plan's downstream review step under the source plan's slip rules.
-Write the wave summary; prune worktrees (native) or let ringer's have been pruned (ringer).
+Write the wave summary; prune native worktrees (ringer prunes its own).
 
 **3. Distill before advancing (both modes, P10: distill or repeat forever).**
 Turn any repeated failure pattern from this wave's verdicts into a fix in the spec artifact and the templates before the next wave, so the next wave does not re-earn the same failures.
@@ -156,13 +157,25 @@ Write `<source-plan-name>_loop.md` next to the source plan, containing, in order
 
 1. What this file is, that the source plan remains the manual fallback, and that the spec artifact stays ground truth.
 2. **Substrate declaration and routing table**: which substrate each wave uses, and the per-unit routing table (unit, wave, substrate, engine/model or subagent model, implementer effort, validator effort, task_type, evidence for the choice).
-3. The orchestration shape and the three validation layers (implementer self-check, per-unit validator, orchestrator gate).
+3. The orchestration shape and the three validation layers (implementer self-check, per-unit validator, orchestrator gate), plus the topology diagram (updated from Step 0 if compilation changed the shape).
 4. The hazard mitigations from Step 3, each marked as a deviation from the source plan where it is one.
 5. Pre-flight checklist (repo state, environment versions, integration branch creation, log directory; for ringer waves, the engines and `~/.config/ringer/` assumptions).
 6. The wave-loop procedure and gate checklist from Step 5, including slip rules and the ask-the-human list.
 7. A quota/resume section: durable-state rules, the reconciliation procedure, and the verbatim resume prompt.
 8. The implementer/validator prompt templates (native) and/or the manifest task templates (ringer) from Step 4.
-9. A one-paragraph "kicking it off" section: the sentence the human says to start, where the per-wave summaries appear, and a pointer to the resume prompt.
+9. A one-paragraph "kicking it off" section: the sentence the human says to start, where the per-wave summaries appear, the watch points from Step 7, and a pointer to the resume prompt.
 
 Follow the user's markdown rules (one sentence per line, no em dashes).
 Do not start executing the loop; drafting the plan and executing it are separate approvals unless the user said otherwise.
+When the user does approve execution, go through Step 7 before launching anything.
+
+## Step 7 - Drive dashboard, then launch
+
+When the user approves execution (including the single-artifact exits from Step 0), ask once via AskUserQuestion, multiSelect: "See execution details before I launch?"
+
+- **Dashboard**: what will run - the routing table condensed (unit, wave, engine/model, effort) plus the topology diagram.
+- **Dry run**: prove the "go" before firing it - execute the pre-flight checklist for real (ringer: `./ringer.py lint <manifest>`, engines present; native: clean tree, worktree-able state) and print the exact wave-1 launches (commands and Agent briefs) without starting any worker.
+- **Watch points**: where to follow the run live - native: per-unit logs (`<log>/unit-NN.md`), the run-state artifact, background-task notifications; ringer: `tail -f <workdir>/logs/` during a wave, run JSON in `~/.ringer/runs/` at gates.
+
+Show what they picked, fix anything the dry run flags, then launch; nothing selected means launch immediately.
+Once per run, never per wave.

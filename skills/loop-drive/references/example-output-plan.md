@@ -24,6 +24,15 @@ Wave 1 is mixed: unit `changelog-doc` runs on the ringer substrate, unit `parser
 ## 3. Orchestration shape and validation layers
 
 One orchestrator session drives the wave; each unit flows implement then validate independently.
+
+```
+orchestrator (this session)
+└── wave 1
+    ├── changelog-doc  ringer / glm-5.2 ──> executed check
+    └── parser         native / Sonnet ──> Opus validator
+        gate: merge to integration branch, full suite, distill
+```
+
 Three validation layers: implementer self-check, per-unit validator (a ringer `check` for `changelog-doc`, an Opus validator subagent for `parser`), orchestrator gate.
 
 ## 4. Hazard mitigations
@@ -106,4 +115,5 @@ Verbatim resume prompt:
 
 Human says: "Run the release-notes loop, wave 1."
 Per-wave summaries land in `logs/loop/wave-1-summary.md`.
+Watch live: `tail -f /tmp/release-notes-loop/logs/*.log` for the ringer unit; `logs/loop/parser.md` and `run-state.json` for the native unit; run JSON in `~/.ringer/runs/` at the gate.
 If interrupted, use the resume prompt in section 7.
