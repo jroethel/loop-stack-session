@@ -1,6 +1,6 @@
 # loop-stack
 
-Agent loop engineering without `/workflows`: a router, a compiler/driver, and a verified execution substrate for running agent-team loops in Anthropic-only or mixed-provider scope.
+Agent loop engineering without `/workflows`: a brainstormer, a planner, a router, a compiler/driver, and a verified execution substrate for running agent-team loops in Anthropic-only or mixed-provider scope.
 
 This repo is the product of a 2026-07-10 session between Jeremy and Claude Fable 5.
 The trigger: `/workflows` was turned off after it burned too many tokens, raising the question of whether agent-team loops were still possible.
@@ -9,28 +9,33 @@ The full story is in `learning_guide.html` (the seven aha moments), `conversatio
 
 ## The architecture
 
-Three layers, one brain.
+Five layers, one brain.
 The same Claude Code session that brainstorms and drafts the PRD also compiles it into waves, drives each wave, and reads the gates.
 Ringer is muscle, not brain: it fans tasks out to cheap engine lanes and verifies each with an executed check command, but makes zero LLM judgment calls of its own.
 
 ```
-brainstorm ──> plan / PRD
-               └─ /loop-which (One-Minute Test triage)
-                   ├─ CHAT ........... paste one prompt into a session
-                   ├─ DON'T BOTHER ... manual checklist
-                   ├─ ONE AGENT ┐
-                   └─ AGENT TEAM ┴──> /loop-drive
-                                       compiles: deps -> waves, steps -> specs + checks,
-                                       assigns models per unit, then DRIVES execution
-                                       ├─ native substrate: parallel Claude Code subagents
-                                       └─ ringer substrate: manifests on GLM / OpenRouter engines
+/loop-brainstorm ──> idea brief
+                     └─ /loop-plan ──> executor-agnostic plan (+ optional rubix review)
+                         └─ /loop-which (One-Minute Test triage)
+                             ├─ CHAT ........... paste one prompt into a session
+                             ├─ DON'T BOTHER ... manual checklist
+                             ├─ ONE AGENT ┐
+                             └─ AGENT TEAM ┴──> /loop-drive
+                                                 compiles: deps -> waves, steps -> specs + checks,
+                                                 assigns models per unit, then DRIVES execution
+                                                 ├─ native substrate: parallel Claude Code subagents
+                                                 └─ ringer substrate: manifests on GLM / OpenRouter engines
 ```
 
-| Layer    | Skill / tool | Job                                                                            |
-|----------|--------------|--------------------------------------------------------------------------------|
-| Router   | `loop-which` | One-Minute Test verdict: CHAT, ONE AGENT, AGENT TEAM, or DON'T BOTHER          |
-| Compiler | `loop-drive` | Turn a plan or flat PRD into waves, specs, checks, and model routing; drive it |
-| Executor | Ringer       | Zero-LLM swarm runner: isolation, executed checks, one retry, scoreboard       |
+| Layer       | Skill / tool      | Job                                                                            |
+|-------------|-------------------|--------------------------------------------------------------------------------|
+| Brainstorm  | `loop-brainstorm` | Turn a raw idea into a loop-ready idea brief: outcome, checkable criteria,     |
+|             |                   | seams, assumptions - no architecture                                            |
+| Plan        | `loop-plan`       | Turn a brief into an executor-agnostic task plan: depends-on graph, exclusive  |
+|             |                   | file ownership, executed acceptance checks; optional rubix fresh-eyes review    |
+| Router      | `loop-which`      | One-Minute Test verdict: CHAT, ONE AGENT, AGENT TEAM, or DON'T BOTHER          |
+| Compiler    | `loop-drive`      | Turn a plan or flat PRD into waves, specs, checks, and model routing; drive it |
+| Executor    | Ringer            | Zero-LLM swarm runner: isolation, executed checks, one retry, scoreboard       |
 
 Key design points, argued in full in the learning guide:
 
@@ -64,6 +69,8 @@ SDD remains fine for small same-session plans, with cheap models pinned in every
 ## Repo layout
 
 ```
+skills/loop-brainstorm/  Brainstorm skill: idea to loop-ready brief (checkable criteria, seams, parking lot)
+skills/loop-plan/        Plan skill: brief to executor-agnostic task plan, with the optional rubix review
 skills/loop-which/       Router skill: the One-Minute Test, verdict formats, worked examples
 skills/loop-drive/       Compiler/driver skill: wave derivation, routing, hazards, gates, launch UX
 config/ringer/           Engine config: claude-zai wrapper (GLM flat-rate) and config.toml
@@ -85,7 +92,7 @@ diagrams/                PlantUML sources and renders (conversation evolution, r
 ```
 
 Idempotent.
-Symlinks the two skills (default style: repo -> `~/.agents/skills/<name>`, with `~/.claude/skills/<name>` linking there), copies ringer config into `~/.config/ringer/` if absent, and maintains exactly one managed block in `~/.claude/CLAUDE.md`.
+Symlinks every skill under `skills/` (default style: repo -> `~/.agents/skills/<name>`, with `~/.claude/skills/<name>` linking there), copies ringer config into `~/.config/ringer/` if absent, and maintains exactly one managed block in `~/.claude/CLAUDE.md`.
 
 **Gotcha: the symlinks embed this repo's absolute path.**
 If you move this repo, every harness symlink breaks silently and the skills stop loading, with no error.

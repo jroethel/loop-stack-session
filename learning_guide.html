@@ -928,6 +928,72 @@
   </div>
 </section>
 
+<section id="loop-plan">
+  <h2><span class="num">15</span>loop-plan and the rubix review: planning from the consumer's contract (2026-07-17)</h2>
+  <p>
+    The pipeline's missing middle got built. The session started as a derivation audit of the new
+    <code class="inline">loop-brainstorm</code> (verdict: faithful derivative of superpowers:brainstorming, recorded in
+    <code class="inline">skills/loop-brainstorm/loop-brainstorm-v1.md</code>), then pivoted on Jeremy's reframe:
+    put the finished work aside and <em>work backwards from /loop-drive</em>.
+  </p>
+  <div class="aha">
+    <div class="aha-label">Aha: the downstream skill's Step 1 is the upstream skill's spec</div>
+    <p>
+      loop-drive's "extract the plan's skeleton" step is an input contract: units with scope, acceptance criteria
+      convertible to an executed check (its one hard stop), exact build/test commands, self-contained units, file
+      ownership, depends-on relations. Auditing the superpowers chain against that table showed brainstorming
+      provides zero rows (by design - it feeds writing-plans) and writing-plans provides most, with four gaps:
+      its plans terminate in superpowers executors, carry no dependency graph or ownership guarantees, mandate
+      implementation code in every step, and omit checkpoint/failure sections. That gap list <em>was</em> the
+      loop-plan design; no fresh invention needed.
+    </p>
+  </div>
+  <h3>What landed</h3>
+  <ul>
+    <li><strong><code class="inline">/loop-plan</code></strong> (from superpowers:writing-plans, same derivation pattern
+      as loop-brainstorm): keeps the task structure, no-placeholders rule, and TDD checks; adds explicit
+      <code class="inline">Depends on:</code> per task, exclusive file ownership (a shared file means dependent or
+      redrawn, never parallel), and one executed acceptance check per task. Every <code class="inline">[judgment]</code>
+      criterion from the brief routes to a human checkpoint, never a worker task.</li>
+    <li><strong>Agnostic plans.</strong> Jeremy's driver: superpowers skills are token-hungry and he wants plans any
+      executor can run. The emitted plan contains no skill invocations or harness features; the handoff offers
+      /loop-which (recommended), /loop-drive directly, run-it-by-hand, or stop - the stop option was his explicit ask.</li>
+    <li><strong>Code policy flip.</strong> writing-plans embeds complete implementation code in every step; loop-plan
+      keeps test code verbatim (the spec's teeth) but demotes implementation to a contract, unless the exact code IS
+      the decision. Rationale: a capable implementer writes better code at execution time, and embedded code is the
+      "plan generated a lot of code, i wasn't expecting that" surprise from prior sessions.</li>
+    <li><strong>The rubix review</strong> (Jeremy's idea and name, from re-orienting a Rubik's cube): an optional step
+      inside loop-plan, offered once after self-review. Two parallel read-only Opus dispatches with fresh context -
+      Lens A takes the seat of a professional downstream of the artifact; Lens B gives a cold best-practice read from
+      a deliberately unbiased start. Findings come back with rationale; the orchestrator records a revise/no verdict
+      per finding; the user picks what gets in. Nothing is applied silently or dismissed unrecorded.</li>
+    <li><strong>Refresh pass:</strong> loop-brainstorm's two "forthcoming" placeholders now point at /loop-plan, the
+      README gained the Plan layer (five layers, one brain), and the managed CLAUDE.md block routes plans through
+      /loop-plan instead of superpowers:writing-plans.</li>
+  </ul>
+  <h3>Design-process learnings</h3>
+  <ul>
+    <li><strong>Fresh eyes require fresh context.</strong> "Baked into the skill" and "inline" are different things:
+      a reviewer inside the planning session has absorbed every assumption the plan made and will nod along. The
+      rubix reviewers are owned by loop-plan but dispatched as separate subagents that see only the plan and the
+      brief. Superpowers' own history is the cautionary tale - both its dispatched reviewer prompts
+      (<code class="inline">spec-document-reviewer-prompt.md</code>, <code class="inline">plan-document-reviewer-prompt.md</code>)
+      were walked back to inline self-review and are now vestigial files.</li>
+    <li><strong>A reviewer earns its place when its checklist is a contract, not vibes.</strong> The generic
+      superpowers reviewer died; the rubix lenses survive scrutiny because loop-plan's self-review already covers the
+      mechanical contract, leaving the lenses the judgment work only fresh perspective can do.</li>
+    <li><strong>A step in an existing skill beats a fourth skill.</strong> The rubix review could have been
+      /loop-rubix; it became loop-plan Step 6 instead, honoring Jeremy's own "why do I need 3 skills if 1 would do"
+      test while keeping the name.</li>
+  </ul>
+  <div class="callout-open">
+    <strong>Open:</strong> no real brief has run through /loop-plan yet, and no rubix review has fired. The first
+    real run tests whether two lenses is the right count, whether Opus is the right tier for both, and whether the
+    triage table is the right grain for picking revisions. The loop-brainstorm visual-companion decision (dropped,
+    silently) also remains Jeremy's to overrule.
+  </div>
+</section>
+
 </main>
 
 <footer>
@@ -935,7 +1001,8 @@
   <code class="inline">PLAN.md</code>, and <code class="inline">diagrams/</code> in
   <code class="inline">~/loops/loop-stack-session/</code>. Generated as part of the 2026-07-10 session archive;
   sections 11-13 added 2026-07-11 after plan execution; section 14 added 2026-07-12 after the loop-drive
-  launch UX revision. Skill names in sections 0-10 are the historical (pre-rename) names; see section 13 for the mapping.
+  launch UX revision; section 15 added 2026-07-17 after the loop-plan build (Fable 5 + Jeremy).
+  Skill names in sections 0-10 are the historical (pre-rename) names; see section 13 for the mapping.
 </footer>
 
 </body>

@@ -5,3 +5,8 @@
 - Cap Fable effort at `high`. `xhigh`/`max` make Fable over-reason and waste the turn.
 - Do not predefine subagent archetypes for Fable; let it shape the roles per task.
 - Do not send research or boilerplate to Fable; that is Opus/Sonnet work. Fable is for architecture, arbitration, and validation.
+
+## Skill routing
+
+- Brainstorming goes through `/loop-brainstorm`, not `superpowers:brainstorming`.
+- Implementation plans go through `/loop-plan`, not `superpowers:writing-plans`.
