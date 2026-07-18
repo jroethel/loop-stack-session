@@ -54,6 +54,9 @@ vocabulary so the answer plugs straight into a build plan later if the verdict c
 Don't ask what you already know from context. If the conversation already established the user's
 available tiers or that they're chat-only, don't re-ask that part.
 
+Orchestration availability has a ground-truth file: read the `[engines.*]` blocks in
+`~/.config/ringer/config.toml` instead of asking which engines are wired.
+
 ### 3. Score the plan against the seven questions
 
 Walk the plan through the framework (full detail in the reference file):

@@ -116,11 +116,12 @@ What you MUST carry into the plan are ringer's own footguns:
 - **Ownership list.** Name every file the worker may create or edit, especially in multi-worker runs over one repo.
 - **Embedded how-to-run.** State exactly how to build/test so the worker and the check agree.
 - **Output contract.** State the exact deliverable files (and set `expect_files`).
-- **Check-writing rules (P14: checks are as important as specs).** The check prints WHY it fails (a silent exit 1 starves the retry prompt and the eval log). It verifies substance, not just presence. Be strict on substance, tolerant on format.
+- **Check-writing rules (P14: checks are as important as specs).** The check prints WHY it fails (a silent exit 1 starves the retry prompt and the eval log). It verifies substance, not just presence. The FULL check-writing ruleset lives in the ringer skill's "Check-writing rules" section - read it before writing any check; do not work from this summary (it summarizes, ringer governs, and the stm-nav 2026-07-17 false FAILs all came from checks that would have passed this summary but broke ringer's rules: unsatisfiable under the spec's boundary, repo-wide negative greps, invariants missing their exceptions).
 
 **Both modes:** the validator/review stance is adversarial and evidence-first (P2: worker self-reports are worthless).
 Judge the raw evidence (the diff, the executed check output, the artifact), and ignore the implementer's own narrative of what it did.
 Native validators also get: mandatory independent test rerun, criterion-by-criterion walk with evidence, scope-boundary diff audit, read-only, and a `{verdict: pass|fail|spec-problem, criteria: [...], notes}` contract (spec-problem routes spec bugs to the orchestrator instead of a futile fix loop).
+Every validator prompt (both substrates) states verdict discipline explicitly: if ANY criterion fails, the overall verdict is fail - without this line, first attempts write pass while their own notes contradict it (stm-nav lesson, 2026-07-17).
 
 ## Step 5 - Write the wave loop and gates
 
@@ -134,6 +135,8 @@ The output plan's core procedure, per wave, depends on substrate for item 1 and 
 **2. Gate (orchestrator).**
 Read all results and verdicts.
 Ringer: consume the run JSON in `~/.ringer/runs/` and the raw worker logs in `<workdir>/logs/` per ringer's post-run ritual (read every retried/failed log, spot-check at least one passing artifact).
+The run JSON is truth; a detached/background shell's exit status is transport and can report failure for a run that passed (stm-nav lesson).
+On a FAIL, attribute before relaunching: re-run the check's steps yourself against the tree - if the worker's output was correct and the CHECK was wrong, fix the check, commit the audited work, and annotate the model log (MODEL-NOTES + amendment when available) instead of burning a round.
 Native: skim diffs of Opus-tier units and test files of Sonnet-tier units.
 Merge passing branches (or apply reviewed patches) into the integration branch; run the full suite there.
 Resolve stopped units: a small spec issue means edit the spec artifact and relaunch that unit; a design issue is recorded for the plan's downstream review step under the source plan's slip rules.
