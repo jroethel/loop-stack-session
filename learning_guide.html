@@ -410,7 +410,7 @@
     How a nine-exchange conversation converged on a single architecture for running verified agent loops,
     across Anthropic-only and mixed-provider scope, with no dependency on the /workflows primitive.
   </p>
-  <p class="meta">Session date: 2026-07-10 &middot; Updated 2026-07-11 with the execution session (sections 11-13) and 2026-07-12 with the loop-drive launch UX revision (section 14) &middot; Participants: Jeremy and Claude Fable 5 &middot; Source: <code class="inline">~/loops/loop-stack-session/</code></p>
+  <p class="meta">Session date: 2026-07-10 &middot; Updated 2026-07-11 with the execution session (sections 11-13), 2026-07-12 with the loop-drive launch UX revision (section 14), and 2026-07-18 with the substrate and routing assessment (section 16) &middot; Participants: Jeremy and Claude Fable 5 &middot; Source: <code class="inline">~/loops/loop-stack-session/</code></p>
 </header>
 
 <nav class="toc" aria-label="Table of contents">
@@ -431,6 +431,7 @@
     <a href="#gotchas">12. Harness gotchas</a>
     <a href="#packaging">13. Names &amp; packaging</a>
     <a href="#launch-ux">14. Launch UX</a>
+    <a href="#substrate-routing">16. Substrate &amp; routing</a>
   </div>
 </nav>
 
@@ -994,6 +995,114 @@
   </div>
 </section>
 
+<section id="substrate-routing">
+  <h2><span class="num">16</span>Substrate &amp; routing: the provider axis is fake (2026-07-18)</h2>
+  <p>
+    An assessment session, not a build: no skill edits were applied. It reconciled model-routing notes from two
+    machines (<code class="inline">model-routing-ringer-notes.local.md</code> from this Mac,
+    <code class="inline">.remote.md</code> from the work PC), then answered two architecture questions Jeremy
+    raised: why do native and ringer exist as separate substrates at all, and what would it take to swap ringer out.
+  </p>
+
+  <h3>Two-machine reconciliation</h3>
+  <ul>
+    <li><strong>The finding:</strong> the work PC held five loop-drive/loop-which edits as <em>uncommitted
+      working-tree diffs</em> (standing claude-zai default, check-writing pointer, verdict discipline, run-JSON
+      truth, FAIL attribution); this Mac held a two-piece Step 2 draft that was never applied. The canonical repo
+      (main @ <code class="inline">01993a1</code>) contained neither. Both routing edits target the same insertion
+      point and restate one idea in two vocabularies (remote's aesthetic-unit flag = local's orchestrator pin) -
+      landing both as-is would create two adjacent paragraphs that drift apart.</li>
+    <li><strong>The decision:</strong> author the merged version in the canonical repo and commit; on the work PC,
+      <code class="inline">git stash &amp;&amp; git pull</code>, confirm the pulled version supersedes, drop the stash.
+      Never reconcile into a dirty tree.</li>
+  </ul>
+  <div class="aha">
+    <div class="aha-label">Aha: skills hold durable rules; machines hold machine facts</div>
+    <p>
+      The remote diffs baked "probe-validated <em>on this machine</em>" and "as of 2026-07-17" into a git-synced
+      skill file - claims that are false on the other machine and stale everywhere by next month. The rule that
+      fell out: skill files carry durable rules and <em>pointers to ground truth</em>
+      (<code class="inline">~/.config/ringer/config.toml</code> for wired engines,
+      <code class="inline">./ringer.py models</code> for the roster); machine-specific validation facts live in each
+      machine's memory; user preferences (claude-zai for execution typing, to save Anthropic quota) live in the
+      managed CLAUDE.md block that install.sh syncs. Three kinds of fact, three homes.
+    </p>
+  </div>
+
+  <h3>The substrate question</h3>
+  <div class="aha">
+    <div class="aha-label">Aha: "native vs mixed-provider" is not the real axis</div>
+    <p>
+      Jeremy's question: why keep native and ringer substrates when ringer with one provider is the same thing?
+      Verified answer: the provider framing is fake. Ringer's <code class="inline">[engines.claude]</code> block runs
+      <code class="inline">claude -p --model &lt;x&gt;</code> under the same logged-in auth, so Anthropic-via-ringer is
+      the same quota lane as a native subagent. What actually differs is <strong>transport and verification</strong>:
+      executable check vs validator-subagent judgment, detached spec-only worker vs session-tool inheritance and
+      SendMessage continuation, zero setup vs wired config, and - the compounding one - only ringer runs feed the
+      scoreboard. The two model-choice logics (Sonnet/Opus ladder vs scoreboard) are historical accident, not
+      architecture: the ladder is exactly the route-by-vibes P7 forbids, surviving only because native units never
+      consult the scoreboard they legally could.
+    </p>
+  </div>
+  <ul>
+    <li><strong>Recommended direction (not yet applied):</strong> one model-choice procedure for every unit -
+      scoreboard posterior &rarr; benchmark prior &rarr; orchestrator pin (design/math/risk/taste, reason recorded).
+      Substrate becomes a derived per-unit transport decision: needs session tools or continuation &rarr; Agent tool;
+      ringer absent &rarr; Agent tool as degraded mode; otherwise &rarr; ringer. The ladder demotes to a documented
+      prior.</li>
+    <li><strong>Co-dependence goes soft, per Jeremy's stated preference:</strong> "if ringer is present, its
+      scoreboard is the evidence source; else the benchmark prior" is a runtime capability probe, not an
+      architectural requirement. loop-plan's executor-agnostic promise survives.</li>
+    <li><strong>Hard fact that closed an open item:</strong> the Agent tool's model set is a fixed harness enum
+      (sonnet, opus, haiku, fable) - not modifiable. GLM can never be a native subagent; ringer is its only door.</li>
+    <li><strong>/loop-setup was considered and skipped</strong> as a routing unifier: the inventories it would
+      aggregate already exist as ground truth, and a third file restating them is the same staleness trap the remote
+      diffs fell into. If machine onboarding/drift detection is the real itch (the WSL bin-path migration bug), the
+      lazy version is a doctor checklist in install.sh or ringer preflight, not a skill.</li>
+  </ul>
+
+  <h3>The "swap out ringer" gap analysis</h3>
+  <p>
+    Jeremy is wary of building loop-* around a third-party app he'd have to fork. The wishlist-vs-reality scorecard
+    (verified against ringer's actual surface: <code class="inline">hud</code>/Ringside,
+    <code class="inline">db</code> SQLite read model, scoreboard, catalog pricing, steering profiles, bakeoff):
+  </p>
+  <ul>
+    <li><strong>Ringer has:</strong> observability (Ringside + run JSON + db), parallel brute force, model
+      strengths/preferences (scoreboard posteriors + steering profiles that inject per-model rules into worker
+      prompts), bakeoff A/B.</li>
+    <li><strong>Genuine gaps - and none are ringer-shaped:</strong> dollar ledger with burn-rate (must see Anthropic
+      subscription, z.ai flat-rate, and OpenRouter actuals - lanes ringer doesn't touch), quota-aware pause/resume
+      (orchestrator-tier: workers already dodge the 5-hour window via GLM; loop-drive's wave gates are already
+      checkpoints, so pause-before-quota is mostly a documented gate procedure plus a usage meter), long-running
+      streams and autoresearch (a scheduler that <em>submits</em> runs, above any substrate).</li>
+    <li><strong>Verdict:</strong> swapping ringer gains nothing on the wishlist; every gap belongs in a thin layer
+      above all substrates that would survive a swap untouched. The real switching cost is accumulated evidence
+      (scoreboard rows, steering observations, MODEL-NOTES) - it grows with every run, though it is all local files
+      in <code class="inline">~/.ringer/</code> that a future replacement could import.</li>
+    <li><strong>Fork policy:</strong> upstream PRs first (e.g. scoreboard amendment, ringer issue #65); fork only if
+      upstream stalls, and keep patches as a small rebase set. The one forbidden move: letting loop-* depend on a
+      patched-ringer-only behavior - that converts implementation dependence into architectural dependence.</li>
+  </ul>
+
+  <h3>Preferences surfaced</h3>
+  <ul>
+    <li>Skill co-dependence should be an implementation decision, not an architectural one - capability probes over
+      hard requirements.</li>
+    <li>Funded autonomy: once brainstorm/plan work is done and credits are funded, runs should not need babysitting.</li>
+    <li>Cross-machine work travels as committed notes files brought to the canonical repo for reconciliation, not as
+      parallel edits merged blind.</li>
+  </ul>
+
+  <div class="callout-open">
+    <strong>Open:</strong> the merged Step 2 routing edit (one roster + evidence-first procedure + pin override) is
+    designed but not written; the standing claude-zai default has not yet moved into the managed CLAUDE.md block;
+    the work PC's uncommitted diffs still need the stash-and-pull once the merged version lands; and the unified
+    routing direction (substrate as derived transport) awaits Jeremy's go - he was still pondering when the session
+    turned to the swap-out question.
+  </div>
+</section>
+
 </main>
 
 <footer>
@@ -1001,7 +1110,8 @@
   <code class="inline">PLAN.md</code>, and <code class="inline">diagrams/</code> in
   <code class="inline">~/loops/loop-stack-session/</code>. Generated as part of the 2026-07-10 session archive;
   sections 11-13 added 2026-07-11 after plan execution; section 14 added 2026-07-12 after the loop-drive
-  launch UX revision; section 15 added 2026-07-17 after the loop-plan build (Fable 5 + Jeremy).
+  launch UX revision; section 15 added 2026-07-17 after the loop-plan build; section 16 added 2026-07-18 after
+  the substrate and routing assessment session (Fable 5 + Jeremy).
   Skill names in sections 0-10 are the historical (pre-rename) names; see section 13 for the mapping.
 </footer>
 
