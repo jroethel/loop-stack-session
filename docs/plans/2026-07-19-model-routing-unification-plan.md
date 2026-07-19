@@ -194,6 +194,7 @@ Depends on: Task 1
 - Section 2's intro sentence changes from substrate language to: "Wave 1 mixes transports: unit `changelog-doc` rides ringer, unit `parser` rides the Agent tool.".
 - Sections 3-9: replace remaining "substrate"/"native" labels with transport terms where they name the mechanism ("native / Sonnet" becomes "Agent tool / Sonnet"); mechanics content unchanged.
 - Section 5 pre-flight adds the capability-probe line (engines found).
+- The example manifest's check must export to an explicit absolute path under the run workdir (e.g. `/tmp/release-notes-loop/exports/CHANGELOG.md`); the variable `$RINGER_EXPORT_DIR` does not exist in ringer and must not appear anywhere in the file (found during this plan's own wave 1, 2026-07-19).
 
 `ringer-substrate.md`:
 - Title and intro reframe from "the substrate to use when..." to "the ringer transport: how the orchestrator drives a wave's packed manifest".
@@ -216,6 +217,7 @@ grep -q "| Transport |" example-output-plan.md \
 && grep -q "model-benchmarks.md" ringer-substrate.md \
 && ! grep -q "prior then posterior" ringer-substrate.md \
 && grep -qi "unified chain" native-orchestration.md \
+&& ! grep -q "RINGER_EXPORT_DIR" example-output-plan.md \
 && ! grep -q "—" example-output-plan.md ringer-substrate.md native-orchestration.md \
 && echo PASS
 ```
