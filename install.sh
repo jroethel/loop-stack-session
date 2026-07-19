@@ -102,6 +102,16 @@ for src in "$REPO"/config/ringer/*; do
   case "$dest" in *.sh) chmod +x "$dest" ;; esac
 done
 
+# 2b. fable-sandwich benchmark reference: symlink so repo edits stay live.
+FS_REFS="$SKILLS_DIR/fable-sandwich/references"
+if [ -d "$SKILLS_DIR/fable-sandwich" ]; then
+  mkdir -p "$FS_REFS"
+  ln -sfn "$REPO/config/fable-sandwich/model-benchmarks.md" "$FS_REFS/model-benchmarks.md"
+  echo "symlinked $FS_REFS/model-benchmarks.md"
+else
+  echo "note: fable-sandwich skill not installed; skipping model-benchmarks.md symlink"
+fi
+
 # 3. CLAUDE.md managed block: replace in place, never duplicate.
 mkdir -p "$CLAUDE_DIR"
 touch "$CLAUDE_MD"
@@ -131,5 +141,20 @@ command -v codex >/dev/null 2>&1 \
 [ -d "$HOME/repos/ringer" ] \
   && echo "found ringer: $HOME/repos/ringer" \
   || echo "WARNING: ~/repos/ringer not found - config.toml points its engine paths there"
+if [ -f "$RINGER_DIR/config.toml" ] && grep -q '^\[engines\.' "$RINGER_DIR/config.toml"; then
+  echo "found engines: $(grep -c '^\[engines\.' "$RINGER_DIR/config.toml") block(s) in config.toml"
+else
+  echo "WARNING: no [engines.*] blocks in $RINGER_DIR/config.toml - routing has no wired engines"
+fi
+[ -f "$RINGER_DIR/zai-token" ] \
+  && echo "found zai-token" \
+  || echo "WARNING: $RINGER_DIR/zai-token missing - the claude-zai flat-rate lane cannot authenticate"
+[ -w "$HOME/.ringer" ] \
+  && echo "found ~/.ringer (writable)" \
+  || echo "note: ~/.ringer missing or unwritable - ringer creates it on first run; scoreboard evidence lands there"
+[ -L "$SKILLS_DIR/fable-sandwich/references/model-benchmarks.md" ] \
+  && echo "found model-benchmarks.md (prior tier wired)" \
+  || echo "WARNING: model-benchmarks.md not linked - the routing chain's prior tier is a dangling pointer"
+echo "hint: ./ringer.py demo verifies an engine end to end"
 
 echo "done. (z.ai / openrouter tokens are created manually, never by this script.)"
