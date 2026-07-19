@@ -1,7 +1,8 @@
-# Native orchestration (Anthropic-only substrate)
+# The Agent-tool transport
 
-How the orchestrator session drives a wave of Claude Code subagents with the Agent tool.
-This is the substrate to use when workers benefit from shared context and mid-flight steering, and every worker can be Anthropic.
+How the orchestrator drives a wave of in-session subagents with the Agent tool.
+Model choice for these units comes from Step 2's unified chain; this file covers transport mechanics only.
+This is the transport for units that need in-session tools or mid-flight continuation: the implementer is a Claude Code subagent the orchestrator can steer with SendMessage, so it keeps shared context and mid-flight steering.
 
 ## Tier mapping
 

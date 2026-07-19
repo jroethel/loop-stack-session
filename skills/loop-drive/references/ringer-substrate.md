@@ -1,8 +1,8 @@
-# Ringer substrate (mixed-provider)
+# The ringer transport
 
-How the orchestrator session drives a wave as a ringer manifest run.
-This is the substrate to use when workers should run on non-Anthropic or cheap models (GLM via z.ai, anything via OpenRouter), or when you want executed checks and a scoreboard row alongside Anthropic workers.
-Ringer owns isolation, checks, retries, and logging; you own the specs, checks, model routing, and the gate.
+How the orchestrator drives a wave's packed manifest.
+Ringer owns isolation, checks, retries, and logging; the orchestrator owns the specs, the checks' substance, model routing, and the gate.
+This is the transport for units routed to ringer by Step 2's unified chain - commonly non-Anthropic or flat-rate engines (GLM via z.ai, anything via OpenRouter), or any unit where you want an executed check and a scoreboard row.
 
 ## Tier mapping
 
@@ -46,14 +46,13 @@ At each gate, consume ringer's outputs (do not trust the summary line alone):
 
 Ringer's built-in single retry IS the repair pass; do not add another. A task that fails twice is a stopped unit for the gate to resolve.
 
-## Model assignment: prior then posterior (P7)
+## Model routing
 
-Route by evidence, not vibes.
+Per-unit model choice follows Step 2's unified chain (integrity-gated scoreboard posterior, else benchmark prior, else orchestrator pin); this file does not restate it.
+Two ringer-specific mechanics stay here:
 
-- **Posterior**: `./ringer.py models --task-type <type>` gives the local scoreboard for that task_type (first-try pass rate is the routing signal). Prefer a proven model for the task_type.
-- **Prior**: a model with no local evidence yet starts from the benchmark file as its prior, promoted to proven only after it earns rows (untested then probation then proven at 3+ tasks).
-- Record on each routing row which evidence drove it (a scoreboard posterior, or a benchmark prior, and which).
-- After a run, add a dated line to `docs/MODEL-NOTES.md` (in the ringer repo) when it taught you something about a model, supported only by the executed checks and raw logs.
+- **Promotion ladder.** The prior tier routes a model with no trusted local scoreboard evidence by its row in `model-benchmarks.md` (the fable-sandwich reference file); a model moves untested, then probation, then proven at 3+ scoreboard rows.
+- **MODEL-NOTES receipts.** After a run, add a dated line to `<ringer-repo>/docs/MODEL-NOTES.md` when it taught you something about a model, supported only by the executed checks and raw logs.
 
 ## W-scaling: fewer, fatter waves (P13)
 
