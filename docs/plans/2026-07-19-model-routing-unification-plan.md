@@ -12,7 +12,8 @@ The surgical-amendment and shared-reference-file alternatives were declined in t
 ## Open-question resolutions (from the brief, decided here)
 
 1. Routing-table columns, in order: `Unit | Wave | task_type | Model | Transport | Engine | Impl. effort | Val. effort | Evidence`.
-   task_type leads the model choice, transport replaces substrate, engine is the ringer engine name or `Agent tool`, evidence records tier plus citation.
+   task_type leads the model choice, transport replaces substrate, engine is the ringer engine name or `Agent tool`.
+   The Evidence cell carries a short tag only - `posterior`, `prior`, or `pin:<reason-word>` - with any longer rationale in a footnote beneath the table, so the approval-gate table stays scannable at laptop width (rubix finding 8).
 2. Step 0 ONE AGENT / single-wave exits apply the same chain to their single unit; no table, but the exit line must name model, transport, and evidence tier.
 3. The doctor stays plain grep/test bash (no tomllib, no new dependencies), remains section 4 of install.sh, and stays never-fatal.
 4. The PR framing note is a new standalone file `docs/PR-65-FRAMING.md` in the ringer repo (`~/repos/ringer`), so it travels with the repo the PR is authored from and cannot conflict with work-PC edits to existing files.
@@ -41,11 +42,16 @@ Wave 1 (parallel, disjoint files):
 
 Wave 2 (parallel, disjoint files):
   Task 2  loop-drive references update ......... depends on Task 1
-  Task 4  install.sh symlink + doctor growth ... depends on Task 3
   Task 5  loop-which + managed-block touch-ups . depends on Task 1
+
+Wave 3:
+  Task 4  install.sh symlink + doctor growth ... depends on Task 3, Task 5
 ```
 
+Task 4 depends on Task 5 through runtime, not files: its acceptance check runs install.sh, which regenerates the live managed CLAUDE.md block from `claude-md/fable.md`; running it before Task 5's edit would install the stale routing language (rubix finding 7).
+
 Deviation from the brief's seams, recorded: brief seams 1-3 (Step 2, Step 0, consistency touches) collapse into Tasks 1-2 because Steps 0-7 share one file and exclusive ownership forbids parallel edits to it; brief seam 6 (managed block) folds into Task 5 with the loop-which touch-up because both are one-to-two-line edits under one reviewer gate.
+Deviation from the brief's interim-integrity wording, recorded (rubix finding 1): the brief describes "applying the jq exclusion overlay" from AMENDMENTS-PENDING Section C, but that query yields model-level row counts, not a task-typed posterior, so it cannot be mechanically applied to `models --task-type` output; the chain instead states the operator action directly - treat glm-5.2's posterior as depressed on the four affected task_types and defer to prior or pin until amend lands.
 
 ## Human checkpoints
 
@@ -87,7 +93,7 @@ The two references keep their roles: `references/ringer-substrate.md` documents 
 Step 0 gains a "Capability probe" block (after the loop-which verdict routing, before the checkability gate) containing verbatim:
 
 > Probe capabilities before routing: read the `[engines.*]` blocks of `~/.config/ringer/config.toml`.
-> If ringer is present, its scoreboard is the evidence source of record.
+> If ringer is present, its scoreboard is the evidence source of record; resolve and record the ringer repo root (the directory holding `ringer.py`, normally `~/repos/ringer`) here, once - Step 2's evidence chain and the gate receipts use that recorded root, never bare relative paths.
 > If ringer is absent on this machine, every unit takes the Agent tool as degraded-mode transport, and the emitted plan says so in its pre-flight.
 
 Step 0's single-artifact exits (ONE AGENT / single-wave TEAM) additionally require the exit to name the unit's model, transport, and evidence tier (resolution 2).
@@ -95,11 +101,14 @@ Step 0's "If two shapes or substrates are close" sentence changes to compare sha
 
 Step 2 replaces the entire "Route each unit by substrate:" block (the standing-default paragraph, the Native ladder paragraph, and the Ringer scoreboard paragraph) with the unified procedure, containing verbatim:
 
-> Model choice is one chain for every unit, regardless of transport (P7: route by evidence, not vibes):
-> 1. Integrity-gated scoreboard posterior: run `./ringer.py models --task-type <type>`; before trusting a posterior, check `docs/MODEL-NOTES.md` and pending amendments for the models under consideration - while ringer #65 is unpatched, apply the exclusion overlay in `AMENDMENTS-PENDING.md` Section C; once amend lands, read the Amended column.
-> 2. Else benchmark prior: a model with no local evidence routes by its row in `model-benchmarks.md` (the fable-sandwich reference file).
-> 3. Else orchestrator pin: design, math- or reasoning-heavy, risk concentration, or taste - pin `engine` and `model` and record the reason in the Evidence column.
+> Model choice is one chain for every unit, regardless of transport (P7: route by evidence, not vibes).
+> If the Step 0 probe reported ringer absent, skip tier 1 entirely and route every unit by benchmark prior, else orchestrator pin, among the Agent-tool roster.
+> 1. Integrity-gated scoreboard posterior: from the ringer repo root recorded by the Step 0 probe, run `./ringer.py models --task-type <type>`; before trusting a posterior, read `<ringer-repo>/docs/MODEL-NOTES.md` and `<ringer-repo>/docs/AMENDMENTS-PENDING.md` for the models under consideration; if the ringer repo is missing, treat the posterior as unverified and fall to the prior tier.
+>    Known pending state while ringer #65 is unpatched: the seven excluded stm-nav rows are all glm-5.2 on site-build, docs, code-fix, and code-review - for those task_types treat glm-5.2's raw posterior as depressed by up to seven misattributed fails and defer to its benchmark prior or a pin; once amend lands, read the Amended column instead.
+> 2. Else benchmark prior: a model with no trusted local evidence routes by its row in `model-benchmarks.md` (the fable-sandwich reference file).
+> 3. Else orchestrator pin: design, math- or reasoning-heavy, risk concentration, or taste - pin `engine` and `model` and record the reason.
 > A pin outranks the chain at any tier when its trigger holds; the reason is never "seems hard".
+> Evidence cells carry the short tag only (`posterior`, `prior`, `pin:<reason-word>`); longer rationale goes in a footnote beneath the table.
 
 And the transport rule, verbatim:
 
@@ -122,7 +131,11 @@ Step 5 item 1: reword so a wave launches its packed manifest and its Agent-tool 
 Step 5 item 2: unchanged except the opening becomes "Read all results and verdicts from both transports."
 Step 5 item 3: the MODEL-NOTES sentence becomes mandatory for Agent-tool units, verbatim:
 
-> Agent-tool units MUST leave a dated line in `docs/MODEL-NOTES.md` (in the ringer repo) at the gate - it is their only durable receipt, since only ringer runs feed the scoreboard; support it only with the validator verdicts and diffs, and read it back through the same integrity discipline as any posterior.
+> Agent-tool units MUST leave dated MODEL-NOTES receipts at the gate - their only durable receipt, since only ringer runs feed the scoreboard.
+> Batch them: one dated line per (model, task_type) per wave in `<ringer-repo>/docs/MODEL-NOTES.md`, plus a separate line only for signal events (a pin, a runtime re-route, a check-bug attribution, an off-nominal result); support them only with validator verdicts and diffs, and read them back through the same integrity discipline as any posterior.
+> Committing the ringer-repo receipt is part of closing the gate: commit it before advancing the wave, so the git-is-truth reconciliation covers both repos.
+
+Step 5's quota/resume paragraph adds one sentence: the reconciliation procedure also checks the ringer repo for an uncommitted MODEL-NOTES receipt owed by the last gate (the run drives two repos; both are checkpointed).
 
 Step 6 item 2 becomes: "Routing table: the per-unit table with the columns Unit, Wave, task_type, Model, Transport, Engine, Impl. effort, Val. effort, Evidence."
 Step 6 item 5 (pre-flight) adds: the capability-probe result (which engines were found, or degraded mode).
@@ -138,14 +151,20 @@ cd ~/repos/loop-stack-session/skills/loop-drive
 && grep -q "Else benchmark prior" SKILL.md \
 && grep -q "Else orchestrator pin" SKILL.md \
 && grep -q "Transport is derived per unit, never chosen per wave" SKILL.md \
-&& grep -q "MUST leave a dated line" SKILL.md \
+&& grep -q "MUST leave dated MODEL-NOTES receipts" SKILL.md \
 && grep -q "AMENDMENTS-PENDING" SKILL.md \
-&& grep -c "stm-nav lesson" SKILL.md | grep -qE "^[3-9]" \
+&& grep -q "overall verdict is fail" SKILL.md \
+&& grep -q "run JSON is truth" SKILL.md \
+&& grep -q "attribute before relaunching" SKILL.md \
+&& grep -q "FULL check-writing ruleset" SKILL.md \
+&& grep -q "rode the default unflagged" SKILL.md \
+&& awk '/^## Step 2/,/^## Step 3/' SKILL.md | grep -q "Integrity-gated scoreboard posterior" \
 && ! grep -q "—" SKILL.md \
 && echo PASS
 ```
 
-Expected: `PASS` (the stm-nav-lesson count is 2 today - verdict discipline and run-JSON-is-truth; the added taste flag makes 3; the rewrite may add references but never drop below 3).
+Expected: `PASS`.
+The four per-lesson greps (verdict discipline, run-JSON-is-truth, FAIL attribution, check-rules pointer) each guard one stm-nav lesson independently, so deleting any one fails the gate; the taste-flag grep guards the line this rewrite adds; the awk range asserts the chain lives in Step 2, not merely somewhere in the file (rubix findings 4 and 10).
 
 - [ ] Step 1: Run the acceptance check; expected FAIL (the chain sentences are absent today).
 - [ ] Step 2: Apply the content contract above to `SKILL.md`, section by section in file order.
@@ -163,15 +182,15 @@ Depends on: Task 1
 - Modify: `skills/loop-drive/references/native-orchestration.md`
 
 **Interfaces:**
-- Consumes, from Task 1, verbatim (do not invent variants): the routing-table columns `Unit | Wave | task_type | Model | Transport | Engine | Impl. effort | Val. effort | Evidence`; the evidence tiers `scoreboard posterior`, `benchmark prior`, `orchestrator pin`; the transport values `ringer` and `Agent tool`.
+- Consumes, from Task 1, verbatim (do not invent variants): the routing-table columns `Unit | Wave | task_type | Model | Transport | Engine | Impl. effort | Val. effort | Evidence`; the evidence tags `posterior`, `prior`, `pin:<reason-word>` (longer rationale goes in a footnote beneath the table); the transport values `ringer` and `Agent tool`.
 - Produces: nothing later tasks consume.
 
 **Content contract.**
 
 `example-output-plan.md`:
 - Section 2's table adopts the Task 1 column set exactly.
-- The `parser` row's evidence changes from "native default ladder; not a promotion case" to a chain-consistent entry: "pin: in-session continuation needed for repair pass; benchmark prior: sonnet Strong tier (no scoreboard rows for code-feature on Agent tool)". Transport `Agent tool`, engine `Agent tool`.
-- The `changelog-doc` row: transport `ringer`, engine `claude-zai`, evidence stays the scoreboard-posterior citation.
+- The `parser` row: transport `Agent tool`, engine `Agent tool`, evidence cell `pin:continuation`, with a footnote beneath the table: "parser: pinned - the repair pass needs in-session continuation; model from benchmark prior (sonnet, Strong tier; no scoreboard rows for code-feature on Agent tool)".
+- The `changelog-doc` row: transport `ringer`, engine `claude-zai`, evidence cell `posterior`, with the current citation (glm-5.2 first-try 1.00 on docs, 3 rows) moved to a footnote.
 - Section 2's intro sentence changes from substrate language to: "Wave 1 mixes transports: unit `changelog-doc` rides ringer, unit `parser` rides the Agent tool.".
 - Sections 3-9: replace remaining "substrate"/"native" labels with transport terms where they name the mechanism ("native / Sonnet" becomes "Agent tool / Sonnet"); mechanics content unchanged.
 - Section 5 pre-flight adds the capability-probe line (engines found).
@@ -192,6 +211,7 @@ Depends on: Task 1
 cd ~/repos/loop-stack-session/skills/loop-drive/references
 grep -q "| Transport |" example-output-plan.md \
 && grep -q "mixes transports" example-output-plan.md \
+&& grep -q "pin:continuation" example-output-plan.md \
 && ! grep -qi "native default ladder" example-output-plan.md \
 && grep -q "model-benchmarks.md" ringer-substrate.md \
 && ! grep -q "prior then posterior" ringer-substrate.md \
@@ -256,7 +276,7 @@ Expected: `PASS`.
 
 ### Task 4: install.sh - benchmark symlink and doctor growth
 
-Depends on: Task 3
+Depends on: Task 3, Task 5 (runtime coupling: the acceptance check runs install.sh, which regenerates the live managed CLAUDE.md block from `claude-md/fable.md`; Task 5's edit must land first)
 
 **Files (exclusive ownership):**
 - Modify: `install.sh`
@@ -408,7 +428,8 @@ Expected: `PASS`.
 - [ ] Step 1: Run the acceptance check; expected FAIL (file absent).
 - [ ] Step 2: Write the file per the content contract.
 - [ ] Step 3: Run the acceptance check; expected PASS.
-- [ ] Step 4: Commit in the ringer repo: `git -C ~/repos/ringer add docs/PR-65-FRAMING.md && git -C ~/repos/ringer commit -m "docs: PR framing for #65 - amendment rows as the routing integrity layer"`.
+- [ ] Step 4: Guard the foreign repo before committing: `git -C ~/repos/ringer status --porcelain` shows nothing but this new file, and `git -C ~/repos/ringer branch --show-current` is the default branch; anything else stops and surfaces to the human.
+- [ ] Step 5: Commit in the ringer repo: `git -C ~/repos/ringer add docs/PR-65-FRAMING.md && git -C ~/repos/ringer commit -m "docs: PR framing for #65 - amendment rows as the routing integrity layer"`.
 
 ## Brief-criteria coverage map
 
@@ -420,6 +441,6 @@ Expected: `PASS`.
 | install.sh doctor lines, exit 0                  | Task 4 acceptance check                      |
 | Integrity gate procedural in Step 2              | Task 1 acceptance check (AMENDMENTS-PENDING) |
 | Native receipts mandatory (MUST)                 | Task 1 acceptance check                      |
-| stm-nav lesson lines survive                     | Task 1 acceptance check (count >= 4)         |
+| stm-nav lesson lines survive                     | Task 1 acceptance check (4 per-lesson greps) |
 | PR framing note with Nate quote                  | Task 6 acceptance check                      |
 | Fresh-session compile behaves (judgment)         | Human checkpoint 2                           |
