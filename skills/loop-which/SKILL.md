@@ -57,6 +57,8 @@ available tiers or that they're chat-only, don't re-ask that part.
 Orchestration availability has a ground-truth file: read the `[engines.*]` blocks in
 `~/.config/ringer/config.toml` instead of asking which engines are wired.
 
+Per-unit model choice downstream follows loop-drive Step 2's evidence chain (scoreboard posterior, else benchmark prior, else orchestrator pin); this skill only establishes what is available, never which model a unit gets.
+
 ### 3. Score the plan against the seven questions
 
 Walk the plan through the framework (full detail in the reference file):

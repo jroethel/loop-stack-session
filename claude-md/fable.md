@@ -13,5 +13,6 @@
 
 ## Model routing
 
-- Execution typing defaults to ringer's `claude-zai` engine (the z.ai flat-rate lane) unless a unit needs Anthropic-side capability, in-session context sharing, or taste judgment. Keep Anthropic quota for orchestration, review gates, and judgment.
+- Model choice for execution units follows the evidence chain (integrity-gated scoreboard posterior, else benchmark prior, else orchestrator pin); substrate is derived per-unit transport, not a per-wave choice.
+- Execution typing leans to ringer's `claude-zai` engine (the z.ai flat-rate lane) when evidence ties or is thin; keep Anthropic quota for orchestration, review gates, and judgment.
 - Wired engines are ground truth in `~/.config/ringer/config.toml`; read it, don't assume.
