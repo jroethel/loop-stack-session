@@ -10,6 +10,7 @@
 
 - Brainstorming goes through `/loop-brainstorm`, not `superpowers:brainstorming`.
 - Implementation plans go through `/loop-plan`, not `superpowers:writing-plans`.
+- Executing a written plan/PRD goes through `/loop-drive`, not `superpowers:subagent-driven-development` 
 
 ## Model routing
 
