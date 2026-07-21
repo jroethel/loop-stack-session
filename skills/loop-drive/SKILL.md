@@ -169,6 +169,9 @@ Design for interruption: the orchestrator cannot see the user's remaining quota,
 Implementers commit their results and log before returning; the orchestrator maintains a run-state artifact updated at every launch and gate; the plan contains a verbatim resume prompt plus a reconciliation procedure that trusts git over the state file and relaunches (never resumes) half-done units.
 The reconciliation procedure also checks the ringer repo for an uncommitted MODEL-NOTES receipt owed by the last gate (the run drives two repos; both are checkpointed).
 
+On the final wave only, after the integration branch is green and the run advances, run the advisory terminal artifact review: `/loop-review <pre-run-base>` from the integration branch, so the two-axis Spec and Standards report judges the whole-run diff.
+This review is advisory and non-blocking - the per-unit validators already gated correctness, so it runs after advancement and does not hold it; its findings are recorded at the final human checkpoint (the ask-the-human list above), and a Spec-axis finding is slipped to the plan's downstream review step under the same slip rules used for a stopped unit's design issue.
+
 ## Step 6 - Emit the plan
 
 Write `<source-plan-name>_loop.md` next to the source plan, containing, in order:
@@ -178,7 +181,7 @@ Write `<source-plan-name>_loop.md` next to the source plan, containing, in order
 3. The orchestration shape and the three validation layers (implementer self-check, per-unit validator, orchestrator gate), plus the topology diagram (updated from Step 0 if compilation changed the shape).
 4. The hazard mitigations from Step 3, each marked as a deviation from the source plan where it is one.
 5. Pre-flight checklist (repo state, environment versions, integration branch creation, log directory; for ringer waves, the engines and `~/.config/ringer/` assumptions; the capability-probe result - which engines were found, or degraded mode).
-6. The wave-loop procedure and gate checklist from Step 5, including slip rules and the ask-the-human list.
+6. The wave-loop procedure and gate checklist from Step 5, including slip rules, the ask-the-human list, and the final-wave advisory terminal loop-review review.
 7. A quota/resume section: durable-state rules, the reconciliation procedure, and the verbatim resume prompt.
 8. The implementer/validator prompt templates (native) and/or the manifest task templates (ringer) from Step 4.
 9. A one-paragraph "kicking it off" section: the sentence the human says to start, where the per-wave summaries appear, the watch points from Step 7, and a pointer to the resume prompt.
