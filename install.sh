@@ -157,6 +157,7 @@ fi
 [ -L "$SKILLS_DIR/fable-sandwich/references/model-benchmarks.md" ] \
   && echo "found model-benchmarks.md (prior tier wired)" \
   || echo "WARNING: model-benchmarks.md not linked - the routing chain's prior tier is a dangling pointer"
+bash "$REPO/tests/gates/check.sh" >/dev/null 2>&1 && echo "found gate registry (fresh)" || echo "WARNING: gate registry stale or gate untagged - run scripts/gen-gate-registry.sh ."
 echo "hint: ./ringer.py demo verifies an engine end to end"
 
 echo "done. (z.ai / openrouter tokens are created manually, never by this script.)"
