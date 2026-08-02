@@ -1,7 +1,6 @@
 # Repo State Map
 
 This file is the single schema source for where each repo-state lane lives and how to read or mirror it.
-Render it into `config/repo-state.md` by replacing the placeholder below with the repo's remote URL.
 For a repo with no remote, replace it with the no-remote note and follow the Fallback section.
 
 Remote: https://github.com/jroethel/loop-stack-session.git

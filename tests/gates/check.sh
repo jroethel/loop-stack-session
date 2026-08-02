@@ -25,6 +25,11 @@ diff <(strip_header "$REG") <(strip_header "$TMP/docs/gate-registry.md") >/dev/n
 if [ -s /tmp/untagged.$$ ]; then cat /tmp/untagged.$$; rm -f /tmp/untagged.$$; fail "gate-signal line without a tag (see above)"; fi
 rm -f /tmp/untagged.$$
 
+# (c) negative path: the scanner must actually catch an untagged gate (fixture proves the catch is alive)
+if "$GEN" --scan-untagged "$REPO/tests/gates/fixtures/untagged" >/dev/null 2>&1; then
+  fail "scanner failed to flag the untagged fixture - the catch path is dead"
+fi
+
 # registry is a disclosed mirror
 grep -qi 'DO NOT EDIT' "$REG" || fail "registry is not a disclosed mirror"
-echo "PASS: registry fresh, disclosed, and no untagged gate-signal lines"
+echo "PASS: registry fresh, disclosed, scanner catch alive, and no untagged gate-signal lines"

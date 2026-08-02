@@ -9,8 +9,14 @@ Manifests: `/tmp/ringer-work/rsa/wave<N>.json`.
 | Wave | Units          | Status   | Run JSON                                      | Patches applied | Commits          |
 |------|----------------|----------|-----------------------------------------------|-----------------|------------------|
 | 1    | B1, B2, C1     | GATED    | repo-state-autonomy-20260802T220111Z-p81049   | B1, B2, C1      | 3 on integration |
-| 2    | B3, B4, C2, C3 | LAUNCHED | pending                                       | -               | -                |
-| 3    | B5 (in-session)| pending  | -                                             | -               | -                |
+| 2    | B3, B4, C2, C3 | GATED    | repo-state-autonomy-20260802T221400Z-p86940   | B3, B4, C2, C3  | 4 on integration |
+| 3    | B5 (in-session)| GATED    | n/a (orchestrator lane, checkpoints honored)  | n/a             | 1 on integration |
+
+RUN COMPLETE 2026-08-02: 7/7 worker units first-try PASS, gate 3 green (7 suites + live.sh),
+issues #1-#5 graduated, archives moved, advisory /loop-review run (findings triaged: 3 fixed
+in b88bda0, duplicate-STOP-rows + awk-escape divergence + shared-header/dup-code smells recorded
+as debt, gate:none kept deliberately as documented escape hatch). Awaiting final checkpoint:
+judgment reads 3+4, merge to main, push offer.
 
 Log:
 - 2026-08-02 wave 1 launched (3 tasks, claude-zai, worktrees, lint clean).

@@ -587,9 +587,12 @@ Depends on: Task C1, Task B1, Task B2
 against ~20 real gates (headings, dot-graph nodes, "Reading the user" prose), so the scanner is scoped two
 ways at once: it considers only lines that (i) fall under a `## Step` heading - skipping frontmatter, the
 red-flag tables, the process-flow dot graph, and the "Reading the user" section - and (ii) contain a tight
-token: `AskUserQuestion`, `ask once`, `offer the commit`, `Want me to commit`, `human checkpoint`,
-`ask the human`, `Wait for the response`. Such a line must carry a `[gate:...]` within +/-2 lines, else the
-scanner prints `file:line` and fails. The `` `[gate:none]` `` token suppresses a rare true positive.
+token: `AskUserQuestion`, `offer the commit`, `Want me to commit`, `Wait for the response`, `ask the human`
+(the tokens `ask once` and `human checkpoint` were dropped at execution, 2026-08-02, because they false-positive
+on non-gate prose in loop-brainstorm Step 2 and loop-plan Step 3 that the C2 task cannot edit).
+A candidate line is covered by a `[gate:...]` within +/-2 lines OR on its governing `## Step` heading line
+(gates are tagged at step headings; body lines like "Wait for the response." belong to that heading's gate),
+else the scanner prints `file:line` and fails. The `` `[gate:none]` `` token suppresses a rare true positive.
 `ponytail: scoped-heuristic, not a parser; a gate phrased outside the token set and outside a ## Step section still slips - widen the tokens or tag it when it does.`
 
 **Acceptance check:** `bash tests/gates/check.sh` exits 0 `[executed-check]`

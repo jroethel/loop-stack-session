@@ -32,7 +32,8 @@ render_no_remote() {
   # Keep the full template (Fallback section included); note the fallback inline.
   local note="none (no remote - local markdown fallback; see section below)"
   awk -v note="$note" '
-    index($0, "{{REMOTE_OR_FALLBACK}}") { print "Remote: " note; next }
+    index($0, "Render it into") { next }
+  index($0, "{{REMOTE_OR_FALLBACK}}") { print "Remote: " note; next }
     { print }
   ' "$TPL"
 }
@@ -46,6 +47,7 @@ render_remote() {
   # per-line scrub is what makes the remote render clean.
   awk -v url="$1" '
     BEGIN { skip = 0 }
+    index($0, "Render it into") { next }
     index($0, "{{REMOTE_OR_FALLBACK}}") { print "Remote: " url; next }
     /^## Fallback \(no remote\)/ { skip = 1; next }
     /^## / { skip = 0 }
