@@ -1,0 +1,5 @@
+[
+  {"number":102,"title":"crash on empty input","labels":[{"name":"bug"}],"updatedAt":"2026-08-01T10:00:00Z"},
+  {"number":101,"title":"cross-repo digest idea","labels":[{"name":"idea"}],"updatedAt":"2026-07-30T09:00:00Z"},
+  {"number":103,"title":"vault backlog view","labels":[{"name":"idea"}],"updatedAt":"2026-08-02T11:00:00Z"}
+]
