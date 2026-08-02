@@ -36,7 +36,7 @@ Apply the checkability gate here and per unit (P6: a unit belongs on a worker on
 
 Every Step 0 exit must name the concrete next command or launch, so the user never has to guess which skill or command comes next.
 Ship every run-something exit with a topology diagram: a fast text sketch (ASCII or fenced mermaid, never a rendered export) of orchestrator, waves, workers, and validators.
-If two shapes are close (roughly 60/40 or tighter), diagram both, name your lean and why, and let the user pick.
+If two shapes are close (roughly 60/40 or tighter), diagram both, name your lean and why, and let the user pick.`[gate:BATCH]`
 
 ## Step 1 - Extract the plan's skeleton
 
@@ -81,7 +81,7 @@ Taste flag: units with aesthetic acceptance criteria get flagged in the routing 
 Give every unit a `task_type` from ringer's canonical vocabulary (code-feature, code-fix, code-review, research, persona-review, site-build, image-gen, docs, probe, bakeoff, ...).
 The task_type drives scoreboard routing and must be set even for Agent-tool units so the choice is legible.
 
-Effort: cap everything at **high**; exceeding high requires an explicit orchestrator decision recorded in the run log.
+Effort: cap everything at **high**; exceeding high requires an explicit orchestrator decision recorded in the run log.`[gate:STOP]`
 Use medium for units that are thin, well-referenced, or mechanical; high where numeric correctness, quirk preservation, or contract design is at stake.
 Validators default to medium, high only for gate-critical units.
 
@@ -108,7 +108,7 @@ What you MUST carry into the plan are ringer's own footguns:
 - **Nested repos**: if the code lives in a repo nested inside the session's outer repo, built-in `isolation: worktree` snapshots the WRONG repo; the implementer must create the worktree itself with explicit `git -C <inner-repo> worktree add ...` commands you spell out.
 - **Per-worktree environments**: in-project venvs do not travel; the template includes the install step (e.g. `poetry install`) inside the worktree.
 - **Shared append-only files** (run logs, checklists): convert to one-file-per-unit (`<log>/unit-NN.md`); the orchestrator writes the combined summary at the gate. State this as an explicit, once-noted deviation from the source plan.
-- **Dirty working tree**: worktrees branch from committed state only; pre-flight surfaces uncommitted changes to the human before wave 1.
+- **Dirty working tree**: worktrees branch from committed state only; pre-flight surfaces uncommitted changes to the human before wave 1.`[gate:STOP]`
 - **Disjoint-files assumption**: within-wave units touch disjoint files by construction; a merge conflict at the gate is a scope violation, not something to quietly resolve.
 
 ## Step 4 - Convert the prompt templates (per transport)
@@ -151,7 +151,7 @@ The run JSON is truth; a detached/background shell's exit status is transport an
 On a FAIL, attribute before relaunching: re-run the check's steps yourself against the tree - if the worker's output was correct and the CHECK was wrong, fix the check, commit the audited work, and annotate the model log (MODEL-NOTES + amendment when available) instead of burning a round.
 Native: skim diffs of Opus-tier units and test files of Sonnet-tier units.
 Merge passing branches (or apply reviewed patches) into the integration branch; run the full suite there.
-Resolve stopped units: a small spec issue means edit the spec artifact and relaunch that unit; a design issue is recorded for the plan's downstream review step under the source plan's slip rules.
+Resolve stopped units: a small spec issue means edit the spec artifact and relaunch that unit; a design issue is recorded for the plan's downstream review step under the source plan's slip rules.`[gate:STOP]`
 Write the wave summary; prune native worktrees (ringer prunes its own).
 
 **3. Distill before advancing (both transports, P10: distill or repeat forever).**
@@ -163,14 +163,14 @@ Committing the ringer-repo receipt is part of closing the gate: commit it before
 **4. Advance only on a green integration branch.**
 
 Preserve the source plan's checkpoint culture: list exactly when the orchestrator stops and asks the human (P12: gates scale with risk, not size).
-The minimum set: pre-flight dirty-tree decisions, any request to exceed the effort cap, spec edits larger than a clarification, and any outward-facing unit (touches live consumers, publishes, or deletes things the human owns).
+The minimum set: pre-flight dirty-tree decisions, any request to exceed the effort cap, spec edits larger than a clarification`[gate:STOP]`, and any outward-facing unit (touches live consumers, publishes, or deletes things the human owns)`[gate:STOP]`.
 
 Design for interruption: the orchestrator cannot see the user's remaining quota, so the loop must die safely at any moment.
 Implementers commit their results and log before returning; the orchestrator maintains a run-state artifact updated at every launch and gate; the plan contains a verbatim resume prompt plus a reconciliation procedure that trusts git over the state file and relaunches (never resumes) half-done units.
 The reconciliation procedure also checks the ringer repo for an uncommitted MODEL-NOTES receipt owed by the last gate (the run drives two repos; both are checkpointed).
 
 On the final wave only, after the integration branch is green and the run advances, run the advisory terminal artifact review: `/loop-review <pre-run-base>` from the integration branch, so the two-axis Spec and Standards report judges the whole-run diff.
-This review is advisory and non-blocking - the per-unit validators already gated correctness, so it runs after advancement and does not hold it; its findings are recorded at the final human checkpoint (the ask-the-human list above), and a Spec-axis finding is slipped to the plan's downstream review step under the same slip rules used for a stopped unit's design issue.
+This review is advisory and non-blocking - the per-unit validators already gated correctness, so it runs after advancement and does not hold it; its findings are recorded at the final human checkpoint (the ask-the-human list above), and a Spec-axis finding is slipped to the plan's downstream review step under the same slip rules used for a stopped unit's design issue.`[gate:BATCH]`
 
 ## Step 6 - Emit the plan
 
@@ -192,7 +192,7 @@ When the user does approve execution, go through Step 7 before launching anythin
 
 ## Step 7 - Drive dashboard, then launch
 
-When the user approves execution (including the single-artifact exits from Step 0), ask once via AskUserQuestion, multiSelect: "See execution details before I launch?"
+When the user approves execution (including the single-artifact exits from Step 0), ask once via AskUserQuestion, multiSelect: "See execution details before I launch?"`[gate:DEFAULT]`
 
 - **Dashboard**: what will run - the routing table condensed (unit, wave, model, transport, effort) plus the topology diagram.
 - **Dry run**: prove the "go" before firing it - execute the pre-flight checklist for real (ringer: `./ringer.py lint <manifest>`, engines present; native: clean tree, worktree-able state) and print the exact wave-1 launches (commands and Agent briefs) without starting any worker.

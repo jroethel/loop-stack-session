@@ -34,7 +34,7 @@ Read the plan, PRD, or task description the user gives you - pasted text, a file
 description in chat. If it's vague or bundles several unrelated deliverables together, don't
 force it into one verdict: name the seams and offer to triage the pieces separately.
 
-### 2. Ask what's actually available
+### 2. Ask what's actually available`[gate:ASK]`
 
 The four routes only mean something relative to what the user can actually run. Before scoring,
 ask in one batch (skip anything they've already told you). Use the `fable-sandwich` skill's tier
@@ -86,7 +86,7 @@ name the mismatch, then either
 - tell them what unlocking the ideal route would take, and give both: "this wants an agent team;
   if you have Claude Code that looks like {shape}, otherwise here's the chat-only version."
 
-### 5. Give the verdict
+### 5. Give the verdict`[gate:DEFAULT]`
 
 Output, in this order:
 

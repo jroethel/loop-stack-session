@@ -82,7 +82,7 @@ Run these before refining anything, in this order (most expensive mistake first)
   Every mapping lands in the brief as chosen or explicitly declined.
   Missing an implied option is a named failure mode for this user; the sweep is how it is caught.
 
-## Step 3 - Clarifying questions
+## Step 3 - Clarifying questions`[gate:ASK]`
 
 One question per message, multiple choice preferred, in this order of importance:
 
@@ -119,7 +119,7 @@ say why.
 The chosen approach, the alternatives, and the rationale all go in the brief; decisions without
 recorded rationale get relitigated.
 
-## Steps 5-6 - The brief
+## Steps 5-6 - The brief`[gate:DEFAULT]`
 
 Present it section by section, scaled to complexity, checking in after each chunk.
 Then write it to `docs/briefs/YYYY-MM-DD-<topic>-brief.md` (one sentence per line, plain dashes,
@@ -173,7 +173,7 @@ Look at the written brief with fresh eyes and fix inline:
 5. **Tag audit** - is every success criterion tagged, and every `[judgment]` tag the survivor of
    an attempted reformulation?
 
-## Step 8 - User review gate
+## Step 8 - User review gate`[gate:DEFAULT]`
 
 > "Brief written to `<path>`. Please review it; I'll make any changes before we hand it to
 > planning. Want me to commit it?"
@@ -182,7 +182,7 @@ Wait for the response.
 Changes requested means edit and re-run the self-review.
 Offer the commit; never commit without the offer being accepted.
 
-## Step 9 - Terminal state (pinned)
+## Step 9 - Terminal state (pinned)`[gate:DEFAULT]`
 
 > Brief approved at `<path>`. Next stage: **/loop-plan** for the executor-agnostic implementation
 > plan. Alternative: `fable-sandwich` for a human-paced run-book.
