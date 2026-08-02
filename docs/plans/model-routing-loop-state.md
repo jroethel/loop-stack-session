@@ -23,4 +23,5 @@ Result: 6/6 units passed on first attempt, zero retries, all on glm-5.2 (claude-
 
 - Wave 1 pre-launch: `$RINGER_EXPORT_DIR` is a phantom variable (absent from ringer.py), inherited from the old example plan; fixed in the source plan (79f7552) and purged from the example by T2.
 - Doctor live finding: opencode binary missing while `[engines.opencode]` is wired; install or remove the block when convenient.
+  Resolved 2026-08-02: binary present at `/opt/homebrew/bin/opencode`, wrapper present at `~/repos/ringer/engines/opencode-sandboxed.sh`; the block stays.
 - MODEL-NOTES receipt appended for glm-5.2 (6/6 first-try; adds a clean code-fix row against the amendment-depressed posterior).

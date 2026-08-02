@@ -102,11 +102,13 @@ for src in "$REPO"/config/ringer/*; do
   case "$dest" in *.sh) chmod +x "$dest" ;; esac
 done
 
-# 2b. fable-sandwich benchmark reference: symlink so repo edits stay live.
+# 2b. benchmark prior reference: symlink so repo edits stay live.
+# Repo source lives in config/routing/ (generalized home); the installed leaf stays in the
+# fable-sandwich skill's references/ until that skill's frontier-sandwich rename lands.
 FS_REFS="$SKILLS_DIR/fable-sandwich/references"
 if [ -d "$SKILLS_DIR/fable-sandwich" ]; then
   mkdir -p "$FS_REFS"
-  ln -sfn "$REPO/config/fable-sandwich/model-benchmarks.md" "$FS_REFS/model-benchmarks.md"
+  ln -sfn "$REPO/config/routing/model-benchmarks.md" "$FS_REFS/model-benchmarks.md"
   echo "symlinked $FS_REFS/model-benchmarks.md"
 else
   echo "note: fable-sandwich skill not installed; skipping model-benchmarks.md symlink"

@@ -59,14 +59,14 @@ The loop is a three-tier structure regardless of transport:
 | Tier | Who | Does |
 |---|---|---|
 | Orchestrator | the main session | The wave loop, gates, merges, spec edits, escalation. Never implements. Reads logs, verdicts, and core diffs only, to preserve context. |
-| Validator | a fresh checker per unit (Opus subagent, or an executed check plus optional review task) | Adversarial re-check of the implementer's claim against actual artifacts. Never fixes. |
+| Validator | a fresh checker per unit (a subagent at the routing block's native-validator role pin, or an executed check plus optional review task) | Adversarial re-check of the implementer's claim against actual artifacts. Never fixes. |
 | Implementer | a worker per unit (subagent, or manifest task) | The unit's actual work, test-first against its criteria. |
 
 Model choice is one chain for every unit, regardless of transport (P7: route by evidence, not vibes).
 If the Step 0 probe reported ringer absent, skip tier 1 entirely and route every unit by benchmark prior, else orchestrator pin, among the Agent-tool roster.
 1. Integrity-gated scoreboard posterior: from the ringer repo root recorded by the Step 0 probe, run `./ringer.py models --task-type <type>`; before trusting a posterior, read `<ringer-repo>/docs/MODEL-NOTES.md` and `<ringer-repo>/docs/AMENDMENTS-PENDING.md` for the models under consideration; if the ringer repo is missing, treat the posterior as unverified and fall to the prior tier.
    Known pending state while ringer #65 is unpatched: the seven excluded stm-nav rows are all glm-5.2 on site-build, docs, code-fix, and code-review - for those task_types treat glm-5.2's raw posterior as depressed by up to seven misattributed fails and defer to its benchmark prior or a pin; once amend lands, read the Amended column instead.
-2. Else benchmark prior: a model with no trusted local evidence routes by its row in `model-benchmarks.md` (the fable-sandwich reference file).
+2. Else benchmark prior: a model with no trusted local evidence routes by its row in `model-benchmarks.md` (the routing prior file named in the managed routing block; repo source `config/routing/model-benchmarks.md`).
 3. Else orchestrator pin: design, math- or reasoning-heavy, risk concentration, or taste - pin `engine` and `model` and record the reason.
 A pin outranks the chain at any tier when its trigger holds; the reason is never "seems hard".
 Evidence cells carry the short tag only (`posterior`, `prior`, `pin:<reason-word>`); longer rationale goes in a footnote beneath the table.
@@ -74,7 +74,7 @@ Evidence cells carry the short tag only (`posterior`, `prior`, `pin:<reason-word
 Transport is derived per unit, never chosen per wave: a unit that needs in-session tools or mid-flight continuation takes the Agent tool; if ringer is absent, every unit takes the Agent tool (degraded mode); otherwise the unit takes ringer.
 Within a wave, all ringer-transport units pack into one manifest; Agent-tool units launch as parallel background calls; both meet at the same gate.
 
-Roster: Agent-tool workers are sonnet, opus, haiku; Fable is orchestrator-tier only and is never a worker; GLM and codex run only via ringer.
+Roster: the managed CLAUDE.md routing block's worker roster and role pins govern, including the Fable never-a-worker constraint and which engines are ringer-only.
 Quota preference: execution typing leans to the flat-rate `claude-zai` lane when evidence ties or is thin; the preference lives in the managed CLAUDE.md block and is cited as a tie-break, not a tier.
 Taste flag: units with aesthetic acceptance criteria get flagged in the routing table and offered the per-unit engine ask despite any default (stm-nav lesson, 2026-07-17: the site map rode the default unflagged).
 

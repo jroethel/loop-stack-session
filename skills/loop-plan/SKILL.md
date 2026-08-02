@@ -158,11 +158,11 @@ Named for solving a Rubik's cube: the same object, deliberately re-oriented, sho
 
 Offer it once, as its own message, after self-review passes:
 
-> "Plan written. Want the rubix review? Two fresh-context reviewers - one reads it as a professional downstream of the artifact, one gives it a cold best-practice read. Two Opus dispatches, findings with rationale, you pick what gets in."
+> "Plan written. Want the rubix review? Two fresh-context reviewers - one reads it as a professional downstream of the artifact, one gives it a cold best-practice read. Two fresh dispatches, findings with rationale, you pick what gets in."
 
 Decline means proceed to Step 7; do not offer again.
 
-**Both lenses are read-only Opus subagents with fresh context.**
+**Both lenses are read-only subagents with fresh context; resolve each lens's model by its role from the managed routing block's role pins (rubix lens A, rubix lens B), never a hard-pin here.**
 They receive the plan file and the brief, never this conversation, and no rationale beyond what those documents record; that blindness is the point.
 Dispatch them in parallel.
 
