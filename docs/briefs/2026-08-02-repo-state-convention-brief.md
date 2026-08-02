@@ -10,14 +10,14 @@ Presupposition tested: "file-based is simplest" held for roadmap but failed for 
 
 ## End artifact
 
-This repo's own state stood up the day the convention ships: `config/agents.md` declared, live parked items (loop-review brief parking lot, ledger loose ends) graduated to labeled gh issues, mirrors generated.
+This repo's own state stood up the day the convention ships: `config/repo-state.md` declared, live parked items (loop-review brief parking lot, ledger loose ends) graduated to labeled gh issues, mirrors generated.
 This unblocks the build wave concretely: wayfinder's map-and-tickets machinery needs the tracker to exist.
 
 ## Done looks like
 
 In a conforming repo:
 
-- Open `config/agents.md` and see where every lane lives, with the exact commands inline.
+- Open `config/repo-state.md` and see where every lane lives, with the exact commands inline.
 - Open `ISSUES.md` and `BACKLOG.md` mirrors whose headers state generation time and the regen command.
 - Run the documented cross-repo backlog command: `gh search issues --owner jroethel --label idea --state open`.
 - Run `/handoff`: the handoff doc lands at the declared repo location and the mirrors refresh in the same pass.
@@ -47,7 +47,8 @@ Chosen: split by lane nature, declared per repo in one config file.
 - Backlog (ideas to revisit): gh issues with the `idea` label - graduation is one `gh issue create`, bodies hold verbatim parking-lot prose, and the cross-repo view is a stock `gh search`.
 - Archive: completed or superseded briefs and plans move to `docs/archive/`, keeping the working dirs live-only.
 - Where I left off: the converged handoff doc at the declared repo location.
-- The contract: `config/agents.md` declares all of the above per repo, with a one-line pointer in the repo's CLAUDE.md; repos without a GitHub remote fall back to Matt's local-markdown tracker for the gh lanes.
+- The contract: `config/repo-state.md` declares all of the above per repo, with a one-line pointer in the repo's CLAUDE.md; repos without a GitHub remote fall back to Matt's local-markdown tracker for the gh lanes.
+- Naming rationale (amended 2026-08-02 during the seam C session): the file is named for what it declares - the repo's state map - after `config/agents.md` proved misreadable as stack-behavior config; loop-stack behavior config, if it ever exists, is a separate file and currently a parked concern.
 
 Label scheme: one load-bearing label - `idea` marks the backlog lane; unlabeled (optionally garnished `bug`/`refactor`) is the issues lane; roadmap is a file and needs no label.
 Wayfinder's ticket-type labels arrive with wayfinder and layer on top; they do not change the lane scheme.
@@ -66,7 +67,7 @@ Alternatives considered: all-files (rots without curation, no free cross-repo vi
 
 ## Success criteria
 
-- `config/agents.md` exists in this repo and names every lane home, the mirror regen command, the handoff location, and the archive rules `[executed-check]`
+- `config/repo-state.md` exists in this repo and names every lane home, the mirror regen command, the handoff location, and the archive rules `[executed-check]`
 - The live parked items exist as labeled issues on this repo's GitHub `[executed-check]`
 - Both mirrors exist with generation timestamp and regen command in their headers `[executed-check]`
 - The cross-repo backlog command returns this repo's `idea` issues `[executed-check]`
@@ -78,7 +79,7 @@ Alternatives considered: all-files (rots without curation, no free cross-repo vi
 
 Blast-radius order:
 
-1. The convention itself plus the `config/agents.md` format (the loop-setup fork).
+1. The convention itself plus the `config/repo-state.md` format (the loop-setup fork).
 2. Graduation rule: parking lot to labeled issues at brief-commit time.
 3. Mirror generation.
 4. Handoff convergence (location-aware write plus mirror refresh).
@@ -108,7 +109,7 @@ Blast-radius order:
 
 ## Open questions for planning
 
-- Exact `config/agents.md` schema and the CLAUDE.md pointer wording.
+- Exact `config/repo-state.md` schema and the CLAUDE.md pointer wording.
 - Whether the converged handoff moves under loop-stack repo management (install.sh symlink) or stays a hand-copied skill.
 - Mirror file format details (header wording, item fields, sort order).
 - Roadmap file name and its relationship to `docs/plans/` ordering.

@@ -410,7 +410,7 @@
     How a nine-exchange conversation converged on a single architecture for running verified agent loops,
     across Anthropic-only and mixed-provider scope, with no dependency on the /workflows primitive.
   </p>
-  <p class="meta">Session date: 2026-07-10 &middot; Updated 2026-07-11 with the execution session (sections 11-13), 2026-07-12 with the loop-drive launch UX revision (section 14), and 2026-07-18 with the substrate and routing assessment (section 16) &middot; Participants: Jeremy and Claude Fable 5 &middot; Source: <code class="inline">~/loops/loop-stack-session/</code></p>
+  <p class="meta">Session date: 2026-07-10 &middot; Updated 2026-07-11 with the execution session (sections 11-13), 2026-07-12 with the loop-drive launch UX revision (section 14), 2026-07-18 with the substrate and routing assessment (section 16), and 2026-08-02 with the decision-settling session (section 17) &middot; Participants: Jeremy and Claude Fable 5 &middot; Source: <code class="inline">~/loops/loop-stack-session/</code></p>
 </header>
 
 <nav class="toc" aria-label="Table of contents">
@@ -431,7 +431,9 @@
     <a href="#gotchas">12. Harness gotchas</a>
     <a href="#packaging">13. Names &amp; packaging</a>
     <a href="#launch-ux">14. Launch UX</a>
+    <a href="#loop-plan">15. loop-plan &amp; rubix</a>
     <a href="#substrate-routing">16. Substrate &amp; routing</a>
+    <a href="#decision-settling">17. Decisions settled</a>
   </div>
 </nav>
 
@@ -1103,6 +1105,183 @@
   </div>
 </section>
 
+<section id="decision-settling">
+  <h2><span class="num">17</span>Decisions settled: D ships, B and C get briefed (2026-08-02)</h2>
+  <p>
+    A resume-and-settle session. It started from Jeremy's annotations in
+    <code class="inline">loop-skills-model-routing.xlsx</code> (Thoughts column, sheet 1; ACTION column, sheet 2)
+    and closed every open decision from the Matt Pocock comparison into a committed ledger
+    (<code class="inline">docs/2026-08-02-settled-decisions-and-sequence.md</code>). Then it executed the first
+    step of its own sequence: seam D (model unpinning) shipped as commit <code class="inline">82e7d27</code>,
+    and seams B (repo state convention) and C (autonomy knob) were brainstormed into briefs the same afternoon.
+    Next: a fresh Opus session runs <code class="inline">/loop-plan</code> over both briefs, then one build wave
+    applies every settled skill edit - and runs under the new knob as its own first demo.
+  </p>
+
+  <div class="aha">
+    <div class="aha-label">Aha: committed parking lots are the live ledger, not the conversation</div>
+    <p>
+      The session's first response reconstructed state from the dump and the xlsx - and missed the parking lot
+      in <code class="inline">docs/briefs/2026-07-21-loop-review-brief.md</code>, which carried lettered seams
+      (B through L) including two flagged "next discussion." Jeremy caught it: "Did you look at the parking lot
+      ... before responding?" The rule: before resuming any thread, sweep the parking lots of every committed
+      brief in the repo, because that is where prior sessions deliberately banked priorities.
+    </p>
+  </div>
+
+  <div class="aha">
+    <div class="aha-label">Aha: a stale loose end is a hypothesis, not an instruction</div>
+    <p>
+      The 2026-07-19 loop state file said the opencode binary was missing and the wired
+      <code class="inline">[engines.opencode]</code> block should be installed-or-removed. By 2026-08-02 the
+      binary existed at <code class="inline">/opt/homebrew/bin/opencode</code> (with its Seatbelt wrapper) -
+      one <code class="inline">which opencode</code> prevented deleting a fully working engine lane on the
+      strength of an outdated note. Same discipline as bug reports: verify the recorded cause before acting on it.
+    </p>
+  </div>
+
+  <div class="aha">
+    <div class="aha-label">Aha: ASK gates cluster before plan approval</div>
+    <p>
+      Inventorying all 19 human-involvement gates across the four skill texts produced a four-type taxonomy -
+      ASK (only Jeremy holds the answer), STOP (irreversibility, quota-as-money, scope authority), BATCH
+      (taste on an artifact; take the lean, collect for end review), DEFAULT (offers with sane defaults) - and
+      one structural finding: every ASK gate sits at or before plan approval. "Run the rest" from an approved
+      plan is therefore naturally safe; the chain front-loads Jeremy's irreplaceable input by its own design.
+      A corollary reframed the whole seam: stop-on-circumstances is not a third autonomy mode, it is the STOP
+      class, active in every mode.
+    </p>
+  </div>
+
+  <div class="aha">
+    <div class="aha-label">Aha: files rot without commit-integrated closing</div>
+    <p>
+      The backlog-home discussion was settled by evidence already on disk: pokemine carries two competing
+      conventions (<code class="inline">whats_next.md</code> and <code class="inline">docs/BACKLOG.md</code>),
+      vaultwise and substack-scraper each a third and fourth. High-churn items rot in files because closing one
+      is a manual edit nobody makes mid-flow. Hence seam B's split-by-lane-nature: roadmap stays a file
+      (narrative, ordered, low churn), issues and backlog go to gh issues where <code class="inline">fixes #N</code>
+      closes items as a side effect of committing, and the cross-repo backlog view is a stock
+      <code class="inline">gh search issues --owner jroethel --label idea --state open</code>.
+    </p>
+  </div>
+
+  <div class="aha">
+    <div class="aha-label">Aha: the disclosed mirror defeats both rot and drift</div>
+    <p>
+      One pattern got reused twice in one afternoon: a generated read-only file whose header states when it was
+      generated and how to regen. Seam B uses it for <code class="inline">ISSUES.md</code>/<code class="inline">BACKLOG.md</code>
+      mirrors over gh truth; seam C uses it for the gate registry over inline gate-type tags in the skill texts.
+      The C version goes further: an executed check fails when a tag is missing or the registry is stale, so
+      drift is a red build rather than a risk. This answered Jeremy's stated reluctance ("reluctant to rely upon
+      if any drift is possible") structurally instead of with a promise.
+    </p>
+  </div>
+
+  <div class="aha">
+    <div class="aha-label">Aha: the session at auto-on becomes the orchestrator; delegation only goes down-tier</div>
+    <p>
+      Jeremy's "who spawns whom?" question resolved into a two-rule continuation model: nobody ever spawns
+      Fable (roster pin), and the session active when autonomy takes effect orchestrates the rest of the chain -
+      it keeps its own model and dispatches heavy lifting to role-pinned subagents (Opus drafts the plan, the
+      session reviews the dependency graph; Opus compiles the loop; workers route by the evidence chain).
+      Model-appropriateness is preserved by the dispatches, not by handing the wheel to a new session.
+    </p>
+  </div>
+
+  <h3>Key decisions register</h3>
+  <table>
+    <tr><th>Decision</th><th>Alternatives considered</th><th>Why</th></tr>
+    <tr><td>No loop-drive skill split; steps 1-4+6 become one in-skill Opus compile dispatch</td>
+        <td>/loop-preflight + /loop-drive as two skills</td>
+        <td><code class="inline">_loop.md</code> is already the resume seam; a split would rename what the artifact marks</td></tr>
+    <tr><td>Sequence: D first, then B brainstorm, then C brainstorm, then one build wave</td>
+        <td>Build wave first; B/C after</td>
+        <td>D places model decisions in the right home; B unblocks wayfinder and names C's state home; C's gate typing must precede skill rewrites or every skill gets edited twice</td></tr>
+    <tr><td>Role pins live in the managed CLAUDE.md block; skills cite roles, never model names (seam D, shipped)</td>
+        <td>Separate roles file in config/</td>
+        <td>The managed block is loaded in every session; a config path is not reliably findable from other repos; loop-review already modeled the pattern</td></tr>
+    <tr><td>Benchmark prior file relocated to <code class="inline">config/routing/model-benchmarks.md</code></td>
+        <td>Keep under config/fable-sandwich/</td>
+        <td>It is the routing chain's prior tier, not a fable-sandwich implementation detail; installed symlink path unchanged until the frontier-sandwich rename</td></tr>
+    <tr><td>Lanes split by nature: roadmap = file, issues + backlog = gh, archive = docs/archive/ (seam B)</td>
+        <td>All file-based; all gh issues</td>
+        <td>Files rot at high churn; issue lists cannot hold roadmap ordering and narrative; gh gives commit-close, cross-repo search, and wayfinder's native blocking links</td></tr>
+    <tr><td>One load-bearing label: <code class="inline">idea</code> marks backlog; unlabeled is the issues lane</td>
+        <td>Three lane labels; Matt's five triage-state labels</td>
+        <td>Roadmap is a file and needs no label; the triage states have no consumer (no triage skill installed)</td></tr>
+    <tr><td>Per-repo contract file named <code class="inline">config/repo-state.md</code></td>
+        <td>config/agents.md; docs/config.md</td>
+        <td>Jeremy read "agents.md" as stack-behavior config; the file declares the repo's state map, so it is named for what it declares; stack-behavior config, if ever needed, is a separate concern</td></tr>
+    <tr><td>Converged handoff: one skill, location-aware via repo config, refreshes mirrors at session boundary</td>
+        <td>Two handoff behaviors (repo vs non-repo) as separate methods</td>
+        <td>Same ritual updates "where I left off" and "what's next/left" together; outside a repo it behaves exactly as Matt's original</td></tr>
+    <tr><td>Autonomy knob = <code class="inline">/loop-auto</code> + recognized phrases with confirmation, persisted in chain state (seam C)</td>
+        <td>Spoken per entry with no persistence; per-repo default</td>
+        <td>Must survive session boundaries to serve run-from-any-step; explicit setting matches Jeremy's reversibility-gated trust posture; per-repo default parked as the graduation path</td></tr>
+    <tr><td>Effort-cap (#14) and spec-edit (#15) gates classified STOP, not BATCH</td>
+        <td>BATCH for more autonomy</td>
+        <td>Quota is money and scope authority is Jeremy's; #15 may relax to BATCH with a size limit after autonomous runs build trust</td></tr>
+    <tr><td>Quota-aware scheduling parked (third time)</td>
+        <td>Fold into seam C</td>
+        <td>It is "resume automatically" where the knob gives "resume cheaply"; recurrence rule recorded - a fourth return earns its own brainstorm on why it keeps coming back</td></tr>
+    <tr><td>briefs/ and plans/ dir names stay</td>
+        <td>brainstorms/ for brainstorm output</td>
+        <td>The scheme names artifacts, not activities (like docs/adr/); brainstorms/ would break the existing symmetry</td></tr>
+    <tr><td>fable-sandwich renames to frontier-sandwich as a repo skill (build wave)</td>
+        <td>Leave as unmanaged personal skill</td>
+        <td>It is the one-shot alternative to the chain, sharing the routing prior file; rename must move the skill, the config path, and benchmark-refresh's write path together</td></tr>
+    <tr><td>Gap set F closed: handoff installed, grilling skipped, tdd and prototype deferred</td>
+        <td>Install Matt's full engineering set</td>
+        <td>loop-brainstorm covers grilling; tdd/prototype wait for a demonstrated need</td></tr>
+  </table>
+
+  <h3>User preferences surfaced (carry forward)</h3>
+  <ul>
+    <li><strong>Sweep committed parking lots before resuming a thread</strong> - they carry his banked priorities,
+      including explicit "next discussion" flags; missing one is a named failure.</li>
+    <li><strong>Return-from-break orientation is the design target</strong>: "an hour break or a month break" must
+      answer where-left-off, what's-next, what's-left from standard locations alone.</li>
+    <li><strong>Verbose state actions, always</strong>: every archive move and every parking-lot graduation announces
+      each file moved and each issue created, with numbers.</li>
+    <li><strong>Converge duplicate methods</strong>: one handoff that adapts to context beats two handoff behaviors;
+      "why do I need 3 skills if 1 would do" extended to methods.</li>
+    <li><strong>Config dirs are named <code class="inline">config/</code> in his world</strong>, and a config file's
+      name must say what it declares - he read <code class="inline">agents.md</code> as "for controlling agents"
+      and rejected it.</li>
+    <li><strong>Willing to learn git where it pays</strong> (commit-message closing keywords), with Claude doing the
+      mechanical gh work - never assume broader git fluency.</li>
+    <li><strong>Generated files must disclose their own staleness</strong> - he distrusts any derived file that
+      could silently drift from truth; regen provenance in the header plus a failing check won his trust.</li>
+  </ul>
+
+  <h3>Operational learnings</h3>
+  <ul>
+    <li><strong>The seam D edit set was smaller than it looked</strong>: 9 files, 23 insertions, 8 deletions -
+      because the installed symlink path stayed stable (the leaf under the fable-sandwich skill re-points at the
+      new repo source), no consumer outside the repo needed edits. Historical briefs and plans keep the old paths;
+      they are records, not living references.</li>
+    <li><strong>install.sh is the sync mechanism for the managed block</strong>: editing
+      <code class="inline">claude-md/fable.md</code> does nothing until
+      <code class="inline">LOOP_STACK_SKILL_STYLE=agents ./install.sh</code> re-splices it into
+      <code class="inline">~/.claude/CLAUDE.md</code>.</li>
+    <li><strong>benchmark-refresh writes through the symlink chain</strong>
+      (<code class="inline">~/.agents/skills/fable-sandwich/references/model-benchmarks.md</code> resolves into the
+      repo file), so the relocation needed no benchmark-refresh edit - but the frontier-sandwich rename will.</li>
+    <li><strong>A session-death ledger beats a good memory</strong>: the settled-decisions file was written and
+      committed before any build step, so the decisions survive even if every scratch channel (xlsx, dump) is
+      archived. The auto-memory carries only a pointer to it.</li>
+  </ul>
+
+  <div class="callout-open">
+    <strong>Open at section close:</strong> the C brief commit was offered and pending; the planning session
+    (fresh Opus, <code class="inline">/loop-plan</code> over both briefs) had not started; HC2 (fresh-session
+    routing check) is folded into build-wave verification; <code class="inline">git push</code> still owed
+    (main several commits ahead); the H dispatch-seam behavior and everything in the build wave remains
+    unbuilt - briefs and ledger are the truth until then.
+  </div>
+</section>
+
 </main>
 
 <footer>
@@ -1111,7 +1290,8 @@
   <code class="inline">~/loops/loop-stack-session/</code>. Generated as part of the 2026-07-10 session archive;
   sections 11-13 added 2026-07-11 after plan execution; section 14 added 2026-07-12 after the loop-drive
   launch UX revision; section 15 added 2026-07-17 after the loop-plan build; section 16 added 2026-07-18 after
-  the substrate and routing assessment session (Fable 5 + Jeremy).
+  the substrate and routing assessment session; section 17 added 2026-08-02 after the decision-settling session
+  (Fable 5 + Jeremy), which also restored the missing section-15 TOC link.
   Skill names in sections 0-10 are the historical (pre-rename) names; see section 13 for the mapping.
 </footer>
 
