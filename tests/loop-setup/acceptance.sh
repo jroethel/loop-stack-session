@@ -45,4 +45,19 @@ TMP2="$(mktemp -d)"; trap 'rm -rf "$TMP" "$TMP2"' EXIT
 [ -f "$TMP2/ISSUES.md" ] || fail "remote branch did not generate mirrors"
 grep -qi 'fallback\|scratch\|no remote' "$TMP2/config/repo-state.md" \
   && fail "remote-repo config wrongly recorded the no-remote fallback"
-echo "PASS: loop-setup config generation, idempotency, and remote branch all verified"
+
+# installed-symlink invocation (field bug 2026-08-02): the installed skill is a two-hop symlink
+# chain (~/.claude/skills -> ~/.agents/skills -> repo); paths must resolve physically, not logically.
+TMP3="$(mktemp -d)"; TMP4="$(mktemp -d)"; trap 'rm -rf "$TMP" "$TMP2" "$TMP3" "$TMP4"' EXIT
+mkdir -p "$TMP3/agents" "$TMP3/claude"
+ln -s "$REPO/skills/loop-setup" "$TMP3/agents/loop-setup"
+ln -s "$TMP3/agents/loop-setup" "$TMP3/claude/loop-setup"
+( cd "$TMP4" && git init -q )
+( cd "$TMP4" && "$TMP3/claude/loop-setup/setup.sh" ) \
+  || fail "setup.sh failed when invoked through the installed symlink chain (logical path leak)"
+[ -f "$TMP4/config/repo-state.md" ] || fail "symlink invocation produced no config"
+
+# the declared regen command must be true in the target repo: setup installs gen-mirrors.sh there
+[ -x "$TMP4/scripts/gen-mirrors.sh" ] \
+  || fail "setup.sh did not install scripts/gen-mirrors.sh into the target repo (regen command dangles)"
+echo "PASS: loop-setup config generation, idempotency, remote branch, and installed-symlink invocation all verified"

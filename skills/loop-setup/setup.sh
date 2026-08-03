@@ -6,8 +6,10 @@
 set -uo pipefail
 fail() { echo "FAIL: $1" >&2; exit 1; }
 
-HERE="$(cd "$(dirname "$0")" && pwd)"
-REPO="$(cd "$HERE/../.." && pwd)"
+# Resolve physically (-P): the installed skill is a symlink chain (~/.claude/skills ->
+# ~/.agents/skills -> repo), and a logical walk up from the link lands in ~/.claude.
+HERE="$(cd "$(dirname "$0")" && pwd -P)"
+REPO="$(cd "$HERE/../.." && pwd -P)"
 TPL="$REPO/config/repo-state.template.md"
 GEN="$REPO/scripts/gen-mirrors.sh"
 [ -f "$TPL" ] || fail "template not found: $TPL"
@@ -27,6 +29,14 @@ else
 fi
 
 mkdir -p config docs/handoffs docs/reviews docs/archive
+
+# Install the mirror generator into the target repo (skip-if-exists), so the regen command the
+# config declares (`scripts/gen-mirrors.sh .`) is true locally - not a dangling pointer to loop-stack.
+if [ ! -f scripts/gen-mirrors.sh ]; then
+  mkdir -p scripts
+  cp "$GEN" scripts/gen-mirrors.sh && chmod +x scripts/gen-mirrors.sh
+  echo "installed scripts/gen-mirrors.sh"
+fi
 
 render_no_remote() {
   # Keep the full template (Fallback section included); note the fallback inline.
@@ -90,7 +100,8 @@ if [ -n "$remote_url" ]; then
   fi
 
   # Mirrors regenerate from GitHub, or from MIRRORS_JSON_FILE when that env hook is set.
-  "$GEN" . || fail "gen-mirrors.sh failed"
+  # Use the target repo's own copy, the same one the declared regen command names.
+  scripts/gen-mirrors.sh . || fail "gen-mirrors.sh failed"
 else
   # --- no-remote branch: local-markdown tracker fallback at .scratch/<feature>/issues/ ---
   if [ ! -f config/repo-state.md ]; then
