@@ -2,6 +2,7 @@
 # gen-mirrors.sh - render open GitHub issues into two markdown mirrors.
 #   <out-dir>/ISSUES.md  - issues with no `idea` label
 #   <out-dir>/BACKLOG.md - issues labeled `idea`
+#   Issues labeled `wayfinder:*` are excluded from both mirrors.
 # Source of truth is GitHub issues; these files are generated, never hand-edited.
 # Usage: scripts/gen-mirrors.sh <out-dir>
 # Test hook: MIRRORS_JSON_FILE=<path> reads that file instead of calling gh.
@@ -62,6 +63,7 @@ printf '%s' "$JSON_SRC" | awk '
       m = substr(s, RSTART, RLENGTH); gsub(/^"[^"]*"[ \t]*:[ \t]*"|"$/, "", m); upd = m
     } else upd = ""
     labels = labels_of(s)
+    if (is_wayfinder(labels)) return
     print (is_idea(labels) ? 1 : 0), num, title, labels, upd
   }
   function labels_of(s,    out, seg, m) {
@@ -77,6 +79,7 @@ printf '%s' "$JSON_SRC" | awk '
     return out
   }
   function is_idea(labels) { return (labels ~ /(^|,)idea(,|$)/) ? 1 : 0 }
+  function is_wayfinder(labels) { return (labels ~ /(^|,)wayfinder:/) ? 1 : 0 }
 ' | sort -t"$TAB" -k2,2nr > "$rows_file" || fail "issue parse/sort failed"
 
 # 3. Write each mirror: disclosed HTML-comment header, H1, then the table.
