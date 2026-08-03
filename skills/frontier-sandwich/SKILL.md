@@ -18,6 +18,8 @@ Simple plans live in a single file; complex ones split each step's prompt into i
 
 Read `references/fable-guidelines.md` before drafting the plan.
 It contains the routing rules, effort-dial data, prompt patterns, and pitfalls this skill is built on.
+`references/model-benchmarks.md` is the routing chain's benchmark prior file (an installed symlink to loop-stack's `config/routing/model-benchmarks.md`).
+Model choice for execution units follows the evidence chain: integrity-gated ringer scoreboard posterior, else this benchmark prior, else an orchestrator pin; the flat-rate `claude-zai` lane takes ties.
 If `references/model-benchmarks.md` exists, read it too: it's kept current by the `benchmark-refresh`
 skill and gives evidence-based signal (all-rounder / specialist / generalist-mid / partial evidence)
 for whichever models are actually on the leaderboard right now. If it's missing or looks stale for

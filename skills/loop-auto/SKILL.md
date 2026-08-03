@@ -1,6 +1,6 @@
 ---
 name: loop-auto
-description: Set or check the chain autonomy knob (/loop-auto). Turns the chain from human-gated (pause) to autonomous (auto), persisted to docs/chain-state.md with an optional committed per-repo default.
+description: Set or check the chain autonomy knob (/loop-auto), and the home of the four gate classes (ASK, STOP, BATCH, DEFAULT) and the batch-review journal format. Turns the chain from human-gated (pause) to autonomous (auto), persisted to docs/chain-state.md with an optional committed per-repo default. Triggers on "run the rest", "take it from here", "go autonomous", "auto mode", "full auto".
 ---
 
 # loop-auto
@@ -28,9 +28,51 @@ It is never silent.
 
 ## Consumption is live
 
-Consumption is live: the knob now governs gate behavior per the four gate classes (ASK, STOP, BATCH, DEFAULT) declared in the managed CLAUDE.md / `claude-md/fable.md` block.
-Under `auto`, the active session orchestrates the rest of the chain after the last ASK gate passes.
+Consumption is live: the knob now governs gate behavior per the four gate classes below.
 Setting the mode acts on this run, not on a future build wave.
+This skill is the single home of the autonomy protocol; the managed CLAUDE.md block only points here.
+
+### Knob off or unset
+
+Knob off or unset equals fully human-gated behavior: every gate fires live.
+Nothing is auto-taken; every ASK, STOP, BATCH, and DEFAULT gate surfaces to the human.
+
+### When autonomy takes effect
+
+Autonomy takes effect only after the last ASK gate passes.
+Up to and including that gate, the human is in the loop.
+After it, the active session orchestrates the rest of the chain under the rules below.
+
+### The four gate classes under autonomy
+
+- ASK always blocks.
+  It asks the human and waits; autonomy does not auto-answer an ASK.
+- STOP always halts and states what it needs.
+  A STOP names the missing input or the failing invariant (dirty tree, exceeded effort cap, outward-facing unit) and waits; autonomy never auto-resolves a STOP.
+- BATCH auto-takes the named lean, proceeds, and collects the decision for the end review.
+  The lean was already named in the gate's prose; autonomy takes it, records it, and moves on.
+- DEFAULT auto-takes the default and logs verbosely.
+  The default was already declared at the gate; autonomy takes it, logs the decision in full, and moves on.
+
+### Batch-review list format
+
+The batch-review list is the run's gate journal: it is created the moment autonomy takes effect and appended at every gate as it fires, in chronological order, so a run that dies mid-chain still leaves the record of every decision taken so far.
+The list home is `docs/reviews/YYYY-MM-DD-<slug>-batch-review.md` (declared in `config/repo-state.md`).
+All four gate classes are logged, but they carry two different obligations.
+ASK and STOP entries are record-only: the human was present for them, so they preserve the chronology and the context around neighboring decisions but need no review.
+BATCH and DEFAULT entries are the review obligation: each is a decision auto-taken for the human, to accept or reverse at the end-of-chain checkpoint.
+Each entry has three fields: the decision (for record-only entries, what was asked or halted and how the human resolved it), the rationale, and a reversal path (record-only entries mark it `n/a - resolved live`).
+The reversal is named honestly by gate type.
+A DEFAULT or commit reversal is cheap: `git revert`, or undoing the default on the next pass.
+A BATCH taste reversal (topology choice, triage) is a scoped re-run with the alternate lean, because the lean was a judgment, not a fact.
+An entry with no honest reversal path is a signal it should have been a STOP, not auto-taken.
+
+### Continuation rule
+
+The session active when autonomy takes effect orchestrates the rest of the chain.
+Delegation only goes down-tier - the orchestrator hands work to sonnet, opus, or haiku workers, or to ringer-transported GLM/codex.
+Nobody ever spawns Fable.
+Fable is orchestrator-tier only and never a worker, so the autonomy continuation never delegates to it, not even under full auto.
 
 ## Per-repo default
 

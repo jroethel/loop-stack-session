@@ -40,12 +40,13 @@ rm -rf "$TMP/docs"
 grep -q  'loop-auto'          "$SKILL" || fail "skill does not name /loop-auto"
 grep -q  'docs/chain-state.md' "$SKILL" || fail "skill does not point at the chain-state source of truth"
 grep -qi 'run the rest'       "$SKILL" || fail "skill missing the recognized phrase list"
-grep -qi '## *Chain autonomy' "$CMD"   || fail "managed CLAUDE.md block missing the Chain autonomy section"
+grep -qi 'loop-auto'          "$CMD"   || fail "managed CLAUDE.md block missing the /loop-auto pointer"
 for t in ASK STOP BATCH DEFAULT; do
-  grep -q "$t" "$CMD" || fail "autonomy rules do not cover the $t class"
+  grep -q "$t" "$SKILL" || fail "autonomy rules do not cover the $t class (protocol home is the skill)"
 done
-grep -qi 'reversal'           "$CMD" || fail "batch-review format does not require a reversal path"
-grep -qi 'never.*Fable\|Fable.*never' "$CMD" || fail "continuation rule missing the never-spawn-Fable clause"
+grep -qi 'reversal'           "$SKILL" || fail "batch-review format does not require a reversal path"
+grep -qi 'never.*Fable\|Fable.*never' "$SKILL" || fail "continuation rule missing the never-spawn-Fable clause"
+grep -qi 'never a worker\|never.*spawns it' "$CMD" || fail "managed block missing the ambient never-a-worker invariant"
 
 # worked sample batch-review exists and distinguishes reversal by gate type
 [ -f "$SAMPLE" ] || fail "no worked sample batch-review for checkpoint 4 to judge"

@@ -59,7 +59,7 @@ None may be silently carried into the plan; an unanswered question in a task is 
 A fresh-context dispatch at the plan-draft role pin performs decompose plus draft plus self-review (Steps 3 through 5) as one bundle.
 That writer holds only the brief and the codebase, never this conversation.
 The driving session then reviews the dependency graph against the conversation before the rubix step, looking for missing depends-on edges that a fresh-context writer could not have inferred.
-Resolve the plan-draft role from the managed routing block's role pins; never hard-pin a model id here.
+The plan-draft role pin resolves to Opus (this line is the pin's single home); cite it by role name everywhere else.
 
 **File structure first.**
 Map which files will be created or modified and what each is responsible for; this is where decomposition gets locked in.
@@ -172,7 +172,7 @@ Offer it once, as its own message, after self-review passes:
 
 Decline means proceed to Step 7; do not offer again.
 
-**Both lenses are read-only subagents with fresh context; resolve each lens's model by its role from the managed routing block's role pins (rubix lens A, rubix lens B), never a hard-pin here.**
+**Both lenses are read-only subagents with fresh context; the role pins resolve here (their single home): rubix lens A = Opus; rubix lens B = Opus, or Fable when the plan is flagged high-stakes; optional third lens = GLM via claude-zai.**
 They receive the plan file and the brief, never this conversation, and no rationale beyond what those documents record; that blindness is the point.
 Dispatch them in parallel.
 
