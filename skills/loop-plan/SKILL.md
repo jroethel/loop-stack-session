@@ -47,7 +47,7 @@ The normal input is a loop-brainstorm brief (`docs/briefs/`): outcome, success c
 Without a brief, accept any spec or requirements, but first run a condensed intake (outcome, what done looks like, checkable criteria) - do not plan against a vibe.
 Explore the codebase the plan will land in; follow its existing patterns rather than restructuring around them.
 
-## Step 2 - Resolve the open questions
+## Step 2 - Resolve the open questions`[gate:ASK]`
 
 The brief's "Open questions for planning" section is this skill's first workload.
 Each question gets answered by your codebase exploration, decided in the plan header, or asked of the user (one per message, multiple choice preferred).
@@ -152,7 +152,7 @@ Look at the written plan with fresh eyes and fix inline:
 4. **Loop-drive contract check** - per task: scope stated, acceptance check executed not judged, ownership exclusive, depends-on complete, readable in isolation. Parallel-eligible tasks (no path between them) touch disjoint files.
 5. **Agnosticism scan** - the plan survives an executor who has never heard of this toolchain; no skill names, no harness features.
 
-## Step 6 - The rubix review (optional)
+## Step 6 - The rubix review (optional)`[gate:DEFAULT]`
 
 Named for solving a Rubik's cube: the same object, deliberately re-oriented, shows faces the builder stopped seeing.
 
@@ -180,9 +180,9 @@ Reviewers never rewrite the plan.
 **Triage.**
 For every finding, record your own verdict - revise or no - with a one-line reason; a finding is never applied silently and never dismissed without its reason written down.
 Present one table: finding, lens, severity, reviewer rationale (condensed), your verdict.
-The user picks which findings get incorporated; revise the plan; re-run Step 5.
+The user picks which findings get incorporated; revise the plan; re-run Step 5.`[gate:BATCH]`
 
-## Step 7 - User review gate
+## Step 7 - User review gate`[gate:DEFAULT]`
 
 > "Plan written to `<path>`. Please review it; I'll revise before hand-off. Want me to commit it?"
 
@@ -190,7 +190,7 @@ Wait for the response.
 Changes requested means edit and re-run the self-review.
 Offer the commit; never commit without the offer being accepted.
 
-## Step 8 - Hand off (pinned)
+## Step 8 - Hand off (pinned)`[gate:DEFAULT]`
 
 > Plan approved at `<path>`. Routes from here:
 > **/loop-which** for the run-shape verdict (recommended), **/loop-drive** directly if you already
