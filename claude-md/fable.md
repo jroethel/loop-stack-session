@@ -25,8 +25,7 @@
 
 The chain has an autonomy knob with two modes: `pause` (the unset default) and `auto`.
 The knob is set and read through `scripts/loop-auto.sh` and persisted to `docs/chain-state.md`, the single source of truth.
-Setting the knob records intent only; it changes no runtime behavior until the build wave wires consumption into the chain skills.
-Today the skills still fire their gates live regardless of the mode.
+Consumption is live: the knob now governs gate behavior per the four gate classes below.
 Recognized phrases set the knob to `auto` with a one-line confirmation (never silent): "run the rest", "run the rest from here", "take it from here", "go autonomous", "auto mode", "full auto".
 
 ### Knob off or unset
