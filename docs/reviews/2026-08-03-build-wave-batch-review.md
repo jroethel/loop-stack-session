@@ -23,3 +23,15 @@ BATCH and DEFAULT entries are the review obligation; ASK and STOP entries are re
 - Decision: auto-took the default (no dashboard, no dry-run walkthrough, no watch-point tour): launch immediately after the real pre-flight passes.
 - Rationale: Jeremy said he does not need to observe the wave; the pre-flight checks still run for real, only the show-me step is skipped. Watch points are named in the _loop.md if wanted.
 - Reversal: none needed - the dashboard is available any time at `~/.ringer/runs/` and Ringside; skipping the tour changes nothing about the run.
+
+### 4. DEFAULT - merge `build-wave` into main at run advancement
+
+- Decision: after gate 3 closed with the full 17-script suite plus `check.sh` green on the integration branch, merged `build-wave` into `main` (fast-forward of the 13 run commits).
+- Rationale: the plan's post-wave steps apply "from merged main"; advancing a fully green integration branch is the run's normal completion, and every per-task commit was independently gate-verified.
+- Reversal: `git revert` of the merge (or `git reset` before anything lands on top); cheap and mechanical.
+
+### 5. BATCH - advisory terminal review ran post-advancement
+
+- Decision: ran `/loop-review 3b32fc8` (the pre-run base) over the whole-run diff as the non-blocking final-wave advisory review; findings recorded below at the final checkpoint rather than blocking advancement.
+- Rationale: per-unit executed checks and gate reruns already gated correctness; the terminal review is advisory by design.
+- Reversal: any Spec-axis finding slips to the plan's downstream review step under the same slip rules as a stopped unit's design issue; a Standards finding is a normal follow-up commit.
