@@ -1,0 +1,25 @@
+# Batch review: build-wave drive run, 2026-08-03
+
+Run: /loop-drive of `docs/plans/2026-08-02-build-wave-plan.md` under knob `auto`.
+Journal created the moment autonomy took effect; one entry per fired gate, chronological.
+BATCH and DEFAULT entries are the review obligation; ASK and STOP entries are record-only.
+
+## Entries
+
+### 1. ASK (record-only) - launch approval
+
+- Decision: Jeremy directed the run live: read the handoff, /loop-drive the plan, pause only when required, no observation needed. Knob set to `auto` in the same session.
+- Rationale: this is the last ASK gate; autonomy takes effect after it.
+- Reversal: n/a - resolved live.
+
+### 2. BATCH - Step 0 topology lean
+
+- Decision: single topology emitted - 3 waves exactly as the source plan's dependency graph forces (W1: tasks 1,3,4,5,6,7,9; W2: tasks 2,8; W3: task 10), all units on ringer transport.
+- Rationale: no second shape within 60/40 - the graph is explicit in the plan, every unit is file-based with an executed check, and ringer is present, so no unit needs Agent-tool transport.
+- Reversal: scoped re-compile with the alternate shape (Agent-tool transport or different wave packing); cheap before wave 1, a judgment re-run after.
+
+### 3. DEFAULT - Step 7 execution-details question
+
+- Decision: auto-took the default (no dashboard, no dry-run walkthrough, no watch-point tour): launch immediately after the real pre-flight passes.
+- Rationale: Jeremy said he does not need to observe the wave; the pre-flight checks still run for real, only the show-me step is skipped. Watch points are named in the _loop.md if wanted.
+- Reversal: none needed - the dashboard is available any time at `~/.ringer/runs/` and Ringside; skipping the tour changes nothing about the run.
