@@ -13,7 +13,7 @@ The runnable, idempotent core is `setup.sh` next to this file; this skill narrat
 1. Writes `config/repo-state.md` by rendering `config/repo-state.template.md`.
    The template is the single schema source; never hand-copy a second schema.
 2. Branches on whether a GitHub remote is present, detected via `git remote`.
-3. Creates the docs homes: `docs/roadmap.md`, `docs/handoffs/`, `docs/reviews/`, `docs/archive/`.
+3. Creates the docs homes: root `ROADMAP.md`, `docs/handoffs/`, `docs/reviews/`, `docs/archive/`.
 4. With a remote:
    - Ensures the `idea` label exists (`gh label create idea`, skipped if already present).
    - Generates `ISSUES.md` and `BACKLOG.md` via `scripts/gen-mirrors.sh .`.

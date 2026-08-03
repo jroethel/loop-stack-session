@@ -27,8 +27,9 @@ Filename patterns: handoffs are `docs/handoffs/YYYY-MM-DD-<slug>.md`; batch revi
 Backlog cross-repo view: `gh search issues --owner jroethel --label idea --state open`.
 Per-repo fallback when private-repo search is unavailable: `gh issue list --label idea --state open`.
 
-"Where I left off" is the newest `docs/handoffs/` file if one exists.
-Otherwise it is the newest commit on the working branch plus `git log --oneline -5` and `git status`.
+"Where I left off" is the most recent of two candidates: the newest `docs/handoffs/` file and the newest commit on the working branch - whichever is fresher wins.
+A handoff older than the latest commits is context, not the frontier: read it, then let `git log --oneline -5` and `git status` say what happened since.
+When several threads are plausibly open (multiple recent handoffs or active branches), name them and ask which to resume rather than silently picking one.
 A crashed session degrades to git, never to nothing.
 
 GitHub is the single source of truth.
