@@ -53,9 +53,12 @@ After it, the active session orchestrates the rest of the chain under the rules 
 
 ### Batch-review list format
 
-Every auto-taken BATCH and DEFAULT decision is collected into a batch-review list for the end-of-chain human checkpoint.
+The batch-review list is the run's gate journal: it is created the moment autonomy takes effect and appended at every gate as it fires, in chronological order, so a run that dies mid-chain still leaves the record of every decision taken so far.
 The list home is `docs/reviews/YYYY-MM-DD-<slug>-batch-review.md` (declared in `config/repo-state.md`).
-Each entry has three fields: the decision, the rationale, and a reversal path.
+All four gate classes are logged, but they carry two different obligations.
+ASK and STOP entries are record-only: the human was present for them, so they preserve the chronology and the context around neighboring decisions but need no review.
+BATCH and DEFAULT entries are the review obligation: each is a decision auto-taken for the human, to accept or reverse at the end-of-chain checkpoint.
+Each entry has three fields: the decision (for record-only entries, what was asked or halted and how the human resolved it), the rationale, and a reversal path (record-only entries mark it `n/a - resolved live`).
 The reversal is named honestly by gate type.
 A DEFAULT or commit reversal is cheap: `git revert`, or undoing the default on the next pass.
 A BATCH taste reversal (topology choice, triage) is a scoped re-run with the alternate lean, because the lean was a judgment, not a fact.

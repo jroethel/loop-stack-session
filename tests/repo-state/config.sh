@@ -18,6 +18,9 @@ for lane in Roadmap Issues Backlog Handoffs "Chain state" "Batch reviews" Archiv
 done
 # chain-state is gitignored runtime state
 grep -q 'docs/chain-state.md' "$GI" || fail ".gitignore does not exclude docs/chain-state.md"
+# scope rule: the active stream and elevation limits are declared, in template and config alike
+grep -Eqi '## *Scope rule' "$TPL" || fail "template missing the Scope rule section"
+grep -Eqi '## *Scope rule' "$CFG" || fail "config missing the Scope rule section (active stream / elevation limits)"
 # "where I left off" degrades to git, not to nothing
 grep -Eqi 'git (log|status)' "$CFG" || fail "Handoffs lane missing the git fallback for 'where I left off'"
 grep -q 'docs/roadmap.md'      "$CFG" || fail "roadmap home not declared"

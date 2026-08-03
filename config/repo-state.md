@@ -57,3 +57,9 @@ Source brief:
 Graduated: <date>
 Restart context: <one line>
 ```
+
+## Scope rule
+
+The top roadmap item is the active stream.
+Backlog items are parked by decision; pulling one mid-stream is an explicit, announced choice, never a silent default.
+A session orienting after a break names the active stream first, states these limits, and treats every other stream as out of scope until the user pulls it in.

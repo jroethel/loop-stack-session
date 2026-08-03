@@ -2,6 +2,7 @@
 
 Ordered, low-churn narrative of where this repo goes next.
 Detail lives in the linked briefs and plans; this file orders them.
+Item 1 is the active stream (scope rule: `config/repo-state.md`).
 Ideas not yet scheduled live on the backlog (`gh issue list --label idea`, mirror `BACKLOG.md`).
 
 ## 1. Build wave (next)
