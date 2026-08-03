@@ -73,7 +73,7 @@ render_remote() {
 }
 
 ensure_roadmap() {
-  [ -f docs/roadmap.md ] || printf '# Roadmap\n\n_Living file; edit in place._\n' > docs/roadmap.md
+  [ -f ROADMAP.md ] || printf '# Roadmap\n\n_Living file; edit in place._\n' > ROADMAP.md
 }
 
 if [ -n "$remote_url" ]; then

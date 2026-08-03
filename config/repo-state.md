@@ -9,7 +9,7 @@ Remote: https://github.com/jroethel/loop-stack-session.git
 
 | Lane          | Home                      | How                                            |
 | ---           | ---                       | ---                                            |
-| Roadmap       | `docs/roadmap.md`         | Living file; edit in place, no mirror.         |
+| Roadmap       | `ROADMAP.md`              | Living file; edit in place, no mirror.         |
 | Issues        | GitHub (open, no `idea`)  | `ISSUES.md` via `scripts/gen-mirrors.sh .`.    |
 | Backlog       | GitHub (label `idea`)     | `BACKLOG.md` via `scripts/gen-mirrors.sh .`.   |
 | Handoffs      | `docs/handoffs/`          | Per session; git fallback below.               |
@@ -17,6 +17,7 @@ Remote: https://github.com/jroethel/loop-stack-session.git
 | Batch reviews | `docs/reviews/`           | Per review run.                                |
 | Archive       | `docs/archive/`           | Moved work lands here.                         |
 
+All root-level ALL-CAPS markdown files (`ROADMAP.md`, `ISSUES.md`, `BACKLOG.md`) belong to this convention; everything else it owns lives under `docs/` or `config/`, and this file is the definitive list.
 The `idea` label is the one load-bearing label.
 Unlabeled issues (optionally `bug` or `refactor`) form the Issues lane; issues labeled `idea` form the Backlog lane.
 

@@ -8,7 +8,7 @@ fail() { echo "FAIL: $1" >&2; exit 1; }
 
 [ -f "$REPO/ISSUES.md" ]      || fail "ISSUES.md not stood up"
 [ -f "$REPO/BACKLOG.md" ]     || fail "BACKLOG.md not stood up"
-[ -f "$REPO/docs/roadmap.md" ] || fail "docs/roadmap.md not seeded"
+[ -f "$REPO/ROADMAP.md" ] || fail "ROADMAP.md not seeded"
 grep -qi 'DO NOT EDIT' "$REPO/ISSUES.md"  || fail "ISSUES.md not a disclosed mirror"
 grep -qi 'DO NOT EDIT' "$REPO/BACKLOG.md" || fail "BACKLOG.md not a disclosed mirror"
 

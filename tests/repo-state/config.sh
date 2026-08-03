@@ -23,7 +23,7 @@ grep -Eqi '## *Scope rule' "$TPL" || fail "template missing the Scope rule secti
 grep -Eqi '## *Scope rule' "$CFG" || fail "config missing the Scope rule section (active stream / elevation limits)"
 # "where I left off" degrades to git, not to nothing
 grep -Eqi 'git (log|status)' "$CFG" || fail "Handoffs lane missing the git fallback for 'where I left off'"
-grep -q 'docs/roadmap.md'      "$CFG" || fail "roadmap home not declared"
+grep -q 'ROADMAP.md'           "$CFG" || fail "roadmap home not declared"
 grep -q 'ISSUES.md'            "$CFG" || fail "ISSUES.md mirror not declared"
 grep -q 'BACKLOG.md'           "$CFG" || fail "BACKLOG.md mirror not declared"
 grep -q 'docs/chain-state.md'  "$CFG" || fail "chain-state home not declared (C consumes this)"

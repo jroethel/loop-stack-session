@@ -6,7 +6,7 @@ Session: Fable 5 + Jeremy; /loop-plan -> rubix -> /loop-drive over both seam bri
 ## Where things stand
 
 Seams D, B, and C are all on `main` and pushed; the integration branch is deleted.
-This repo now conforms to its own state convention: orient from `config/repo-state.md`, `docs/roadmap.md`, `ISSUES.md`, `BACKLOG.md`, and this directory.
+This repo now conforms to its own state convention: orient from `config/repo-state.md`, `ROADMAP.md`, `ISSUES.md`, `BACKLOG.md`, and this directory.
 The run's full record is `docs/plans/repo-state-autonomy-loop-state.md`; the plan and its orchestration compile sit beside it in `docs/plans/`.
 Detail lives in those artifacts and in `learning_guide.html` section 18; this doc does not repeat them.
 
