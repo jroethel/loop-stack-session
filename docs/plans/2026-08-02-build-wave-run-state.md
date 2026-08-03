@@ -14,6 +14,8 @@ Reconciliation trusts git over this file; see the resume prompt in `2026-08-02-b
 | 3 | DEFAULT | Step 7 execution-details       | 3             |
 | 4 | DEFAULT | merge to main at advancement   | 4             |
 | 5 | BATCH   | advisory terminal loop-review  | 5             |
+| 6 | STOP    | post-wave install (live)       | 6             |
+| 7 | STOP    | benchmark-refresh edit (live)  | 7             |
 
 ## Wave log
 

@@ -41,3 +41,15 @@ BATCH and DEFAULT entries are the review obligation; ASK and STOP entries are re
 - Spec axis, 1 finding (CONFIRMED, low): `scripts/graduate-parking.sh` asserts `config/repo-state.md` exists but hardcodes the issue-body shape instead of parsing the template block at runtime, so a future template edit (say a new `Priority:` field) silently never reaches graduated issues. Output matches the template today and the acceptance test passes. Slipped to the plan's downstream review step per the slip rules; the cheap fix is to read the fenced template block and substitute fields.
 - Standards axis, 0 violations; 2 judgement-call smells, note-only: the deliberate byte-identical `esc()` duplication across the two generators (parity was the point; awk cannot share includes cleanly), and a possible `runtime_mode()` helper extraction in `scripts/loop-auto.sh` mirroring its existing `repo_default()` helper.
 - Completeness check for Criterion 2: 4 BATCH+DEFAULT journal entries (2, 3, 4, 5) against 4 BATCH+DEFAULT gates in the run-state fired-gates table - counts match.
+
+### 6. STOP (record-only) - post-wave install
+
+- Decision: Jeremy approved live; ran `LOOP_STACK_SKILL_STYLE=agents ./install.sh` from merged main. Verified: frontier-sandwich and wayfinder symlinked in both scan locations, fable-sandwich retired to `~/.agents/fable-sandwich.bak` (the retire is silent in install output; verified by absence), managed block refreshed with the live-consumption sentence, benchmarks leaf symlinked to `config/routing/model-benchmarks.md` with the doctor reporting `found model-benchmarks.md (prior tier wired)` and a fresh gate registry, no stale-path WARNING.
+- Rationale: global mutation outside the repo worktree; STOP-class by the plan, never auto-taken.
+- Reversal: n/a - resolved live.
+
+### 7. STOP (record-only) - benchmark-refresh write path
+
+- Decision: Jeremy approved live; edited `~/.agents/skills/benchmark-refresh/SKILL.md` so its overwrite target is `~/.agents/skills/frontier-sandwich/references/model-benchmarks.md` (the installed leaf symlinking loop-stack's `config/routing/model-benchmarks.md`), sweeping all fable-sandwich references. Verified by the plan's confirm grep: frontier path present, zero `fable-sandwich` remaining.
+- Rationale: edits a file outside this repo; STOP-class by the plan, never auto-taken.
+- Reversal: n/a - resolved live.
