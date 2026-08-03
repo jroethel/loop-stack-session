@@ -15,7 +15,7 @@ That executor may be a human, a lone agent, or a wave of parallel workers under 
 The plan stands alone: no skill invocations, no tool-specific instructions, nothing the executor must have installed beyond the repo itself.
 
 ```
-/loop-brainstorm ──> brief ──> /loop-plan ──> plan (+ optional rubix review)
+/loop-brainstorm ──> brief ──> /loop-plan ──> plan (+ optional Rubix review)
                                               └─ /loop-which ──> /loop-drive
 ```
 
@@ -36,7 +36,7 @@ Create a task for each item and complete them in order:
 3. **Decompose** - file map, task boundaries, dependency graph, ownership
 4. **Write the plan file** - `docs/plans/YYYY-MM-DD-<topic>-plan.md`
 5. **Self-review** - including the loop-drive contract check, fixed inline
-6. **Offer the rubix review** - optional; two fresh-context dispatches
+6. **Offer the Rubix review** - optional; two fresh-context dispatches
 7. **User reviews the plan** - and gets offered the commit
 8. **Hand off** - pinned options, then stop
 
@@ -57,7 +57,7 @@ None may be silently carried into the plan; an unanswered question in a task is 
 **Dispatch.**
 A fresh-context dispatch at the plan-draft role pin performs decompose plus draft plus self-review (Steps 3 through 5) as one bundle.
 That writer holds only the brief and the codebase, never this conversation.
-The driving session then reviews the dependency graph against the conversation before the rubix step, looking for missing depends-on edges that a fresh-context writer could not have inferred.
+The driving session then reviews the dependency graph against the conversation before the Rubix step, looking for missing depends-on edges that a fresh-context writer could not have inferred.
 The plan-draft role pin resolves to Opus (this line is the pin's single home); cite it by role name everywhere else.
 
 **File structure first.**
@@ -161,17 +161,17 @@ Look at the written plan with fresh eyes and fix inline:
 4. **Loop-drive contract check** - per task: scope stated, acceptance check executed not judged, ownership exclusive, depends-on complete, readable in isolation. Parallel-eligible tasks (no path between them) touch disjoint files.
 5. **Agnosticism scan** - the plan survives an executor who has never heard of this toolchain; no skill names, no harness features.
 
-## Step 6 - The rubix review (optional)`[gate:DEFAULT]`
+## Step 6 - The Rubix review (optional)`[gate:DEFAULT]`
 
 Named for solving a Rubik's cube: the same object, deliberately re-oriented, shows faces the builder stopped seeing.
 
 Offer it once, as its own message, after self-review passes:
 
-> "Plan written. Want the rubix review? Two fresh-context reviewers - one reads it as a professional downstream of the artifact, one gives it a cold best-practice read. Two fresh dispatches, findings with rationale, you pick what gets in."
+> "Plan written. Want the Rubix review? Two fresh-context reviewers - one reads it as a professional downstream of the artifact, one gives it a cold best-practice read. Two fresh dispatches, findings with rationale, you pick what gets in."
 
 Decline means proceed to Step 7; do not offer again.
 
-**Both lenses are read-only subagents with fresh context; the role pins resolve here (their single home): rubix lens A = Opus; rubix lens B = Opus, or Fable when the plan is flagged high-stakes; optional third lens = GLM via claude-zai.**
+**Both lenses are read-only subagents with fresh context; the role pins resolve here (their single home): Rubix lens A = Opus; Rubix lens B = Opus, or Fable when the plan is flagged high-stakes; optional third lens = GLM via claude-zai.**
 They receive the plan file and the brief, never this conversation, and no rationale beyond what those documents record; that blindness is the point.
 Dispatch them in parallel.
 

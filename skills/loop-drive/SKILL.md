@@ -1,6 +1,6 @@
 ---
 name: loop-drive
-description: Use when you have a multi-step plan, PRD, or hand-off run-book (steps or work packages, with or without copy-paste prompts) and want a single frontier-model session to orchestrate its execution instead of a human pasting prompts by hand (formerly named frontier-loop). Covers ringer-transported and Agent-tool-transported workers, mixed freely within a wave. Not for a one-off single-answer task.
+description: Use when you have a multi-step plan, PRD, or hand-off run-book (steps or work packages, with or without copy-paste prompts) and want a single frontier-model session to orchestrate its execution instead of a human pasting prompts by hand. Covers ringer-transported and Agent-tool-transported workers, mixed freely within a wave. Not for a one-off single-answer task.
 ---
 
 # loop-drive: hand-off plan to orchestration plan

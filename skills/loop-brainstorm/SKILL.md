@@ -20,7 +20,7 @@ The pipeline position:
 
 ```
 /loop-brainstorm ──> idea brief
-                     └─ /loop-plan ──> plan (+ optional rubix review)
+                     └─ /loop-plan ──> plan (+ optional Rubix review)
                                        └─ /loop-which ──> /loop-drive
 ```
 
