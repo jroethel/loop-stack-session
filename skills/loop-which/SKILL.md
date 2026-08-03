@@ -32,13 +32,13 @@ force it into one verdict: name the seams and offer to triage the pieces separat
 ### 2. Ask what's actually available`[gate:ASK]`
 
 The four routes only mean something relative to what the user can actually run. Before scoring,
-ask in one batch (skip anything they've already told you). Use the `fable-sandwich` skill's tier
+ask in one batch (skip anything they've already told you). Use the `frontier-sandwich` skill's tier
 vocabulary so the answer plugs straight into a build plan later if the verdict calls for one:
 
 - **Model tiers available** (multi-select): Frontier (best judgment - architecture, ambiguity
   calls, final review), Strong (solid all-around execution), Fast (cheap, mechanical work), and
   Specialty (a model that spikes hard on one category but is mediocre elsewhere - only trust it
-  for that category). If `~/.claude/skills/fable-sandwich/references/model-benchmarks.md` exists,
+  for that category). If `~/.claude/skills/frontier-sandwich/references/model-benchmarks.md` exists,
   skim it first and offer the user its current concrete model names as examples for each tier
   instead of asking them to classify blind.
 - **Big-picture constraints** (one question, can be free text): can you orchestrate multiple
@@ -117,7 +117,7 @@ Output, in this order:
 
 - This is a triage step, not a build step. Once the verdict is ONE AGENT or AGENT TEAM and the
   user wants to actually build it, `loop-drive` is the skill that compiles and drives the
-  execution; `fable-sandwich` is the alternative when they want a human-paced Frontier Sandwich
+  execution; `frontier-sandwich` is the alternative when they want a human-paced Frontier Sandwich
   run-book instead of an orchestrated loop.
 - DON'T BOTHER is a legitimate, frequent verdict, not a failure to find a use case. Plans can look
   agent-shaped (files, steps, checks) and still not earn automation because the judgment isn't

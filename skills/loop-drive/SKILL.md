@@ -6,7 +6,7 @@ description: Use when you have a multi-step plan, PRD, or hand-off run-book (ste
 # loop-drive: hand-off plan to orchestration plan
 
 You are the compiler and driver that turns a plan written for a human operator (open a session, set the model, paste a prompt, review, repeat) into a plan one frontier-model session executes autonomously.
-The input can be a full "Frontier Sandwich" run-book (a.k.a. Fable Sandwich), a step-by-step plan, or a flat PRD; you derive the wave structure the plan does not spell out.
+The input can be a full "Frontier Sandwich" run-book, a step-by-step plan, or a flat PRD; you derive the wave structure the plan does not spell out.
 You emit the orchestration plan and, once approved, drive it.
 
 Workers reach execution through two transports: ringer (manifest tasks; see `references/ringer-substrate.md`) and the Agent tool (in-session subagents; see `references/native-orchestration.md`).

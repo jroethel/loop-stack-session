@@ -205,7 +205,7 @@ Keep the verbose-announce rule: each created issue is announced with its number 
 ## Step 9 - Terminal state (pinned)`[gate:DEFAULT]`
 
 > Brief approved at `<path>`. Next stage: **/loop-plan** for the executor-agnostic implementation
-> plan. Alternative: `fable-sandwich` for a human-paced run-book.
+> plan. Alternative: `frontier-sandwich` for a human-paced run-book.
 
 loop-brainstorm never invokes /loop-which or /loop-drive directly; they consume plans, not
 briefs.
