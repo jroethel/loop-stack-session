@@ -1,5 +1,5 @@
 <!--
-generated: 2026-08-03T04:15:44Z
+generated: 2026-08-03T21:41:38Z
 source of truth: GitHub issues
 regenerate: scripts/gen-mirrors.sh .
 DO NOT EDIT
@@ -8,6 +8,7 @@ DO NOT EDIT
 
 | # | title | labels | updated |
 |---|---|---|---|
+| 8 | loop-setup tracker mode: 100% github or 100% local, never a mix | idea | 2026-08-03T21:41:34Z |
 | 7 | Case for Matt's triage / tdd / prototype skills | idea | 2026-08-03T03:25:55Z |
 | 6 | Status-bar surfacing of the autonomy knob mode | idea | 2026-08-03T03:25:53Z |
 | 5 | Relax spec-edit gate #15 STOP -> BATCH with size limit | idea | 2026-08-02T22:25:52Z |
