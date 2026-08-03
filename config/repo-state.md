@@ -17,6 +17,9 @@ Remote: https://github.com/jroethel/loop-stack-session.git
 | Batch reviews | `docs/reviews/`           | Per review run.                                |
 | Archive       | `docs/archive/`           | Moved work lands here.                         |
 
+The committed per-repo autonomy default is a line-anchored `autonomy-default:` key in this same file (value `pause` or `auto`).
+The runtime value in `docs/chain-state.md` overrides it; `scripts/loop-auto.sh default get|set|clear` reads, writes, and removes it.
+
 All root-level ALL-CAPS markdown files (`ROADMAP.md`, `ISSUES.md`, `BACKLOG.md`) belong to this convention; everything else it owns lives under `docs/` or `config/`, and this file is the definitive list.
 The `idea` label is the one load-bearing label.
 Unlabeled issues (optionally `bug` or `refactor`) form the Issues lane; issues labeled `idea` form the Backlog lane.
