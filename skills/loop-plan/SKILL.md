@@ -55,6 +55,12 @@ None may be silently carried into the plan; an unanswered question in a task is 
 
 ## Step 3 - Decompose
 
+**Dispatch.**
+A fresh-context dispatch at the plan-draft role pin performs decompose plus draft plus self-review (Steps 3 through 5) as one bundle.
+That writer holds only the brief and the codebase, never this conversation.
+The driving session then reviews the dependency graph against the conversation before the rubix step, looking for missing depends-on edges that a fresh-context writer could not have inferred.
+Resolve the plan-draft role from the managed routing block's role pins; never hard-pin a model id here.
+
 **File structure first.**
 Map which files will be created or modified and what each is responsible for; this is where decomposition gets locked in.
 Prefer small files with one clear responsibility; in existing codebases, follow the established pattern.
@@ -63,6 +69,10 @@ Prefer small files with one clear responsibility; in existing codebases, follow 
 A task is the smallest unit that carries its own test cycle and is worth a fresh reviewer's gate.
 Fold setup, config, and docs into the task whose deliverable needs them; split only where a reviewer could reject one task while approving its neighbor.
 The brief's seams are candidate task boundaries; deviations from them get a recorded reason.
+
+**Prefactor rule.**
+Restructuring that must precede a change is called out as its own earlier task or step, so it never rides inside a feature task.
+For a wide refactor, expand-contract is the reference pattern: land the new structure, migrate callers, then remove the old.
 
 **Loop-aware structure (the delta from a human-paced plan):**
 
