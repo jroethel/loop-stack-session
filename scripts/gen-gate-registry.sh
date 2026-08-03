@@ -83,11 +83,19 @@ for f in "$SKILLS"/loop-*/SKILL.md; do
       if (t == "BATCH") return 3
       return 4
     }
+    function esc(s,    r, i, c) {
+      r = ""
+      for (i = 1; i <= length(s); i++) {
+        c = substr(s, i, 1)
+        r = r (c == "|" ? "\\|" : c)
+      }
+      return r
+    }
     function excerpt(s,   t) {
       t = s
       gsub(/`?\[gate:(ASK|STOP|BATCH|DEFAULT|none)\]`?/, "", t)
       gsub(/^[ \t]+|[ \t]+$/, "", t)
-      gsub(/\|/, "\\|", t)
+      t = esc(t)
       if (length(t) > 75) t = substr(t, 1, 72) "..."
       return t
     }
