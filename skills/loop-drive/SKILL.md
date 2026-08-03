@@ -15,6 +15,15 @@ Transport is a per-unit attribute derived in Step 2.
 A full worked skeleton of the emitted plan is `references/example-output-plan.md`.
 The principle IDs cited below (P2, P6, P7, P10, P12, P14) are defined in the loop-stack `principles.md`; short glosses are inline so this skill stands alone.
 
+## Step boundary and entry points
+
+The driving session does not compile the plan inline.
+Steps 1-4 and Step 6 - extract the skeleton, assign roles and models, neutralize the hazards, convert the prompt templates, and emit the plan - are compiled by ONE fresh-context dispatch at the drive-compile dispatch role pin; cite the role pin by that name, never a hard model id.
+The driving session keeps Step 0 (route and scope), a pin review of the compiled output against this skill's rules, the Step 5 gates, and the Step 7 launch.
+
+**Start from an existing `_loop.md`.**
+When the orchestration plan already exists, skip compilation entirely and go straight to the pin review of that file, then Step 7.
+
 ## Step 0 - Route and scope
 
 Before compiling anything, decide whether this plan should be a loop at all, and at what size.
@@ -163,7 +172,12 @@ Committing the ringer-repo receipt is part of closing the gate: commit it before
 **4. Advance only on a green integration branch.**
 
 Preserve the source plan's checkpoint culture: list exactly when the orchestrator stops and asks the human (P12: gates scale with risk, not size).
-The minimum set: pre-flight dirty-tree decisions, any request to exceed the effort cap, spec edits larger than a clarification`[gate:STOP]`, and any outward-facing unit (touches live consumers, publishes, or deletes things the human owns)`[gate:STOP]`.
+The minimum set: pre-flight dirty-tree decisions.
+Any request to exceed the effort cap stops and asks the human`[gate:STOP]`.
+A spec edit confined to a single unit or criterion, leaving unchanged what that unit is asked to produce, and touching 15 or fewer lines, auto-takes as BATCH `[gate:BATCH]`.
+A larger edit, or one touching multiple units, a global constraint, or a unit's produced contract, stays a STOP and asks the human`[gate:STOP]`.
+The boundary is blast radius, not raw size; 15 lines is the agreed threshold.
+Any outward-facing unit (touches live consumers, publishes, or deletes things the human owns) stops and asks the human`[gate:STOP]`.
 
 Design for interruption: the orchestrator cannot see the user's remaining quota, so the loop must die safely at any moment.
 Implementers commit their results and log before returning; the orchestrator maintains a run-state artifact updated at every launch and gate; the plan contains a verbatim resume prompt plus a reconciliation procedure that trusts git over the state file and relaunches (never resumes) half-done units.
