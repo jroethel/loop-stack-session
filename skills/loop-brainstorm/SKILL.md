@@ -50,7 +50,7 @@ it and get approval.
 Create a task for each item and complete them in order:
 
 1. **Explore context** - files, docs, recent commits; never ask what context already answers
-2. **Run the three scope probes** - before any detailed questions
+2. **Run the three scope probes, then the domain-modeling probe (E)** - before any detailed questions
 3. **Ask clarifying questions** - one per message, multiple choice preferred
 4. **Propose 2-3 approaches** - trade-offs and your recommendation
 5. **Present the brief section by section** - approval per chunk
@@ -81,6 +81,17 @@ Run these before refining anything, in this order (most expensive mistake first)
   devices, data - and map each to the option it implies.
   Every mapping lands in the brief as chosen or explicitly declined.
   Missing an implied option is a named failure mode for this user; the sweep is how it is caught.
+
+## Step 2b - Domain modeling probe (E)
+
+Run this after the scope probes and before clarifying questions.
+It sharpens the words the brief will lean on, because a fuzzy domain term baked in here survives every downstream layer.
+Every term this probe sharpens or flags feeds the brief's Known vs guessed section, never a silent assumption.
+
+- **Glossary challenge.** List every domain term the idea turns on and define each in one plain sentence a non-expert could repeat back.
+  Any term that cannot be defined without hand-waving or a circular reference is a fuzzy term; sharpen it to a crisp definition, or flag it under Known vs guessed as believed-unchecked.
+- **Scenario stress-test (optional).** Offer this probe only when domain terms are load-bearing - that is, when a success criterion or a seam depends on what a term means.
+  Walk two or three edge scenarios that stretch the definitions and record where the glossary bends; those bends become Open questions for planning, not silent assumptions.
 
 ## Step 3 - Clarifying questions`[gate:ASK]`
 
@@ -182,6 +193,15 @@ Wait for the response.
 Changes requested means edit and re-run the self-review.
 Offer the commit; never commit without the offer being accepted.
 
+On an accepted commit, graduate the brief's Parking lot into backlog issues.
+Preview first: announce the parked-item count and each item's derived title, and ask for assent before creating anything.
+On assent, invoke `scripts/graduate-parking.sh <brief-path>`.
+It parses the Parking lot section and opens one `idea`-labeled issue per parked item, body built from the graduated-item template in `config/repo-state.md`.
+This graduation is a DEFAULT step in prose, not a new gate tag.
+An autonomous run auto-takes it once the Step 8 commit is accepted, but journals every created issue number for the end-of-chain review rather than firing silently.
+Reverse a graduated issue with `gh issue close <num>`.
+Keep the verbose-announce rule: each created issue is announced with its number and title.
+
 ## Step 9 - Terminal state (pinned)`[gate:DEFAULT]`
 
 > Brief approved at `<path>`. Next stage: **/loop-plan** for the executor-agnostic implementation
@@ -213,6 +233,7 @@ The only file it creates is the brief.
 digraph loop_brainstorm {
     "Explore context" [shape=box];
     "Three scope probes" [shape=box];
+    "Domain modeling (E)" [shape=box];
     "Clarifying questions\n(one at a time)" [shape=box];
     "Propose 2-3 approaches" [shape=box];
     "Present brief sections" [shape=box];
@@ -223,7 +244,8 @@ digraph loop_brainstorm {
     "Offer commit; pinned handoff; STOP" [shape=doublecircle];
 
     "Explore context" -> "Three scope probes";
-    "Three scope probes" -> "Clarifying questions\n(one at a time)";
+    "Three scope probes" -> "Domain modeling (E)";
+    "Domain modeling (E)" -> "Clarifying questions\n(one at a time)";
     "Clarifying questions\n(one at a time)" -> "Propose 2-3 approaches";
     "Propose 2-3 approaches" -> "Present brief sections";
     "Present brief sections" -> "User approves sections?";
