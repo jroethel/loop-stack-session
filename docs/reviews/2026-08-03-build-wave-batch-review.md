@@ -53,3 +53,7 @@ BATCH and DEFAULT entries are the review obligation; ASK and STOP entries are re
 - Decision: Jeremy approved live; edited `~/.agents/skills/benchmark-refresh/SKILL.md` so its overwrite target is `~/.agents/skills/frontier-sandwich/references/model-benchmarks.md` (the installed leaf symlinking loop-stack's `config/routing/model-benchmarks.md`), sweeping all fable-sandwich references. Verified by the plan's confirm grep: frontier path present, zero `fable-sandwich` remaining.
 - Rationale: edits a file outside this repo; STOP-class by the plan, never auto-taken.
 - Reversal: n/a - resolved live.
+
+## Checkpoint outcomes
+
+- Criterion 2 (journal completeness and auto-taken decisions): reviewed and ACCEPTED by Jeremy, 2026-08-03. No reversals requested.
