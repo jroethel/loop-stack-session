@@ -3,8 +3,7 @@ name: loop-brainstorm
 description: >
   Use before any creative work: a new feature, component, project, behavior change, or a
   half-formed idea the user wants to think through - before any plan, PRD, code, or scaffolding
-  exists. Supersedes superpowers:brainstorming for this user: when both could trigger, use this
-  one. Use even when the idea seems simple or already fully specified, and especially when the
+  exists. Use even when the idea seems simple or already fully specified, and especially when the
   user's message is an idea dump that lists tools, subscriptions, or assets, bundles several
   ideas with "oh and it could also...", or names an implementation ("probably a cron job").
   Also triggers on brainstorm, think through, kick around, "help me shape this", or sharing a

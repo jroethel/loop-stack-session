@@ -40,7 +40,6 @@ rm -rf "$TMP/docs"
 grep -q  'loop-auto'          "$SKILL" || fail "skill does not name /loop-auto"
 grep -q  'docs/chain-state.md' "$SKILL" || fail "skill does not point at the chain-state source of truth"
 grep -qi 'run the rest'       "$SKILL" || fail "skill missing the recognized phrase list"
-grep -qi 'loop-auto'          "$CMD"   || fail "managed CLAUDE.md block missing the /loop-auto pointer"
 for t in ASK STOP BATCH DEFAULT; do
   grep -q "$t" "$SKILL" || fail "autonomy rules do not cover the $t class (protocol home is the skill)"
 done

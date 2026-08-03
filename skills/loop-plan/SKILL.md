@@ -2,8 +2,7 @@
 name: loop-plan
 description: >
   Use when a brief, spec, or requirements exist for multi-step work and the next artifact is an
-  implementation plan - after /loop-brainstorm (or any spec), before any code. Supersedes
-  superpowers:writing-plans for this user: when both could trigger, use this one. Triggers on
+  implementation plan - after /loop-brainstorm (or any spec), before any code. Triggers on
   "write the plan", "implementation plan", "break this into tasks", "PRD", or a brief handed off
   for planning. Emits an executor-agnostic plan consumable by /loop-which, /loop-drive, or any
   capable agent with no special skills installed.

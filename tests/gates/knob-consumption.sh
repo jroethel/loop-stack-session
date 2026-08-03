@@ -12,8 +12,9 @@ fail() { echo "FAIL: $1" >&2; exit 1; }
 # The staged-only disclaimers must be gone everywhere.
 grep -qi 'records intent only' "$CMD" "$LA" && fail "a file still says 'records intent only' (consumption not live)"
 grep -qi 'still fire their gates live regardless' "$CMD" "$LA" && fail "the staged disclaimer survives"
-# The managed block stays lean: it points at /loop-auto and keeps the never-a-worker invariant.
-grep -qi 'loop-auto' "$CMD" || fail "managed block lost its /loop-auto pointer"
+# The managed block stays lean (Fable footguns only) and keeps the never-a-worker invariant;
+# routing lives entirely in skill descriptions now that superpowers is uninstalled.
+grep -qi 'superpowers' "$CMD" && fail "managed block re-grew superpowers arbitration lines (plugin is uninstalled)"
 grep -Eqi 'never a worker|never.*spawns it' "$CMD" || fail "managed block lost the Fable never-a-worker invariant"
 # The block must NOT re-absorb the protocol (that is the bloat this layout retired).
 grep -qi 'batch-review list' "$CMD" && fail "managed block re-absorbed the journal protocol (belongs in loop-auto)"
