@@ -1,16 +1,11 @@
 ---
 name: loop-which
 description: >
-  Evaluates a plan, PRD, proposal, or task description and gives a verdict on which approach
-  to take: a plain chat prompt, one accountable agent, a small agent team, or "don't automate
-  this" - based on Nate B. Jones's One-Minute Test framework (full source in references/).
-  Before giving the verdict, asks the user which models and orchestration tools are actually
-  available to them and any big-picture constraints (access, sensitivity, how often the work
-  recurs), so the recommendation is something they can actually run, not a theoretical ideal.
-  Use this whenever the user shares a plan, PRD, spec, proposal, or roadmap and asks how to
-  proceed, which approach they need, whether it's worth automating, whether to use one agent
-  or a team, or "should I bother with AI for this" - even if they never say "loop-which",
-  "one-minute test", or "route this."
+  Evaluates a plan or PRD and returns a routing verdict: CHAT, ONE AGENT, AGENT TEAM, or
+  DON'T BOTHER, using the One-Minute Test framework. Asks first which models and tools
+  the user actually has plus key constraints, so the call fits what they can run. Use when
+  the user shares a plan and asks how to proceed, which approach fits, or whether it's worth
+  automating.
 ---
 
 # loop-which: the One-Minute Test router
