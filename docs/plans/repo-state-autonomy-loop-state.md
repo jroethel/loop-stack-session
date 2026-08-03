@@ -15,7 +15,7 @@ Manifests: `/tmp/ringer-work/rsa/wave<N>.json`.
 RUN COMPLETE 2026-08-02: 7/7 worker units first-try PASS, gate 3 green (7 suites + live.sh),
 issues #1-#5 graduated, archives moved, advisory /loop-review run (findings triaged: 3 fixed
 in b88bda0, duplicate-STOP-rows + awk-escape divergence + shared-header/dup-code smells recorded
-as debt, gate:none kept deliberately as documented escape hatch). Awaiting final checkpoint:
+as debt, gate:none kept deliberately as documented escape hatch). Final checkpoint CLEARED 2026-08-02 (journal format + scope rule shipped, db4c852); merged to main and pushed (9bfc6c4). Was:
 judgment reads 3+4, merge to main, push offer.
 
 Log:
