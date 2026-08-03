@@ -434,6 +434,7 @@
     <a href="#loop-plan">15. loop-plan &amp; rubix</a>
     <a href="#substrate-routing">16. Substrate &amp; routing</a>
     <a href="#decision-settling">17. Decisions settled</a>
+    <a href="#bc-build-run">18. B+C build run</a>
   </div>
 </nav>
 
@@ -1282,6 +1283,131 @@
   </div>
 </section>
 
+<section id="bc-build-run">
+  <h2><span class="num">18</span>The B+C build run: plan, rubix, loop-drive on the flat lane (2026-08-02)</h2>
+  <p>
+    The same evening, seams B and C went from briefs to merged code in one continuous chain:
+    <code class="inline">/loop-plan</code> produced one combined plan (8 tasks, 3 waves), the rubix review ran
+    two fresh Opus lenses (all 14 findings applied), and <code class="inline">/loop-drive</code> under Fable
+    compiled and drove it - 7 worker units on ringer's <code class="inline">claude-zai</code> lane, all
+    first-try passes, with B5 (the outward-facing live migration) held in the orchestrator's own lane.
+    Merged and pushed as <code class="inline">9bfc6c4</code>. The stack is now self-hosting: the run created
+    <code class="inline">/loop-setup</code>, <code class="inline">/loop-auto</code>, and the converged
+    <code class="inline">/handoff</code>, and its own <code class="inline">install.sh</code> pass made them
+    live mid-run.
+  </p>
+
+  <div class="aha">
+    <div class="aha-label">Aha: when two independent rubix lenses converge, treat it as near-certainty</div>
+    <p>
+      Lens A (impacted operator) and lens B (cold craft) independently found the same five defects - the
+      chain-state file tripping its own dirty-tree STOP, the hard gate on a guessed <code class="inline">gh
+      search</code>, the schema authored twice, the prose-grep scanner, the unenforced tags-only invariant.
+      Convergence from deliberately different seats is the strongest review signal the process produces;
+      those five got fixed even before Jeremy picked "apply all".
+    </p>
+  </div>
+
+  <div class="aha">
+    <div class="aha-label">Aha: runtime state must be excluded from the invariants it participates in</div>
+    <p>
+      <code class="inline">docs/chain-state.md</code> written by <code class="inline">loop-auto set</code>
+      would have dirtied the tree and tripped the very pre-flight STOP it exists to serve. The fix is a
+      pattern, not a patch: gitignore the state file and exclude it from the porcelain check
+      (<code class="inline">git status --porcelain -- . ':(exclude)docs/chain-state.md'</code>), then prove
+      set-then-preflight passes on a clean tree. Any future state artifact gets the same treatment.
+    </p>
+  </div>
+
+  <div class="aha">
+    <div class="aha-label">Aha: precision-over-recall with disclosed incompleteness beats recall plus curation</div>
+    <p>
+      The naive gate-freshness scanner matched ~57 prose lines against ~20 real gates. Instead of widening
+      escape hatches, the scanner was scoped hard (only <code class="inline">## Step</code> sections, only
+      tight tokens) and the registry discloses "tagged gates only, not a completeness guarantee". A checker
+      that cries wolf becomes a curation treadmill; a narrow checker with an honest disclosure stays trusted.
+    </p>
+  </div>
+
+  <div class="aha">
+    <div class="aha-label">Aha: check a check's satisfiability against files the worker cannot edit - before dispatch</div>
+    <p>
+      C2's spec required a scanner that would have flagged untagged lines in the four skill files, which are
+      outside C2's ownership - the check was unsatisfiable as written. Caught at compile time by walking the
+      scanner rules against the real tagged files; fixed as a recorded clarification (tokens trimmed,
+      heading-coverage added) instead of a burned worker round. The plan doc was then reconciled to what
+      shipped, with the dated reason, when loop-review surfaced the divergence.
+    </p>
+  </div>
+
+  <div class="aha">
+    <div class="aha-label">Aha: the judgment checkpoints are refinement gates, not pass/fail</div>
+    <p>
+      Jeremy's fresh-session probe ("what are the scope/elevation limits and how would I know?") exposed that
+      the convention encoded priority but never surfaced it - now the <code class="inline">## Scope rule</code>
+      section in <code class="inline">config/repo-state.md</code>. His batch-review question ("log ASK and
+      STOP too? start earlier?") became the gate-journal design: chronological, crash-safe, all four classes
+      logged, ASK/STOP record-only, review obligation scoped to BATCH/DEFAULT. Both checkpoint answers
+      shipped as code the same evening.
+    </p>
+  </div>
+
+  <div class="aha">
+    <div class="aha-label">Aha: the flat lane carried the whole build for zero Anthropic worker quota</div>
+    <p>
+      All 7 dispatched units ran glm-5.2 via <code class="inline">claude-zai</code>, 7/7 first-try, 83s-8m
+      each. Routing was evidence, not vibes: code-feature rode the proven scoreboard posterior; C1 (code-fix,
+      in the stm-nav-affected set) rode the benchmark prior. Worker notes were genuinely good - C1 recorded
+      its tag-placement judgment calls, B2 verified beyond its fixture (BWK-vs-gawk escaping) unprompted.
+      Fable spent tokens only on gates, specs, and judgment.
+    </p>
+  </div>
+
+  <table>
+    <tr><th>Decision</th><th>Alternatives considered</th><th>Why</th></tr>
+    <tr>
+      <td>Workers never commit; checks export patches, the orchestrator commits at gates</td>
+      <td>Worker commits in worktrees; deliverables written outside the tree</td>
+      <td>Ringer deletes passing worktrees (commits die with them); patch-export is lint-enforced and keeps
+          the plan's exact commit messages</td>
+    </tr>
+    <tr>
+      <td>B5 in the orchestrator lane, never a worker</td>
+      <td>Dispatch with embedded approval pauses</td>
+      <td>It creates real gh issues and moves files - outward-facing with mid-unit human checkpoints breaks
+          the stateless-worker model (P6/P12)</td>
+    </tr>
+    <tr>
+      <td>Cross-repo <code class="inline">gh search</code> demoted to advisory in
+          <code class="inline">live.sh</code></td>
+      <td>Hard exit-0 assertion</td>
+      <td>The brief marked it guessed and the search index lags creation; the index-free per-repo
+          <code class="inline">gh issue list</code> is the hard gate. (The guess then verified true.)</td>
+    </tr>
+    <tr>
+      <td>Batch-review list = chronological gate journal, started at knob-set time</td>
+      <td>End-of-run list of auto-taken decisions only</td>
+      <td>Crash-safety (a dead run keeps its record) and context (a BATCH lean reads next to the ASK that
+          preceded it); review burden protected by the record-only/review split</td>
+    </tr>
+    <tr>
+      <td>Scope rule declared in <code class="inline">config/repo-state.md</code> and its template</td>
+      <td>Leave priority implicit in roadmap ordering</td>
+      <td>Checkpoint 3 proved a fresh session cannot state limits that are never declared; "how would I know"
+          needs a written answer</td>
+    </tr>
+  </table>
+
+  <div class="callout-open">
+    <strong>Open at section close:</strong> the build wave is the single active stream (roadmap item 1) -
+    one brief, <code class="inline">/loop-plan</code>, <code class="inline">/loop-drive</code> applying the
+    settled ledger, running under the knob as its own demo; <code class="inline">/loop-auto</code> records
+    intent only until that wave wires gate-tag consumption; recorded debt: duplicate STOP registry rows,
+    awk pipe-escape divergence between the two generators, shared disclosed-header emitter; backlog lives as
+    issues #1-#5.
+  </div>
+</section>
+
 </main>
 
 <footer>
@@ -1291,7 +1417,8 @@
   sections 11-13 added 2026-07-11 after plan execution; section 14 added 2026-07-12 after the loop-drive
   launch UX revision; section 15 added 2026-07-17 after the loop-plan build; section 16 added 2026-07-18 after
   the substrate and routing assessment session; section 17 added 2026-08-02 after the decision-settling session
-  (Fable 5 + Jeremy), which also restored the missing section-15 TOC link.
+  (Fable 5 + Jeremy), which also restored the missing section-15 TOC link; section 18 added 2026-08-02 after the
+  seam B+C build run (Fable 5 + Jeremy).
   Skill names in sections 0-10 are the historical (pre-rename) names; see section 13 for the mapping.
 </footer>
 
