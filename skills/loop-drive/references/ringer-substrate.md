@@ -21,6 +21,7 @@ One task per unit. Each task carries:
 - `expect_files`: the deliverables, so the results page shows the right work.
 - `check`: prints WHY it fails, verifies substance not just presence, strict on substance and tolerant on format (P14).
 - `verified`: one plain-English line stating what the check proves.
+- Optional: `max_attempts` (default 2 = one try + one retry; set `1` for a hard no-retry lane) and `redact_spec` (scrubs the spec from run state, logged command line, and eval row - but NOT from `worker.log` if the worker echoes it, so it is not a secrecy guarantee).
 
 Run-level: `run_name` (the SAME across every wave of the build), `workdir`, `worktrees: true`, and `max_parallel`.
 
@@ -44,7 +45,12 @@ At each gate, consume ringer's outputs (do not trust the summary line alone):
 4. A failure with a useless error message means the CHECK needs work, not (only) the worker.
 5. Apply reviewed patches to the integration branch, run the full suite there, and advance only when green.
 
-Ringer's built-in single retry IS the repair pass; do not add another. A task that fails twice is a stopped unit for the gate to resolve.
+Ringer's built-in single retry IS the repair pass; do not add another (per-task `max_attempts` tunes it: `1` disables the retry). A task that fails at its attempt limit is a stopped unit for the gate to resolve.
+
+## The ask lane
+
+`./ringer.py ask "question" --source <path>` (repeatable `--source`, `--dry-run` to preview the packet) is a one-shot, read-only, no-manifest question over named sources.
+Use it instead of reading files into your own context when the answer is all you need; it is not a unit and produces no scoreboard row.
 
 ## Model routing
 
