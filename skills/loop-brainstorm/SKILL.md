@@ -198,7 +198,7 @@ On assent, invoke `scripts/graduate-parking.sh <brief-path>`.
 It parses the Parking lot section and opens one `idea`-labeled issue per parked item, body built from the graduated-item template in `config/repo-state.md`.
 This graduation is a DEFAULT step in prose, not a new gate tag.
 An autonomous run auto-takes it once the Step 8 commit is accepted, but journals every created issue number for the end-of-chain review rather than firing silently.
-Reverse a graduated issue with `gh issue close <num>`.
+Reverse a graduated issue with `scripts/tracker.sh close <num>` (backend-agnostic; works in either tracker mode).
 Keep the verbose-announce rule: each created issue is announced with its number and title.
 
 ## Step 9 - Terminal state (pinned)`[gate:DEFAULT]`

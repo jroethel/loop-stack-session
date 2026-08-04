@@ -12,6 +12,8 @@ The destination varies per effort, and naming it is the first act of charting - 
 It might be a spec to hand off and iterate on, a decision to lock before planning starts, or a change made in place like a data-structure migration.
 The map is domain-agnostic - engineering work, course content, whatever fits the shape.
 
+Wayfinder requires `tracker: github`: its map and tickets are GitHub issues end to end, with no local-tracker variant (a disclosed limitation, promotable later).
+
 ## Plan, don't do
 
 Wayfinder is **planning** by default: each ticket resolves a decision, and the map is done when the way is clear - nothing left to decide before someone goes and does the thing.
