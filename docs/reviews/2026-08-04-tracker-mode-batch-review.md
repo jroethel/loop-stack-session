@@ -48,3 +48,14 @@ BATCH and DEFAULT entries are the review obligation; ASK and STOP entries (if an
 - Decision: Task 7 failed twice on a spec-problem, not a worker miss - the source plan's verbatim test called `scripts/graduate-parking.sh` inside the sandbox, but setup installs only `tracker.sh` and `gen-mirrors.sh` into targets (the plan's own decision log), so the file cannot exist there. Applied a one-line spec edit to the source plan's verbatim test: invoke `"$REPO/scripts/graduate-parking.sh"` against the sandbox cwd, the exact convention the plan's criterion-6 decision already uses for migrate. Line count kept stable so the manifest's plan line-range references remain valid. Relaunched Task 7 as a fresh unit.
 - Rationale: confined to a single unit's criterion, one changed line, the unit's produced artifact is unchanged (the criterion-4 integration test); `graduate-parking.sh` operates on the caller's cwd, so the sandbox's installed tracker.sh and `tracker: local` config still govern, and the gh-stub PATH guard still proves the zero-gh criterion. The worker behaved correctly both attempts (verbatim test, ownership respected, defect attributed upstream in its summary).
 - Reversal path: `git revert` of the spec-edit commit and a scoped re-run; the alternate lean (teach setup to install graduate-parking.sh) remains available but touches another unit's produced contract, which is a STOP-class edit by blast radius.
+
+### 8. [BATCH] Final-wave advisory loop-review, run post-advancement
+
+- Decision: ran `/loop-review 069d36f` from the green integration branch after wave 4 advanced, per the plan's non-blocking design. Spec axis: zero defects, all six criteria pass, no material scope creep; one spec-baked prose nit (github-rendered config intro references the stripped Local tracker section). Standards axis: zero hard violations; judgment-call Duplicated Code (`fm()` and the awk frontmatter walker across the two new scripts) and a Mysterious Name (`fm`), all downgraded by the deliberate self-contained-script design. No finding slipped to a downstream review step; nothing reversed.
+- Rationale: per-unit executed checks already gated correctness; the review is the plan's advisory terminal artifact check and confirmed the run clean on both axes.
+- Reversal path: n/a - advisory; the two nits are named here for a future pass if wanted (rename `fm`, or fix the template intro line in a follow-up spec).
+
+## Run closed
+
+All 8 units landed on `tracker-mode-integration` (75910cd..575fbf7), full 9-test sweep green, advisory review clean.
+Open human decisions at this checkpoint: accept or reverse the BATCH/DEFAULT entries above; merge `tracker-mode-integration` to `main`; close issue #8; run the one advisory real-data eyeball (an un-dry `scripts/migrate-tracker.sh` against a throwaway repo) before trusting migration on anything precious.
