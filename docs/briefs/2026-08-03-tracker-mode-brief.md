@@ -34,12 +34,13 @@ Same commands in both modes, backend decided by the key: `scripts/gen-mirrors.sh
 | `gen-mirrors.sh` fixture hook         | Renderer is source-agnostic; local source slots in   | Chosen                      |
 | `graduate-parking.sh`                 | Grows a local write path in local mode               | Chosen                      |
 | `.scratch/<feature>/issues/` fallback | Keep as the local tracker root                       | Declined - see note         |
-| wayfinder                             | Local-mode variant                                   | Chosen as map-as-file       |
+| wayfinder                             | Local-mode variant                                   | Declined - disclosed limit  |
 | Cross-repo `gh search issues` view    | Local repos participate somehow                      | Declined - disclosed limit  |
 | Existing bash test harness            | Success criteria as executed-checks in that style    | Chosen                      |
 
 Declined-scratch note: scratch implies disposable; a declared tracker is durable and committed.
 Declined cross-repo note: a shared index inherently needs a remote; local mode discloses the limitation instead.
+Declined wayfinder note (2026-08-03): wayfinder's data model is issue-shaped end to end; a map-as-file variant carries most of this brief's skill-prose cost for an unlikely consumer, so wayfinder requires `tracker: github` as a disclosed limitation, promotable later if a local repo needs a map.
 
 ## Approach
 
@@ -47,7 +48,7 @@ Chosen: two declared modes, one key; each script does a one-line mode read; gith
 Considered: github-only hard fail - declined because gh-excluded projects deserve the full workflow.
 Considered: local-as-truth with github as a sync layer - declined because it inverts source-of-truth, breaks gh-native workflows, and forces migration of every existing repo.
 Rationale recorded at decision time: the bug class dies by construction when no script can guess, and existing seams make the local lane cheap.
-Parity bar (user decision): disclosed limitations, not true parity - cross-repo idea search skips local repos, wayfinder becomes map-as-file.
+Parity bar (user decision): disclosed limitations, not true parity - cross-repo idea search skips local repos, wayfinder requires `tracker: github`.
 
 ## Success criteria
 
@@ -55,10 +56,10 @@ Parity bar (user decision): disclosed limitations, not true parity - cross-repo 
 2. Re-run against a keyless legacy config asks the mode, and its output reports remote-found or no-remote, suggesting `tracker: github` only when found. `[executed-check]`
 3. `tracker: github` with gh unauthenticated or absent exits non-zero fail-fast with a message naming the prerequisite. `[executed-check]`
 4. The full local-mode workflow - setup, create issues, regenerate mirrors, graduate a brief's parking lot - runs to exit 0 in a sandbox where gh is not on PATH, and ISSUES.md/BACKLOG.md render from the local files with labels intact. `[executed-check]`
-5. Rendered local-mode config discloses both limitations (invisible to cross-repo idea search; wayfinder is map-as-file), grep-verifiable. `[executed-check]`
+5. Rendered local-mode config discloses both limitations (invisible to cross-repo idea search; wayfinder requires `tracker: github`), grep-verifiable. `[executed-check]`
 6. Migration local -> github is lossless: every local issue file becomes a GitHub issue with title, body, and labels preserved, dry-run comparable. `[executed-check]`
 
-No `[judgment]` criteria survived reformulation; "wayfinder works locally" became criterion 5's disclosure plus a planning question on map-as-file mechanics.
+No `[judgment]` criteria survived reformulation; "wayfinder works locally" was declined (2026-08-03) and became criterion 5's disclosure.
 
 ## Terminology
 
@@ -72,8 +73,7 @@ Blast-radius order:
 1. The `tracker:` key: setup asks/reports/renders it; legacy keyless configs re-ask; scripts read it.
 2. Github-mode hardening: fail-fast auth, `gh repo create --private` offer, fallback code path deleted.
 3. Local tracker core: frontmatter-labeled issue files, mirrors rendered from them, graduation writing them.
-4. Wayfinder map-as-file variant.
-5. Migration local -> github.
+4. Migration local -> github.
 
 ## Known vs guessed
 
@@ -101,6 +101,7 @@ None - no new threads surfaced during this brainstorm.
 ## Out of scope
 
 Cross-repo search participation for local repos.
+A local-mode wayfinder (map-as-file); wayfinder requires `tracker: github`.
 Any hybrid or sync mode.
 Github to local demotion.
 Auto-switching an existing repo's mode without the user answering the question.
@@ -111,7 +112,6 @@ Hooks or daemons.
 - Does `gen-mirrors.sh` grow a local reader or gain a sibling script?
 - Local issue file location, naming, and number-assignment scheme (durable and committed, per the declined-scratch verdict).
 - How setup asks the mode question interactively while staying testable (answer hook).
-- Map-as-file format and location for local wayfinder.
 - Local equivalents of issue lifecycle verbs (close, reopen) and of the `gh issue close <num>` graduation-reversal.
 - Does `tracker:` get a read/write helper like `loop-auto.sh default`?
 - Full audit pass for stray gh assumptions in scripts and skill prose.
