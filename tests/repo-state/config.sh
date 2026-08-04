@@ -30,7 +30,13 @@ grep -q 'docs/chain-state.md'  "$CFG" || fail "chain-state home not declared (C 
 grep -q 'docs/reviews/'        "$CFG" || fail "batch-review home not declared (C consumes this)"
 grep -q 'docs/handoffs/'       "$CFG" || fail "handoff home not declared"
 grep -q 'scripts/gen-mirrors.sh' "$CFG" || fail "mirror regen command not declared"
-grep -qi '## *Fallback'        "$CFG" || fail "no-remote fallback section missing"
+# tracker: key is a line-anchored declared choice in this repo's config
+grep -q '^tracker:' "$CFG" || fail "config/repo-state.md missing the line-anchored tracker: key"
+# template carries the Local tracker section and both disclosed limitations (source for local renders)
+grep -Eqi '## *Local tracker' "$TPL" || fail "template missing the Local tracker section"
+grep -qi 'cross-repo idea search' "$TPL" || fail "template missing the cross-repo-search disclosure"
+grep -qi 'wayfinder requires' "$TPL"     || fail "template missing the wayfinder-requires-github disclosure"
+grep -qi 'single linear writer' "$TPL"   || fail "template missing the single-linear-writer numbering disclosure"
 grep -qi 'idea'                "$CFG" || fail "the 'idea' backlog label not documented"
 grep -Eqi '## *Archive and graduation' "$CFG" || fail "archive/graduation rules section missing"
 grep -qi 'Source brief:'       "$CFG" || fail "graduated-item issue template (Source brief/Restart) missing"

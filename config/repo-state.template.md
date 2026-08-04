@@ -2,7 +2,7 @@
 
 This file is the single schema source for where each repo-state lane lives and how to read or mirror it.
 Render it into `config/repo-state.md` by replacing the placeholder below with the repo's remote URL.
-For a repo with no remote, replace it with the no-remote note and follow the Fallback section.
+The tracker backend (github or local) is declared in the `tracker:` key below; the Local tracker section governs local mode.
 
 Remote: {{REMOTE_OR_FALLBACK}}
 
@@ -17,6 +17,10 @@ Remote: {{REMOTE_OR_FALLBACK}}
 | Chain state   | `docs/chain-state.md`     | Runtime, gitignored.                           |
 | Batch reviews | `docs/reviews/`           | Per review run.                                |
 | Archive       | `docs/archive/`           | Moved work lands here.                         |
+
+The committed tracker backend is a line-anchored `tracker:` key in this same file (value `github` or `local`).
+Every loop-stack script reads it and obeys it; none infers the backend from `git remote`.
+`scripts/tracker.sh mode get|set` reads and writes it; `skills/loop-setup/setup.sh` asks it once when the key is missing.
 
 All root-level ALL-CAPS markdown files (`ROADMAP.md`, `ISSUES.md`, `BACKLOG.md`) belong to this convention; everything else it owns lives under `docs/` or `config/`, and this file is the definitive list.
 The `idea` label is the one load-bearing label.
@@ -36,12 +40,21 @@ GitHub is the single source of truth.
 Mirrors are read-only snapshots whose headers disclose staleness.
 They regenerate at handoff time or on demand - no hooks, no daemons.
 
-## Fallback (no remote)
+## Local tracker
 
-When a repo has no GitHub remote, the Issues and Backlog lanes fall back to a local-markdown tracker.
-Tracker root: `.scratch/<feature>/issues/`.
-Use one file per issue, named by the issue title slug.
-Graduate these into GitHub issues when the repo gains a remote.
+When `tracker: local`, the Issues and Backlog lanes live in `docs/issues/`, one file per issue.
+These files are durable and committed - not scratch, not disposable.
+Each file is named `NNN-<title-slug>.md` (NNN zero-padded, numbers never reused) with line-anchored frontmatter keys `number:`, `title:`, `labels:` (comma-separated), `state:` (open|closed), and `updated:`.
+Closed issues keep their files with `state: closed` - archive, never delete.
+`scripts/tracker.sh` reads and writes these files; `scripts/gen-mirrors.sh .` renders ISSUES.md/BACKLOG.md from them.
+Issues are updated by editing `docs/issues/NNN-<slug>.md` directly; the safe-to-edit frontmatter keys are `title:`, `labels:` (comma-separated), and `state:` (open|closed) - keep each on its own single line, and do not renumber.
+Progress notes are appended to the body.
+Local-mode limitations, disclosed:
+- A local repo is invisible to cross-repo idea search - `gh search issues` needs a remote.
+- wayfinder requires `tracker: github`; its map is issue-shaped end to end, with no local variant.
+- Numbering is safe only for a single linear writer: two branches or contributors can both mint the same number in differently-slugged files that git merges cleanly; shared or branched work should use `tracker: github`.
+Migration to GitHub - distinct from graduation - recreates every local issue as a GitHub issue via `scripts/migrate-tracker.sh`.
+Migration renumbers issues (GitHub assigns its own numbers); any existing `#N` reference in commits, other issues, or ROADMAP must be updated afterward - the migration prints the old->new mapping.
 
 ## Archive and graduation rules
 
