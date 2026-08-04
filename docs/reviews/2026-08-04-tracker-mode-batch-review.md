@@ -30,3 +30,15 @@ BATCH and DEFAULT entries are the review obligation; ASK and STOP entries (if an
 - Decision: auto-took the default (no dashboard/dry-run/watch-points selection; launch immediately). The dry-run's substance still ran: pre-flight checklist executed for real, `ringer.py lint` on each manifest before its wave.
 - Rationale: the Step 7 ask is a DEFAULT gate; autonomy takes the declared default and logs. Watch points remain in the plan's Section 9 for live tailing.
 - Reversal path: n/a - informational gate; the same details are in `_loop.md` Sections 2, 3, and 9.
+
+### 5. [BATCH] Wave-1 gate: accepted Task 8's out-of-ownership gate-registry refresh
+
+- Decision: Task 8 attempt 1 failed its check because `tests/gates/check.sh` was pre-existing red - `docs/gate-registry.md` went stale at commit `57df13d` (rubix -> Rubix rename, generator never re-run). Attempt 2 regenerated the registry (outside its 3-file ownership) to satisfy the gate. Accepted the fix, re-verified by running `scripts/gen-gate-registry.sh .` on the integration branch (working tree matched generator output), and landed it as its own commit `2a9f89b`, separate from the Task 8 prose commit `182754a`.
+- Rationale: the standing engineering rule is that pre-existing test failures get fixed when found; the file is auto-generated, so regeneration via its script is the only legitimate edit; splitting the commit keeps attribution honest (the staleness predates this run).
+- Reversal path: `git revert 2a9f89b` (restores the stale registry; check.sh returns to red).
+
+### 6. [record] Wave-1 gate: Task 1 ambiguity resolved conservatively by the worker
+
+- Decision: the source plan told Task 1 to place the tracker prose "immediately after the autonomy-default: prose paragraph" in the template, but only `config/repo-state.md` carries that paragraph (pre-existing template/config drift). The worker placed the paragraph in the analogous structural slot near line 20 and did NOT add the missing autonomy-default paragraph (out of scope). Accepted at the gate; `tests/repo-state/config.sh` passes.
+- Rationale: the conservative reading preserved existing drift rather than widening scope; the acceptance test constrains position by content, not line number.
+- Reversal path: n/a - accepted as-is; the template/config autonomy-default drift is pre-existing and untouched.
