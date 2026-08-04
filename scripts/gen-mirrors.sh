@@ -20,9 +20,7 @@ if [ -n "${MIRRORS_JSON_FILE:-}" ]; then
   [ -f "$MIRRORS_JSON_FILE" ] || fail "MIRRORS_JSON_FILE not found: $MIRRORS_JSON_FILE"
   JSON_SRC="$(cat "$MIRRORS_JSON_FILE")"
 else
-  command -v gh >/dev/null 2>&1 || fail "gh CLI not found (set MIRRORS_JSON_FILE to use a local fixture)"
-  JSON_SRC="$(gh issue list --state open --json number,title,labels,updatedAt --limit 500)" \
-    || fail "gh issue list failed"
+  JSON_SRC="$(scripts/tracker.sh list)" || fail "tracker.sh list failed"
 fi
 
 # 2. Parse JSON into TSV rows: lane(0=issues,1=backlog) \t number \t title \t labels \t updated.
@@ -83,12 +81,16 @@ printf '%s' "$JSON_SRC" | awk '
 ' | sort -t"$TAB" -k2,2nr > "$rows_file" || fail "issue parse/sort failed"
 
 # 3. Write each mirror: disclosed HTML-comment header, H1, then the table.
+SRC_LABEL="GitHub issues"
+if [ "$(scripts/tracker.sh mode get 2>/dev/null || true)" = "local" ]; then
+  SRC_LABEL="docs/issues/ local tracker"
+fi
 write_mirror() {
   local file="$1" h1="$2" want="$3"
   {
     echo "<!--"
     echo "generated: $GEN_TIME"
-    echo "source of truth: GitHub issues"
+    echo "source of truth: $SRC_LABEL"
     echo "regenerate: scripts/gen-mirrors.sh $OUT_DIR"
     echo "DO NOT EDIT"
     echo "-->"
