@@ -71,12 +71,11 @@ while IFS=$'\t' read -r prose restart; do
   body="$(printf '%s\n---\nSource brief: %s\nGraduated: %s\nRestart context: %s' \
     "$prose" "$BRIEF" "$TODAY" "$restart")"
   if [ "$DRY" = "1" ]; then
-    printf "gh issue create --label idea --title '%s' --body:\n" "$title"
+    printf "scripts/tracker.sh create --label idea --title '%s' --body:\n" "$title"
     printf '%s\n\n' "$body"
   else
-    url="$(gh issue create --label idea --title "$title" --body "$body")" \
-      || fail "gh issue create failed for: $title"
-    num="${url##*/}"
-    printf 'Graduated idea #%s: %s\n  %s\n' "$num" "$title" "$url"
+    num="$(scripts/tracker.sh create --label idea --title "$title" --body "$body")" \
+      || fail "tracker.sh create failed for: $title"
+    printf 'Graduated idea #%s: %s\n' "$num" "$title"
   fi
 done <<< "$items"

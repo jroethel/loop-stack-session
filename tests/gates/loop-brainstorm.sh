@@ -39,8 +39,8 @@ cat > "$TMPB/brief.md" <<'EOF'
 ## Out of scope
 EOF
 out="$( cd "$TMPB" && GRADUATE_DRY_RUN=1 bash "$G" brief.md )" || fail "graduate-parking dry-run failed"
-n="$(printf '%s\n' "$out" | grep -c 'gh issue create')"
-[ "$n" -eq 2 ] || fail "expected 2 gh issue create calls, got $n"
+n="$(printf '%s\n' "$out" | grep -c 'tracker.sh create')"
+[ "$n" -eq 2 ] || fail "expected 2 tracker.sh create calls, got $n"
 printf '%s\n' "$out" | grep -q -- '--label idea' || fail "graduation does not label issues idea"
 printf '%s\n' "$out" | grep -q 'Source brief:' || fail "body missing the Source brief template field"
 printf '%s\n' "$out" | grep -q 'Restart context:' || fail "body missing the Restart context template field"
