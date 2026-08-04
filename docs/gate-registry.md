@@ -1,4 +1,4 @@
-<!-- generated: 2026-08-03T15:04:37Z -->
+<!-- generated: 2026-08-04T13:44:44Z -->
 <!-- regenerate: scripts/gen-gate-registry.sh . -->
 <!-- DO NOT EDIT -->
 <!-- This registry reflects tagged gates only and is not a completeness guarantee. -->
@@ -24,7 +24,7 @@
 | loop-brainstorm | DEFAULT | ## Step 8 - User review gate |
 | loop-brainstorm | DEFAULT | ## Step 9 - Terminal state (pinned) |
 | loop-drive | DEFAULT | When the user approves execution (including the single-artifact exits fr... |
-| loop-plan | DEFAULT | ## Step 6 - The rubix review (optional) |
+| loop-plan | DEFAULT | ## Step 6 - The Rubix review (optional) |
 | loop-plan | DEFAULT | ## Step 7 - User review gate |
 | loop-plan | DEFAULT | ## Step 8 - Hand off (pinned) |
 | loop-which | DEFAULT | ### 5. Give the verdict |
