@@ -7,8 +7,8 @@ Ideas not yet scheduled live on the backlog - see the `BACKLOG.md` mirror (regen
 
 ## 1. Steady state
 
-The build wave shipped 2026-08-03 (10/10 tasks, artifacts in `docs/archive/` and `docs/reviews/`); no shaped stream is active.
-Next shaped work gets pulled from the backlog by explicit choice - leading candidate per the last handoff: idea #8 (loop-setup tracker mode), shaped via /loop-brainstorm.
+The build wave shipped 2026-08-03 and tracker mode (idea #8) shipped 2026-08-04; no shaped stream is active.
+Next shaped work gets pulled from the backlog by explicit choice - candidates in `BACKLOG.md`.
 
 - Migrate sprawl repos (pokemine, vaultwise, substack-scraper) to the repo-state convention as each is next touched (idea #1).
 - Revisit parked backlog ideas as they come due: see `BACKLOG.md`.
