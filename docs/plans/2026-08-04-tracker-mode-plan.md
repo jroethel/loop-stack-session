@@ -943,7 +943,7 @@ Depends on: Task 2, Task 3, Task 4, Task 5
 
     ## Out of scope
     EOS
-    scripts/graduate-parking.sh brief.md || fail "graduate-parking.sh failed in local mode"
+    "$REPO/scripts/graduate-parking.sh" brief.md || fail "graduate-parking.sh failed in local mode"
     grep -Rql 'revisit the enrichment idea later' docs/issues/ \
       || fail "graduated parking item did not land as a local issue file"
 
