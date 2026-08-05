@@ -39,12 +39,9 @@ Resolve the spec source in this fixed order, stopping at the first hit.
 4. Issue references in the commit messages (`#123`, `Closes #45`).
    Fetch the referenced issue with the `gh` CLI (`gh issue view <n>`) if `gh` is available and authenticated.
    If it is not, record the reference text as the spec pointer and note it was not fetched.
-5. If nothing matched, default to rung 7 immediately in this same response - do not stop and wait on a question first.
-   Never let the current report sit half-finished on a pending reply: a question posed in prose inside a one-shot response has no way to get an answer back inside that same response, so treat "nothing matched" as unresolved for this run and move straight to producing the full report.
-   If plans or briefs exist but none matched the branch, name the most recent by `YYYY-MM-DD` filename date as a labeled suggestion inside that same rung 7 warning, but still do not auto-resolve to it - the Spec axis stays skipped for this run.
-6. The one exception: if the user's own invocation already told you there is no spec (they said so before or while asking for the review), the disclosure reports "no spec available (confirmed: none exists)" instead of the rung 7 wording, and the Spec axis is skipped; the Standards axis still runs.
-7. Default wording when nothing matched and rung 6 does not apply: the disclosure reports "no spec available (not found automatically - none passed and nothing matched under docs/plans or docs/briefs; pass an explicit path if one exists)" as a warning, and the Standards axis still runs in this same response.
-   A user who wants to correct this re-invokes with an explicit path, or confirms there is none, which is rung 6.
+5. If nothing matched, there is no spec for this run: skip the Spec axis, still run the Standards axis, and produce the full report in this same response - never park it on a question, since a one-shot response cannot receive an answer back.
+   The disclosure reports the no-spec state plainly: as confirmed when the user's own invocation already said no spec exists, otherwise as a warning that says how discovery failed and how to fix it (pass an explicit path, or confirm none exists).
+   If plans or briefs exist but none matched the branch, name the most recent by `YYYY-MM-DD` filename date as a labeled suggestion inside that warning, but do not auto-resolve to it.
 
 There is no dependency on `docs/agents/` or any setup file.
 When rung 2 or 3 resolves the spec source, name it using the exact phrase "matched by branch name" in the disclosure (see step 4).
@@ -80,7 +77,7 @@ Reproduce this baseline verbatim - the Standards subagent has no other access to
 
 Before the two axis sections, the report opens with a short disclosure block that names, in plain text:
 
-- The resolved spec source and which discovery rung produced it, using the exact phrase "matched by branch name" when rung 2 or 3 resolved it (for example: "Spec source: `docs/plans/2026-07-21-loop-review-plan.md` (plan, matched by branch name)"), or one of the two no-spec wordings from step 2 rungs 6 and 7.
+- The resolved spec source and which discovery rung produced it, using the exact phrase "matched by branch name" when rung 2 or 3 resolved it (for example: "Spec source: `docs/plans/2026-07-21-loop-review-plan.md` (plan, matched by branch name)"), or the no-spec disclosure from step 2 rung 5.
 - The standards sources (each documented file found, plus "Fowler 12-smell baseline").
 
 Name only the resolved source.

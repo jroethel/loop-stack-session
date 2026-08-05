@@ -204,62 +204,15 @@ The user picks which findings get incorporated; revise the plan; re-run Step 5.`
 
 ## Step 7 - User review gate`[gate:DEFAULT]`
 
-> "Plan written to `<path>`. Please review it; I'll revise before hand-off. Want me to commit it?"
-
+Tell the user where the plan was written, invite review and revisions before hand-off, and offer the commit; the phrasing is yours.
 Wait for the response.
 Changes requested means edit and re-run the self-review.
 Offer the commit; never commit without the offer being accepted.
 
 ## Step 8 - Hand off (pinned)`[gate:DEFAULT]`
 
-> Plan approved at `<path>`. Routes from here:
-> **/loop-which** for the run-shape verdict (recommended), **/loop-drive** directly if you already
-> know it is a loop, execute it by hand or with any agent, or stop here - the plan stands alone
-> either way.
+Close by naming the approved plan's path and the routes onward: **/loop-which** for the run-shape verdict (recommended), **/loop-drive** directly if it is already known to be a loop, execution by hand or with any agent, or stopping here - the plan stands alone either way.
 
 The user chooses the route; loop-plan never invokes the next skill unprompted and never begins execution.
 The only files it creates are the plan and its revisions.
 
-## Red flags - stop, you are rationalizing
-
-| Thought                                          | Reality                                            |
-|--------------------------------------------------|-----------------------------------------------------|
-| "The brief is thin here, I'll assume"            | Open questions get answered or asked, never        |
-|                                                  | silently guessed                                    |
-| "I'll include the implementation code to be safe"| Test code yes; implementation code pre-decides     |
-|                                                  | the worker's job and bloats the plan               |
-| "These two tasks can share utils.py"             | Shared file means dependent or redrawn, never      |
-|                                                  | parallel                                            |
-| "A worker can eyeball this criterion"            | `[judgment]` routes to a human checkpoint, never   |
-|                                                  | a worker task                                       |
-| "The executor will have that skill installed"    | The plan must survive an executor with none of     |
-|                                                  | them                                                |
-| "The reviewer findings look right, just apply"   | Triage with recorded verdicts, then the user picks |
-
-## Process flow
-
-```dot
-digraph loop_plan {
-    "Ingest brief + codebase" [shape=box];
-    "Resolve open questions" [shape=box];
-    "Decompose: files, tasks,\ndeps, ownership" [shape=box];
-    "Write plan file" [shape=box];
-    "Self-review (fix inline)" [shape=box];
-    "Rubix review?" [shape=diamond];
-    "Dispatch 2 lenses;\ntriage; user picks" [shape=box];
-    "User approves plan?" [shape=diamond];
-    "Offer commit; pinned handoff; STOP" [shape=doublecircle];
-
-    "Ingest brief + codebase" -> "Resolve open questions";
-    "Resolve open questions" -> "Decompose: files, tasks,\ndeps, ownership";
-    "Decompose: files, tasks,\ndeps, ownership" -> "Write plan file";
-    "Write plan file" -> "Self-review (fix inline)";
-    "Self-review (fix inline)" -> "Rubix review?" [label="first pass"];
-    "Rubix review?" -> "Dispatch 2 lenses;\ntriage; user picks" [label="accepted"];
-    "Dispatch 2 lenses;\ntriage; user picks" -> "Self-review (fix inline)" [label="revisions"];
-    "Rubix review?" -> "User approves plan?" [label="declined"];
-    "Self-review (fix inline)" -> "User approves plan?" [label="re-run, offer made once"];
-    "User approves plan?" -> "Write plan file" [label="changes"];
-    "User approves plan?" -> "Offer commit; pinned handoff; STOP" [label="approved"];
-}
-```

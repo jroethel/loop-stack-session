@@ -164,9 +164,9 @@ Present it section by section, scaled to complexity, checking in after each chun
 Then write it to `docs/briefs/YYYY-MM-DD-<topic>-brief.md` (one sentence per line, plain dashes,
 aligned table pipes).
 
-Every section below is REQUIRED.
-For a simple idea a section may be one sentence, or `n/a - <reason>`; it may never be silently
-absent.
+The sections below are the brief's default shape.
+Scale each to the idea - one sentence is fine for a simple one - and use your judgment to drop a
+section that genuinely does not apply, saying in the brief what you dropped and why.
 
 | Section                    | Contents                                                                    |
 |----------------------------|-----------------------------------------------------------------------------|
@@ -214,9 +214,7 @@ Look at the written brief with fresh eyes and fix inline:
 
 ## Step 8 - User review gate`[gate:DEFAULT]`
 
-> "Brief written to `<path>`. Please review it; I'll make any changes before we hand it to
-> planning. Want me to commit it?"
-
+Tell the user where the brief was written, invite review and changes before it goes to planning, and offer the commit; the phrasing is yours.
 Wait for the response.
 Changes requested means edit and re-run the self-review.
 Offer the commit; never commit without the offer being accepted.
@@ -232,56 +230,10 @@ Keep the verbose-announce rule: each created issue is announced with its number 
 
 ## Step 9 - Terminal state (pinned)`[gate:DEFAULT]`
 
-> Brief approved at `<path>`. Next stage: **/loop-plan** for the executor-agnostic implementation
-> plan. Alternative: `frontier-sandwich` for a human-paced run-book.
+Close by naming the approved brief's path and both routes onward: **/loop-plan** for the executor-agnostic implementation plan (the default next stage), or `frontier-sandwich` for a human-paced run-book.
 
 loop-brainstorm never invokes /loop-which or /loop-drive directly; they consume plans, not
 briefs.
 It never invokes an implementation skill.
 The only file it creates is the brief.
 
-## Red flags - stop, you are rationalizing
-
-| Thought                                        | Reality                                            |
-|------------------------------------------------|-----------------------------------------------------|
-| "This is too simple to need a brief"           | Simple ideas hide the costliest assumptions         |
-| "The idea is already clear from the message"   | A detailed message is an inventory dump; run the    |
-|                                                | sweep                                               |
-| "This is infrastructure, there's no artifact"  | That IS the meta-tooling probe firing; ask it       |
-| "I'll keep that new idea in mind"              | Park it in the lot, in writing, now                 |
-| "The architecture is obvious, I'll sketch it"  | One line in Open questions for planning; delete     |
-|                                                | the sketch                                          |
-| "This criterion can't be made checkable"       | Attempt the reformulation first; only then tag      |
-|                                                | `[judgment]`                                        |
-| "The user named the implementation, so use it" | The named action is a hypothesis; test it           |
-
-## Process flow
-
-```dot
-digraph loop_brainstorm {
-    "Explore context" [shape=box];
-    "Three scope probes" [shape=box];
-    "Domain modeling (E)" [shape=box];
-    "Clarifying questions\n(frontier rounds)" [shape=box];
-    "Propose 2-3 approaches" [shape=box];
-    "Present brief sections" [shape=box];
-    "User approves sections?" [shape=diamond];
-    "Write brief file" [shape=box];
-    "Self-review (fix inline)" [shape=box];
-    "User approves brief?" [shape=diamond];
-    "Offer commit; pinned handoff; STOP" [shape=doublecircle];
-
-    "Explore context" -> "Three scope probes";
-    "Three scope probes" -> "Domain modeling (E)";
-    "Domain modeling (E)" -> "Clarifying questions\n(frontier rounds)";
-    "Clarifying questions\n(frontier rounds)" -> "Propose 2-3 approaches";
-    "Propose 2-3 approaches" -> "Present brief sections";
-    "Present brief sections" -> "User approves sections?";
-    "User approves sections?" -> "Present brief sections" [label="no, revise"];
-    "User approves sections?" -> "Write brief file" [label="yes"];
-    "Write brief file" -> "Self-review (fix inline)";
-    "Self-review (fix inline)" -> "User approves brief?";
-    "User approves brief?" -> "Write brief file" [label="changes"];
-    "User approves brief?" -> "Offer commit; pinned handoff; STOP" [label="approved"];
-}
-```

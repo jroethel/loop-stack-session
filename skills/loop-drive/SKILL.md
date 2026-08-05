@@ -74,7 +74,6 @@ The loop is a three-tier structure regardless of transport:
 Model choice is one chain for every unit, regardless of transport (P7: route by evidence, not vibes).
 If the Step 0 probe reported ringer absent, skip tier 1 entirely and route every unit by benchmark prior, else orchestrator pin, among the Agent-tool roster.
 1. Integrity-gated scoreboard posterior: from the ringer repo root recorded by the Step 0 probe, run `./ringer.py models --task-type <type>`; before trusting a posterior, read `<ringer-repo>/docs/MODEL-NOTES.md` and `<ringer-repo>/docs/AMENDMENTS-PENDING.md` for the models under consideration; if the ringer repo is missing, treat the posterior as unverified and fall to the prior tier.
-   Known pending state while ringer #65 is unpatched: the seven excluded stm-nav rows are all glm-5.2 on site-build, docs, code-fix, and code-review - for those task_types treat glm-5.2's raw posterior as depressed by up to seven misattributed fails and defer to its benchmark prior or a pin; once amend lands, read the Amended column instead.
 2. Else benchmark prior: a model with no trusted local evidence routes by its row in `model-benchmarks.md` (the frontier-sandwich skill's `references/model-benchmarks.md` leaf; repo source `config/routing/model-benchmarks.md`).
 3. Else orchestrator pin: design, math- or reasoning-heavy, risk concentration, or taste - pin `engine` and `model` and record the reason.
 A pin outranks the chain at any tier when its trigger holds; the reason is never "seems hard".
@@ -85,7 +84,7 @@ Within a wave, all ringer-transport units pack into one manifest; Agent-tool uni
 
 Roster: Agent-tool workers are sonnet, opus, and haiku; Fable is orchestrator-tier only and never a worker; GLM and codex run only via ringer.
 Quota preference: execution typing leans to the flat-rate `claude-zai` lane when evidence ties or is thin, keeping Anthropic quota for orchestration, review gates, and judgment; this is a tie-break, not a tier.
-Taste flag: units with aesthetic acceptance criteria get flagged in the routing table and offered the per-unit engine ask despite any default (stm-nav lesson, 2026-07-17: the site map rode the default unflagged).
+Taste flag: units with aesthetic acceptance criteria get flagged in the routing table and offered the per-unit engine ask despite any default.
 
 Give every unit a `task_type` from ringer's canonical vocabulary (code-feature, code-fix, code-review, research, persona-review, site-build, image-gen, docs, probe, bakeoff, ...).
 The task_type drives scoreboard routing and must be set even for Agent-tool units so the choice is legible.
@@ -136,12 +135,12 @@ What you MUST carry into the plan are ringer's own footguns:
 - **Ownership list.** Name every file the worker may create or edit, especially in multi-worker runs over one repo.
 - **Embedded how-to-run.** State exactly how to build/test so the worker and the check agree.
 - **Output contract.** State the exact deliverable files (and set `expect_files`).
-- **Check-writing rules (P14: checks are as important as specs).** The check prints WHY it fails (a silent exit 1 starves the retry prompt and the eval log). It verifies substance, not just presence. The FULL check-writing ruleset lives in the ringer skill's "Check-writing rules" section - read it before writing any check; do not work from this summary (it summarizes, ringer governs, and the stm-nav 2026-07-17 false FAILs all came from checks that would have passed this summary but broke ringer's rules: unsatisfiable under the spec's boundary, repo-wide negative greps, invariants missing their exceptions).
+- **Check-writing rules (P14: checks are as important as specs).** The check prints WHY it fails (a silent exit 1 starves the retry prompt and the eval log). It verifies substance, not just presence. The FULL check-writing ruleset lives in the ringer skill's "Check-writing rules" section - read it before writing any check; do not work from this summary (it summarizes, ringer governs; checks that pass this summary can still break ringer's rules - unsatisfiable under the spec's boundary, repo-wide negative greps, invariants missing their exceptions - and produce false FAILs).
 
 **Both transports:** the validator/review stance is adversarial and evidence-first (P2: worker self-reports are worthless).
 Judge the raw evidence (the diff, the executed check output, the artifact), and ignore the implementer's own narrative of what it did.
 Native validators also get: mandatory independent test rerun, criterion-by-criterion walk with evidence, scope-boundary diff audit, read-only, and a `{verdict: pass|fail|spec-problem, criteria: [...], notes}` contract (spec-problem routes spec bugs to the orchestrator instead of a futile fix loop).
-Every validator prompt (both transports) states verdict discipline explicitly: if ANY criterion fails, the overall verdict is fail - without this line, first attempts write pass while their own notes contradict it (stm-nav lesson, 2026-07-17).
+Every validator prompt (both transports) states verdict discipline explicitly: if ANY criterion fails, the overall verdict is fail - without this line, first attempts write pass while their own notes contradict it.
 
 ## Step 5 - Write the wave loop and gates
 
@@ -157,7 +156,7 @@ Agent-tool units: launch them as parallel background Agent calls at the same tim
 **2. Gate (orchestrator).**
 Read all results and verdicts from both transports.
 Ringer: consume the run JSON in `~/.ringer/runs/` and the raw worker logs in `<workdir>/logs/` per ringer's post-run ritual (read every retried/failed log, spot-check at least one passing artifact).
-The run JSON is truth; a detached/background shell's exit status is transport and can report failure for a run that passed (stm-nav lesson).
+The run JSON is truth; a detached/background shell's exit status is transport and can report failure for a run that passed.
 On a FAIL, attribute before relaunching: re-run the check's steps yourself against the tree - if the worker's output was correct and the CHECK was wrong, fix the check, commit the audited work, and annotate the model log (MODEL-NOTES + amendment when available) instead of burning a round.
 Native: skim diffs of Opus-tier units and test files of Sonnet-tier units.
 Merge passing branches (or apply reviewed patches) into the integration branch; run the full suite there.
