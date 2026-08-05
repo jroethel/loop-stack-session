@@ -50,7 +50,7 @@ Create a task for each item and complete them in order:
 
 1. **Explore context** - files, docs, recent commits; never ask what context already answers
 2. **Run the three scope probes, then the domain-modeling probe (E)** - before any detailed questions
-3. **Ask clarifying questions** - one per message, multiple choice preferred
+3. **Ask clarifying questions** - in frontier rounds, multiple choice preferred
 4. **Propose 2-3 approaches** - trade-offs and your recommendation
 5. **Present the brief section by section** - approval per chunk
 6. **Write the brief file** - `docs/briefs/YYYY-MM-DD-<topic>-brief.md` in the target project
@@ -92,9 +92,27 @@ Every term this probe sharpens or flags feeds the brief's Known vs guessed secti
 - **Scenario stress-test (optional).** Offer this probe only when domain terms are load-bearing - that is, when a success criterion or a seam depends on what a term means.
   Walk two or three edge scenarios that stretch the definitions and record where the glossary bends; those bends become Open questions for planning, not silent assumptions.
 
-## Step 3 - Clarifying questions`[gate:ASK]`
+## Step 3 - Clarifying questions in rounds`[gate:ASK]`
 
-One question per message, multiple choice preferred, in this order of importance:
+Map the open decisions as a design tree: every decision branches into the decisions that hang
+off it.
+Work the tree in rounds.
+The **frontier** is every question whose prerequisites are already settled - the ones you can
+ask now without guessing at answers you haven't heard yet.
+Ask the whole frontier in one round, numbered, each with your recommended answer, then wait for
+the user's answers before recomputing.
+A question whose answer depends on another question still open in this round belongs to a later
+round, not this one.
+
+Format each question:
+
+```
+❓ **Q1** - **<question title>**: <question body, multiple choice preferred>
+
+➡️ <your recommended answer>
+```
+
+The importance order still shapes the tree:
 
 1. **Outcome.** Restate the request as the outcome needed, not the action named.
    The named implementation ("probably a cron job") is a hypothesis and an invitation to
@@ -104,10 +122,21 @@ One question per message, multiple choice preferred, in this order of importance
 3. **Success criteria.** Push each criterion toward something a script could check.
 4. **Seams.** Where does the idea split into independently checkable pieces?
 
+Outcome is usually the root: round 1 is often that question alone (plus any scope-probe question
+still open), and done/criteria/seams batch into round 2 once it settles.
+
+Finding facts is your job, never the user's.
+When a frontier question needs a fact from the environment (filesystem, docs, tools), dispatch a
+sub-agent to find it instead of asking.
+Don't block on it: a running exploration is an unsettled prerequisite, so only the questions
+downstream of it wait - ask the rest of the frontier now.
+The decisions are the user's; put each to them and wait.
+
+The frontier stays capped at brief-shaped questions.
 Questions you do NOT ask here: architecture, components, schedulers, data flow, file formats,
 library choices.
-If one surfaces anyway, it becomes a one-line entry under the brief's Open questions for
-planning, not a discussion.
+If one surfaces on the frontier anyway, it becomes a one-line entry under the brief's Open
+questions for planning, never a round entry.
 
 **Reading the user** (distilled from the user's manuals; update when they change):
 
@@ -233,7 +262,7 @@ digraph loop_brainstorm {
     "Explore context" [shape=box];
     "Three scope probes" [shape=box];
     "Domain modeling (E)" [shape=box];
-    "Clarifying questions\n(one at a time)" [shape=box];
+    "Clarifying questions\n(frontier rounds)" [shape=box];
     "Propose 2-3 approaches" [shape=box];
     "Present brief sections" [shape=box];
     "User approves sections?" [shape=diamond];
@@ -244,8 +273,8 @@ digraph loop_brainstorm {
 
     "Explore context" -> "Three scope probes";
     "Three scope probes" -> "Domain modeling (E)";
-    "Domain modeling (E)" -> "Clarifying questions\n(one at a time)";
-    "Clarifying questions\n(one at a time)" -> "Propose 2-3 approaches";
+    "Domain modeling (E)" -> "Clarifying questions\n(frontier rounds)";
+    "Clarifying questions\n(frontier rounds)" -> "Propose 2-3 approaches";
     "Propose 2-3 approaches" -> "Present brief sections";
     "Present brief sections" -> "User approves sections?";
     "User approves sections?" -> "Present brief sections" [label="no, revise"];

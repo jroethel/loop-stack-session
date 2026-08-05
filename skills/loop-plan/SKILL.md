@@ -49,7 +49,18 @@ Explore the codebase the plan will land in; follow its existing patterns rather 
 ## Step 2 - Resolve the open questions`[gate:ASK]`
 
 The brief's "Open questions for planning" section is this skill's first workload.
-Each question gets answered by your codebase exploration, decided in the plan header, or asked of the user (one per message, multiple choice preferred).
+Each question gets answered by your codebase exploration, decided in the plan header, or asked of the user.
+Ask user questions in frontier rounds, not one per message: batch every question whose prerequisites are settled into one numbered round, wait for the answers, then recompute - a question that depends on another still open this round waits for the next round.
+Facts are your job (explore, don't ask); only decisions go to the user.
+
+Format each question:
+
+```
+❓ **Q1** - **<question title>**: <question body, multiple choice preferred>
+
+➡️ <your recommended answer>
+```
+
 None may be silently carried into the plan; an unanswered question in a task is a placeholder.
 
 ## Step 3 - Decompose
