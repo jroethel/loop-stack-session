@@ -53,13 +53,14 @@ Each question gets answered by your codebase exploration, decided in the plan he
 Ask user questions in frontier rounds, not one per message: batch every question whose prerequisites are settled into one numbered round, wait for the answers, then recompute - a question that depends on another still open this round waits for the next round.
 Facts are your job (explore, don't ask); only decisions go to the user.
 
-Format each question:
+Present each round through the AskUserQuestion tool, up to 4 questions per call (chunk a larger
+frontier into consecutive calls, dependency-safe order):
 
-```
-❓ **Q1** - **<question title>**: <question body, multiple choice preferred>
-
-➡️ <your recommended answer>
-```
+- Each question carries 2-4 concrete options, your recommended answer listed first.
+- An open-ended question becomes your 2-3 most plausible candidate answers as options; "Other"
+  covers a verbose answer.
+- If an "Other" response contains a question, concern, or counter rather than an answer, address
+  it in prose and re-ask that single question before recomputing the frontier.
 
 None may be silently carried into the plan; an unanswered question in a task is a placeholder.
 

@@ -50,7 +50,7 @@ Create a task for each item and complete them in order:
 
 1. **Explore context** - files, docs, recent commits; never ask what context already answers
 2. **Run the three scope probes, then the domain-modeling probe (E)** - before any detailed questions
-3. **Ask clarifying questions** - in frontier rounds, multiple choice preferred
+3. **Ask clarifying questions** - in AskUserQuestion frontier rounds
 4. **Propose 2-3 approaches** - trade-offs and your recommendation
 5. **Present the brief section by section** - approval per chunk
 6. **Write the brief file** - `docs/briefs/YYYY-MM-DD-<topic>-brief.md` in the target project
@@ -104,13 +104,14 @@ the user's answers before recomputing.
 A question whose answer depends on another question still open in this round belongs to a later
 round, not this one.
 
-Format each question:
+Present each round through the AskUserQuestion tool, up to 4 questions per call (chunk a larger
+frontier into consecutive calls, dependency-safe order):
 
-```
-❓ **Q1** - **<question title>**: <question body, multiple choice preferred>
-
-➡️ <your recommended answer>
-```
+- Each question carries 2-4 concrete options, your recommended answer listed first.
+- An open-ended question becomes your 2-3 most plausible candidate answers as options; "Other"
+  covers a verbose answer.
+- If an "Other" response contains a question, concern, or counter rather than an answer, address
+  it in prose and re-ask that single question before recomputing the frontier.
 
 The importance order still shapes the tree:
 
