@@ -1,0 +1,64 @@
+# The shared brief pipeline (convergence half)
+
+This reference holds the convergence half shared by loop-brainstorm and loop-improve.
+The calling skill carries its own divergence half - explore, scope probes, and clarifying questions, or audit-and-select - and points here once a single idea or finding is chosen to converge.
+Read it in full and follow it before proceeding - do not summarize it from memory.
+It runs from approaches through the user review gate and the commit offer.
+Graduation and the terminal state are NOT here: those are the calling skill's own final steps.
+
+## Approaches
+
+Propose 2-3 genuinely different approaches with trade-offs, lead with your recommendation, and say why.
+The chosen approach, the alternatives, and the rationale all go in the brief; decisions without recorded rationale get relitigated.
+
+## The brief
+
+Present it section by section, scaled to complexity, checking in after each chunk.
+Then write it to `docs/briefs/YYYY-MM-DD-<topic>-brief.md` (one sentence per line, plain dashes, aligned table pipes).
+
+The sections below are the brief's default shape.
+Scale each to the idea - one sentence is fine for a simple one - and use your judgment to drop a section that genuinely does not apply, saying in the brief what you dropped and why.
+
+| Section                    | Contents                                                                    |
+|----------------------------|-----------------------------------------------------------------------------|
+| Outcome                    | The need restated as outcome, not the action named; presupposition verdict  |
+| End artifact               | The concrete thing this unblocks; for infra, the first real deliverable     |
+| Done looks like            | What the user can do when finished, including the exact run/usage commands  |
+| Assets and options         | Every asset mentioned, mapped to its implied option, chosen or declined     |
+| Approach                   | The chosen one, the 2-3 considered, and the rationale at decision time      |
+| Success criteria           | Each tagged `[executed-check]` or `[judgment]` (see tagging rule below)     |
+| Seams                      | Independently checkable pieces in blast-radius order, or "atomic" stated    |
+| Known vs guessed           | Three bins: verified / believed-unchecked / guessed, with what breaks if a  |
+|                            | guess is wrong                                                              |
+| Parking lot                | Every parked thread, verbatim enough to restart later                       |
+| Out of scope               | What this deliberately is not                                               |
+| Open questions for planning| Implementation questions that surfaced, one line each, unanswered           |
+
+**Checkability tagging rule.**
+Tag a criterion `[executed-check]` only if you can name the command shape that would verify it (exit 0, a rendered file, a fetched citation).
+For a `[judgment]` criterion, attempt one reformulation toward checkable - "feels fast" becomes "the digest renders in under 2 seconds on the sample vault" - and keep the judgment tag only if the reformulation genuinely loses the intent.
+Downstream, /loop-plan routes every `[judgment]` tag to a human checkpoint (never a worker task), and /loop-which question 4 and /loop-drive's step 1 halt condition consume the tags directly (P6: work enters a swarm only when checking is cheaper than producing).
+
+**What the brief is not.**
+The brief contains no components, no data flow, no schedulers, no file formats, no library names, no phased build roadmap.
+If any of those appears in your draft, move it to Open questions for planning as a single line and delete the prose.
+The test: every sentence in the brief should survive the implementation being swapped out entirely.
+
+## Self-review
+
+Look at the written brief with fresh eyes and fix inline:
+
+1. **Placeholder scan** - any TBD, vague requirement, or empty REQUIRED section.
+2. **Internal consistency** - do sections contradict each other?
+3. **Architecture scan** - run the "survives an implementation swap" test on every sentence.
+4. **Ambiguity check** - could any criterion be read two ways? Pick one, make it explicit.
+5. **Tag audit** - is every success criterion tagged, and every `[judgment]` tag the survivor of an attempted reformulation?
+
+## User review gate and commit offer
+
+Tell the user where the brief was written, invite review and changes before it goes to planning, and offer the commit; the phrasing is yours.
+Wait for the response.
+Changes requested means edit and re-run the self-review.
+Offer the commit; never commit without the offer being accepted.
+
+Graduation and the terminal state are the calling skill's own steps - return to the calling SKILL.md after the commit offer resolves.
