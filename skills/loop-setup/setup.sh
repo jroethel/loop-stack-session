@@ -24,7 +24,14 @@ GEN="$REPO/scripts/gen-mirrors.sh"
 [ -x "$GEN" ] || fail "gen-mirrors.sh not found or not executable: $GEN"
 
 DRY_REMOTE=0
-[ "${1:-}" = "--dry-run-remote" ] && DRY_REMOTE=1
+SCAN_ROOTS=()
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --dry-run-remote) DRY_REMOTE=1; shift ;;
+    --scan) [ $# -ge 2 ] || fail "--scan requires a directory argument"; SCAN_ROOTS+=("$2"); shift 2 ;;
+    *) fail "unknown argument: $1" ;;
+  esac
+done
 
 # Detect a GitHub remote in the target repo (the cwd we were called from).
 # Advisory only: it phrases the suggestion, never picks the mode.
@@ -123,6 +130,51 @@ reconcile_config() {   # offer a re-render when the config's template-version di
   fi
 }
 
+is_excluded() {   # $1 = path; true for the live tracker home, loop-stack's own dirs, and the ALL-CAPS mirrors
+  case "$1" in
+    docs/issues/*|docs/handoffs/*|docs/reviews/*|docs/briefs/*|docs/archive/*) return 0 ;;
+  esac
+  case "$(basename "$1")" in ROADMAP.md|ISSUES.md|BACKLOG.md) return 0 ;; esac
+  return 1
+}
+is_candidate() { # $1 = path; keyword filename OR issue-shaped content
+  local base; base="$(basename "$1")"
+  # keyword match anchored to whole filename tokens so "fixture"/"explanation" do not match "fix"/"plan"
+  printf '%s' "$base" | grep -qiE '(^|[^a-z])(issues|next|backlog|plan|fix|todo)([^a-z]|$)' && return 0
+  if grep -qE '^# ' "$1" && grep -qiE '^(Label|Filed|Status):' "$1"; then return 0; fi
+  grep -qiE '^(number|title|state):' "$1" && return 0
+  return 1
+}
+reconcile_import() {   # local mode only: scan standard + --scan roots, offer each candidate for import
+  local roots=() r f label title body
+  for r in docs .planning .ralph; do [ -d "$r" ] && roots+=("$r"); done
+  for r in .scratch/*/issues; do [ -d "$r" ] && roots+=("$r"); done
+  for r in ${SCAN_ROOTS[@]+"${SCAN_ROOTS[@]}"}; do [ -d "$r" ] && roots+=("$r"); done
+  [ "${#roots[@]}" -gt 0 ] || return 0
+  while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    is_excluded "$f" && continue
+    is_candidate "$f" || continue
+    if head -1 "$f" | grep -qE '^---$'; then
+      # frontmatter-shaped file: read title/labels from frontmatter, strip the first frontmatter block from the body
+      title="$(grep -E '^title:'  "$f" | head -1 | sed -E 's/^title:[[:space:]]*//; s/[[:space:]]*$//')"
+      label="$(grep -E '^labels:' "$f" | head -1 | sed -E 's/^labels:[[:space:]]*//; s/[[:space:]]*$//')"
+      body="$(awk 'f{print} /^---$/{c++; if(c==2){f=1}}' "$f")"
+    else
+      # prose file: title from the # H1, label from the Label: line
+      label="$(grep -iE '^Label:' "$f" | head -1 | sed -E 's/^[Ll]abel:[[:space:]]*//; s/[[:space:]]*$//')"
+      title="$(grep -E '^# ' "$f" | head -1 | sed -E 's/^#[[:space:]]+//')"
+      body="$(cat "$f")"
+    fi
+    [ -n "$title" ] || title="$(basename "$f" .md)"
+    echo "import candidate: $f (title: $title, label: ${label:-none})"
+    if ask "import $f as a tracker issue?"; then
+      scripts/tracker.sh create --label "$label" --title "$title" --body "$body" >/dev/null \
+        && echo "imported $f"
+    fi
+  done < <(find "${roots[@]}" -type f -name '*.md' | sort)
+}
+
 existing_mode="$(scripts/tracker.sh mode get 2>/dev/null || true)"
 if [ -n "$existing_mode" ]; then
   echo "tracker mode: $existing_mode (declared); not re-asking"
@@ -160,4 +212,5 @@ else
   mkdir -p docs/issues
   scripts/gen-mirrors.sh . || fail "gen-mirrors.sh failed"   # local source, zero gh
 fi
+[ "$MODE" = local ] && reconcile_import
 echo "loop-setup complete"
