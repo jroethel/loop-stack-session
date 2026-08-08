@@ -22,6 +22,8 @@ TPL="$REPO/config/repo-state.template.md"
 GEN="$REPO/scripts/gen-mirrors.sh"
 [ -f "$TPL" ] || fail "template not found: $TPL"
 [ -x "$GEN" ] || fail "gen-mirrors.sh not found or not executable: $GEN"
+TIDY="$REPO/scripts/tidy.sh"
+[ -x "$TIDY" ] || fail "tidy.sh not found or not executable: $TIDY"
 
 DRY_REMOTE=0
 SCAN_ROOTS=()
@@ -213,4 +215,5 @@ else
   scripts/gen-mirrors.sh . || fail "gen-mirrors.sh failed"   # local source, zero gh
 fi
 [ "$MODE" = local ] && reconcile_import
+"$TIDY"
 echo "loop-setup complete"
