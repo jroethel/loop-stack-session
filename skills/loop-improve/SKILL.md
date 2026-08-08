@@ -1,17 +1,18 @@
 ---
 name: loop-improve
 description: >
-  Audit this repo for improvements and converge the one worth doing into a single approved brief.
+  Audit this repo for improvements and converge the ones worth doing into a single approved brief.
   Surveys the codebase as a senior advisor, scans the Issues and Backlog lanes for overlap, and
-  presents a vetted findings table; the user selects one finding and it converges to ONE brief for
-  /loop-plan. Read-only on source code - it never fixes, refactors, or scaffolds. Triggers on
-  "audit this repo for improvements", "what should I improve", "improvement brief", and loop-improve.
+  presents a vetted findings table; the user selects the findings worth briefing (default: the top
+  3-5 by leverage) and they converge into ONE brief for /loop-plan. Read-only on source code -
+  it never fixes, refactors, or scaffolds. Triggers on "audit this repo for improvements",
+  "what should I improve", "improvement brief", and loop-improve.
 ---
 
 # loop-improve: audit to one approved brief
 
 You are a senior advisor, not an implementer.
-You survey the repo for improvement opportunities, match them against what is already tracked, and converge the single finding the user picks into a brief for /loop-plan.
+You survey the repo for improvement opportunities, match them against what is already tracked, and converge the findings the user picks into one brief for /loop-plan.
 How to build it is deliberately absent; that belongs to /loop-plan.
 
 The pipeline position:
@@ -63,7 +64,8 @@ A finding with no matching open issue gets `-` in the Tracker column.
 ## Step 4 - Present findings and select`[gate:ASK]`
 
 Present the findings table, ordered by leverage (impact / effort, discounted by confidence and fix-risk).
-Then the user selects exactly one finding to converge, via AskUserQuestion.
+Then the user selects which findings to converge, via AskUserQuestion with multiSelect: the default suggestion is the top 3-5 by leverage plus anything they flag, and a single finding is a fine selection when only one is worth doing.
+All selected findings converge into the ONE brief - selection sets the brief's scope, never its file count.
 Covered findings (Tracker shows `covered by #N`) stay selectable - converging one may be the cleaner path than the open issue.
 
 ## Step 5 - Converge through the shared brief pipeline`[gate:DEFAULT]`
@@ -72,8 +74,9 @@ Read `~/.claude/skills/loop-brainstorm/references/brief-pipeline.md` in full and
 Follow the shared reference from approaches through the user review gate and the commit offer, then return to Step 6 here.
 The shared reference contains NO graduation and NO terminal state; loop-improve's own Steps 6 and 7 are the sole graduation and terminal.
 
+The selected findings are the brief's seams, in blast-radius order, and each carries its file:line evidence into the brief's success criteria.
 While authoring the brief, write each unselected finding that is NOT covered by an existing open issue into the brief's `## Parking lot` section, one bullet per finding (bullet shape in Step 6).
-Record `Supersedes: #N` in the brief when the selected finding was covered by issue #N.
+Record `Supersedes: #N` in the brief for each selected finding that was covered by issue #N.
 
 ## Step 6 - Leftover graduation and supersede-close`[gate:DEFAULT]`
 
@@ -85,7 +88,7 @@ The bullet's first sentence is the derived issue title and MUST be period-free a
 Keep the title a plain noun phrase; every dotted `file:line` token and the impact one-liner ride the indented `Restart context:` continuation, which reaches the issue body untouched.
 
 Unselected findings that ARE covered by an existing open issue are never graduated; they appear only as a Tracker-column annotation in the findings table.
-For the selected finding when it was covered, offer `scripts/tracker.sh close <num>` (assented, announced); declining leaves the issue open with the `Supersedes: #N` link still recorded in the brief.
+For each selected finding that was covered, offer `scripts/tracker.sh close <num>` for its issue (assented, announced); declining leaves the issue open with the `Supersedes: #N` link still recorded in the brief.
 Closing at brief time rather than merge time is the deliberate, brief-mandated choice: the brief already declares the supersedes, so leaving the issue open would only mislead later readers.
 
 ## Step 7 - Terminal state`[gate:DEFAULT]`
