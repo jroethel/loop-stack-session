@@ -55,6 +55,9 @@ After it, the active session orchestrates the rest of the chain under the rules 
 - DEFAULT auto-takes the default and logs verbosely.
   The default was already declared at the gate; autonomy takes it, logs the decision in full, and moves on.
 
+Scope narrowing is ASK-class by definition: a decision that narrows the requested scope is never a BATCH lean or a DEFAULT take, wherever inside a step it arises.
+Narrowing is sometimes right, but it is never silent and never auto-taken - it surfaces as its own explicit question.
+
 ### Batch-review list format
 
 The batch-review list is the run's gate journal: it is created the moment autonomy takes effect and appended at every gate as it fires, in chronological order, so a run that dies mid-chain still leaves the record of every decision taken so far.

@@ -108,6 +108,9 @@ Present each round through the AskUserQuestion tool, up to 4 questions per call 
 frontier into consecutive calls, dependency-safe order):
 
 - Each question carries 2-4 concrete options, your recommended answer listed first.
+- One decision per question: an option's label and description answer only the question asked;
+  a scope narrowing (or any second decision) never rides inside an option's description - it gets
+  its own question, and under autonomy scope narrowing is ASK-class, never auto-taken.
 - An open-ended question becomes your 2-3 most plausible candidate answers as options; "Other"
   covers a verbose answer.
 - If an "Other" response contains a question, concern, or counter rather than an answer, address
