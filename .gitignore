@@ -1,4 +1,5 @@
 .DS_Store
+.scratch/
 docs/chain-state.md
 skills/frontier-sandwich/references/model-benchmarks.md
 .loop-patches/
