@@ -18,8 +18,8 @@ How to build it is deliberately absent; that belongs to /loop-plan.
 The pipeline position:
 
 ```
-/loop-improve  ->  findings table  ->  ONE brief
-                                      \_ /loop-plan  ->  plan
+/loop-improve ──> findings table ──> ONE brief
+                                     └─ /loop-plan ──> plan
 ```
 
 <HARD-GATE>

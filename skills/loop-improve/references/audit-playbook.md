@@ -2,6 +2,36 @@
 
 > Source: the improve skill by shadcn, MIT, version 1.0.0, vendored 2026-08-08.
 
+<!--
+Vendoring provenance and license.
+Vendored from the locally installed improve skill's references/audit-playbook.md, lightly adapted (plans-directory machinery recast to brief/backlog terms, em dashes to plain dashes).
+The upstream ships no LICENSE file or source URL; its license is declared in its SKILL.md frontmatter: license: MIT, metadata author: shadcn, version: "1.0.0".
+The MIT permission notice is reproduced below with the declared author as the copyright holder (year not stated upstream).
+
+MIT License
+
+Copyright (c) shadcn
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+-->
+
+
 What to look for, per category. Each audit pass gets the relevant section plus the **Finding format** at the bottom.
 Adapt depth to repo size - a 2K-line CLI gets a lighter pass than a 500K-line monorepo.
 
@@ -150,7 +180,7 @@ Every finding, from every category, comes back in this shape:
 
 ## Prioritization rubric
 
-Order findings by **leverage = impact ÷ effort, discounted by confidence and fix-risk**. Tiebreakers:
+Order findings by **leverage = impact / effort, discounted by confidence and fix-risk**. Tiebreakers:
 
 1. Anything that unblocks other findings (verification baseline, characterization tests) floats up.
 2. Security findings with HIGH confidence float above equivalent-leverage non-security findings.
