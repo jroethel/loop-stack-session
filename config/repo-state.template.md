@@ -4,6 +4,8 @@ This file is the single schema source for where each repo-state lane lives and h
 Render it into `config/repo-state.md` by replacing the placeholder below with the repo's remote URL.
 The tracker backend (github or local) is declared in the `tracker:` key below; the Local tracker section governs local mode.
 
+template-version: 1
+
 Remote: {{REMOTE_OR_FALLBACK}}
 
 ## Lanes

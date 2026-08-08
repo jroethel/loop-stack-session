@@ -5,6 +5,14 @@
 # Runs FROM this repo INTO the target repo's cwd. Idempotent; safe to re-run.
 set -uo pipefail
 fail() { echo "FAIL: $1" >&2; exit 1; }
+ask() {   # $1 = prompt; 0 = yes, 1 = no. Env-then-read, mirroring determine_mode.
+  [ "${LOOP_ASSUME_YES:-0}" = 1 ] && return 0
+  [ "${LOOP_ASSUME_NO:-0}"  = 1 ] && return 1
+  local a; printf '%s [y/N]: ' "$1" >&2; read -r a || return 1
+  case "$a" in [yY]*) return 0;; *) return 1;; esac
+}
+version_of() { grep -E '^template-version:' "$1" 2>/dev/null | head -1 \
+  | sed -E 's/^template-version:[[:space:]]*//; s/[[:space:]]*$//'; }
 
 # Resolve physically (-P): the installed skill is a symlink chain (~/.claude/skills ->
 # ~/.agents/skills -> repo), and a logical walk up from the link lands in ~/.claude.
@@ -55,6 +63,10 @@ render_github() {
     index($0, "{{REMOTE_OR_FALLBACK}}") { print "Remote: " url; next }
     /^## Local tracker/ { skip = 1; next }
     /^## / { skip = 0 }
+    index($0, "the Local tracker section governs local mode") {
+      print "The tracker backend (github or local) is declared in the `tracker:` key below."
+      next
+    }
     { if (skip) next; print }
   ' "$TPL"
 }
@@ -86,6 +98,31 @@ ensure_roadmap() {
   [ -f ROADMAP.md ] || printf '# Roadmap\n\n_Living file; edit in place._\n' > ROADMAP.md
 }
 
+reconcile_config() {   # offer a re-render when the config's template-version differs from the template's
+  [ -f config/repo-state.md ] || return 0
+  local tv cv cand remote
+  tv="$(version_of "$TPL")"
+  cv="$(version_of config/repo-state.md)"
+  [ "$cv" = "$tv" ] && return 0                 # already current -> report nothing
+  if [ "$MODE" = github ]; then
+    remote="$(grep -E '^Remote:' config/repo-state.md | head -1 | sed -E 's/^Remote:[[:space:]]*//')"
+    [ -n "$remote" ] || remote="$remote_url"    # fall back to the detected remote when the config has no Remote: line
+    cand="$(render_github "$remote")"
+  else
+    cand="$(render_local)"
+  fi
+  cand="$cand"$'\n'"tracker: $MODE"             # mirror tracker.sh mode set's appended key
+  echo "config/repo-state.md is stale (template-version '${cv:-none}' vs '$tv'); proposed re-render:"
+  diff -u config/repo-state.md <(printf '%s\n' "$cand") || true
+  echo "note: accepting REPLACES the whole file with the render above; any hand edits not shown as kept are lost."
+  if ask "re-render config/repo-state.md to template-version $tv (preserving mode $MODE)?"; then
+    printf '%s\n' "$cand" > config/repo-state.md
+    echo "re-rendered config/repo-state.md (template-version $tv)"
+  else
+    echo "left config/repo-state.md unchanged"
+  fi
+}
+
 existing_mode="$(scripts/tracker.sh mode get 2>/dev/null || true)"
 if [ -n "$existing_mode" ]; then
   echo "tracker mode: $existing_mode (declared); not re-asking"
@@ -104,6 +141,7 @@ else
   fi
   scripts/tracker.sh mode set "$MODE" >/dev/null
 fi
+reconcile_config
 ensure_roadmap
 if [ "$MODE" = github ]; then
   if [ "$DRY_REMOTE" -eq 0 ]; then
