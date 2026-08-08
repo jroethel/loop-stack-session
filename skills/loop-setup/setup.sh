@@ -63,6 +63,29 @@ if [ ! -f scripts/tracker.sh ]; then
   echo "installed scripts/tracker.sh"
 fi
 
+GRAD="$REPO/scripts/graduate-parking.sh"
+[ -x "$GRAD" ] || fail "graduate-parking.sh not found or not executable: $GRAD"
+if [ ! -f scripts/graduate-parking.sh ]; then
+  mkdir -p scripts; cp "$GRAD" scripts/graduate-parking.sh && chmod +x scripts/graduate-parking.sh
+  echo "installed scripts/graduate-parking.sh"
+fi
+
+# Refresh vendored scripts that have drifted from loop-stack's current copies (content compare via
+# cmp -s, no version stamps). Each drifted file is offered on its own; declining leaves it untouched.
+for pair in "gen-mirrors.sh:$GEN" "tracker.sh:$TRK" "graduate-parking.sh:$GRAD"; do
+  name="${pair%%:*}"; src="${pair#*:}"
+  [ -f "scripts/$name" ] || continue
+  cmp -s "scripts/$name" "$src" && continue
+  echo "scripts/$name differs from loop-stack's current copy"
+  diff -u "scripts/$name" "$src" || true
+  echo "note: accepting REPLACES scripts/$name with loop-stack's copy; any local edits shown above are lost."
+  if ask "refresh scripts/$name from loop-stack?"; then
+    cp "$src" "scripts/$name" && chmod +x "scripts/$name" && echo "refreshed scripts/$name"
+  else
+    echo "left scripts/$name unchanged"
+  fi
+done
+
 render_github() {
   # Fill the placeholder with the remote URL and strip the Local tracker section by heading;
   # drop the "Render it into" instruction line. Local-mode disclosures must not survive here.
