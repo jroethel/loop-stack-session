@@ -164,7 +164,7 @@ Read `references/brief-pipeline.md` in full and follow it before proceeding - do
 ## Steps 5-6 - The brief`[gate:DEFAULT]`
 
 Present the brief section by section, scaled to complexity, checking in after each chunk.
-Then write it to `docs/briefs/YYYY-MM-DD-<topic>-brief.md` (one sentence per line, plain dashes, aligned table pipes).
+Then write it to `docs/briefs/YYYY-MM-DD-<topic>-brief.md`, following the user's markdown house style (~/.claude/CLAUDE.md).
 The brief's default section shape, the checkability tagging rule, and the "what the brief is not" test are the shared convergence reference's middle section.
 Read `references/brief-pipeline.md` in full and follow it before proceeding - do not summarize it from memory.
 

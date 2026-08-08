@@ -96,7 +96,7 @@ For a wide refactor, expand-contract is the reference pattern: land the new stru
 
 ## Step 4 - Write the plan file
 
-Save to `docs/plans/YYYY-MM-DD-<topic>-plan.md` (one sentence per line, plain dashes, aligned table pipes).
+Save to `docs/plans/YYYY-MM-DD-<topic>-plan.md`, following the user's markdown house style (~/.claude/CLAUDE.md).
 
 **Header, in order:**
 

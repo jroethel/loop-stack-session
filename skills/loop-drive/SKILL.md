@@ -200,7 +200,7 @@ Write `<source-plan-name>_loop.md` next to the source plan, containing, in order
 8. The implementer/validator prompt templates (native) and/or the manifest task templates (ringer) from Step 4.
 9. A one-paragraph "kicking it off" section: the sentence the human says to start, where the per-wave summaries appear, the watch points from Step 7, and a pointer to the resume prompt.
 
-Follow the user's markdown rules (one sentence per line, no em dashes).
+Follow the user's markdown house style (~/.claude/CLAUDE.md).
 Do not start executing the loop; drafting the plan and executing it are separate approvals unless the user said otherwise.
 When the user does approve execution, go through Step 7 before launching anything.
 
