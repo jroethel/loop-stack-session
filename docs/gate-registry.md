@@ -1,4 +1,4 @@
-<!-- generated: 2026-08-07T21:02:35Z -->
+<!-- generated: 2026-08-08T14:35:34Z -->
 <!-- regenerate: scripts/gen-gate-registry.sh . -->
 <!-- DO NOT EDIT -->
 <!-- This registry reflects tagged gates only and is not a completeness guarantee. -->
@@ -8,6 +8,7 @@
 | skill | type | trigger |
 |---|---|---|
 | loop-brainstorm | ASK | ## Step 3 - Clarifying questions in rounds |
+| loop-improve | ASK | ## Step 4 - Present findings and select |
 | loop-plan | ASK | ## Step 2 - Resolve the open questions |
 | loop-which | ASK | ### 2. Ask what's actually available |
 | loop-drive | STOP | Effort: cap everything at **high**; exceeding high requires an explicit ... |
@@ -24,6 +25,9 @@
 | loop-brainstorm | DEFAULT | ## Step 8 - User review gate |
 | loop-brainstorm | DEFAULT | ## Step 9 - Terminal state (pinned) |
 | loop-drive | DEFAULT | When the user approves execution (including the single-artifact exits fr... |
+| loop-improve | DEFAULT | ## Step 5 - Converge through the shared brief pipeline |
+| loop-improve | DEFAULT | ## Step 6 - Leftover graduation and supersede-close |
+| loop-improve | DEFAULT | ## Step 7 - Terminal state |
 | loop-plan | DEFAULT | ## Step 6 - The Rubix review (optional) |
 | loop-plan | DEFAULT | ## Step 7 - User review gate |
 | loop-plan | DEFAULT | ## Step 8 - Hand off (pinned) |
