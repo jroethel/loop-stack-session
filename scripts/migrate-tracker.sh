@@ -54,11 +54,20 @@ for f in "${files[@]}"; do
   num="$(fm "$f" number)"; title="$(fm "$f" title)"; labels="$(fm "$f" labels)"; state="$(fm "$f" state)"
   body="$(printf '%s\n---\nMigrated from local issue #%s\n' "$(body_of "$f")" "$num")"
   if [ "$DRY" = 1 ]; then
-    printf "gh issue create --title '%s' --label '%s' --body <migrated body of local #%s>\n" "$title" "$labels" "$num"
+    if [ -n "$labels" ]; then
+      printf "gh issue create --title '%s' --label '%s' --body <migrated body of local #%s>\n" "$title" "$labels" "$num"
+    else
+      printf "gh issue create --title '%s' --body <migrated body of local #%s>\n" "$title" "$num"
+    fi
     [ "$state" = closed ] && printf "gh issue close <new #> (local #%s was closed)\n" "$num"
   else
-    url="$(gh issue create --title "$title" --label "$labels" --body "$body")" \
-      || fail "gh issue create failed for local #$num ($title)"
+    if [ -n "$labels" ]; then
+      url="$(gh issue create --title "$title" --label "$labels" --body "$body")" \
+        || fail "gh issue create failed for local #$num ($title)"
+    else
+      url="$(gh issue create --title "$title" --body "$body")" \
+        || fail "gh issue create failed for local #$num ($title)"
+    fi
     new="${url##*/}"
     stamp_migrated "$f" "$url"   # record BEFORE anything else so a re-run after a later failure skips this file
     freeze_state "$f"
