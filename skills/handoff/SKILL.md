@@ -9,7 +9,7 @@ Write a handoff document summarising the current conversation so a fresh agent c
 
 Decide where it lands based on the repo the session is working in.
 If `config/repo-state.md` exists at the repo root, this is a conforming repo: read its Handoffs lane and write the handoff to `docs/handoffs/YYYY-MM-DD-<slug>.md`, then refresh the mirrors in the same pass with `scripts/gen-mirrors.sh .`.
-Otherwise, save to the OS temp directory of the user's OS - not the current workspace.
+Otherwise this is a non-conforming repo: create `docs/handoffs/` inside the project on demand and write the handoff to `docs/handoffs/YYYY-MM-DD-<slug>.md` there, never outside the project.
 
 Include a "suggested skills" section in the document, which suggests skills that the agent should invoke.
 

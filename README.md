@@ -32,7 +32,7 @@ Ringer is muscle, not brain: it fans tasks out to cheap engine lanes and verifie
 | Brainstorm  | `loop-brainstorm` | Turn a raw idea into a loop-ready idea brief: outcome, checkable criteria,     |
 |             |                   | seams, assumptions - no architecture                                            |
 | Audit       | `loop-improve`    | Read-only audit front end: survey the repo and scan Issues and Backlog for     |
-|             |                   | overlap; converge the one finding the user picks into a brief for /loop-plan.  |
+|             |                   | overlap; converge the findings the user selects into a brief for /loop-plan.   |
 | Plan        | `loop-plan`       | Turn a brief into an executor-agnostic task plan: depends-on graph, exclusive  |
 |             |                   | file ownership, executed acceptance checks; optional rubix fresh-eyes review    |
 | Router      | `loop-which`      | One-Minute Test verdict: CHAT, ONE AGENT, AGENT TEAM, or DON'T BOTHER          |
@@ -72,7 +72,7 @@ SDD remains fine for small same-session plans, with cheap models pinned in every
 
 ```
 skills/loop-brainstorm/  Brainstorm skill: idea to loop-ready brief (checkable criteria, seams, parking lot)
-skills/loop-improve/     Audit skill: read-only repo survey, converge one finding into a brief for /loop-plan
+skills/loop-improve/     Audit skill: read-only repo survey, converge selected findings into a brief for /loop-plan
 skills/loop-plan/        Plan skill: brief to executor-agnostic task plan, with the optional rubix review
 skills/loop-which/       Router skill: the One-Minute Test, verdict formats, worked examples
 skills/loop-drive/       Compiler/driver skill: wave derivation, routing, hazards, gates, launch UX

@@ -34,7 +34,7 @@ cmd_get() {
   if [ -f "$CS" ]; then
     local v
     v="$(grep -Ei '^autonomy:' "$CS" | head -1 | sed -E 's/^[Aa]utonomy:[[:space:]]*//; s/[[:space:]]*$//')"
-    [ -n "$v" ] && echo "$v" || echo "pause"
+    [ -n "$v" ] && echo "$v" || repo_default
   else
     repo_default
   fi
