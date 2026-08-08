@@ -20,7 +20,8 @@ Run the knob through the script, or via the `/loop-auto` command:
 - `/loop-auto default set <pause|auto>` - write the committed per-repo default.
 - `/loop-auto default clear` - remove the committed per-repo default.
 
-The script is `scripts/loop-auto.sh {set <pause|auto>|get|status|default <get|set <pause|auto>|clear>|preflight <mode>}`.
+The runnable core is `loop-auto.sh` next to this file; this skill narrates and invokes it: `loop-auto.sh {set <pause|auto>|get|status|default <get|set <pause|auto>|clear>|preflight <mode>}`.
+Invoke it from the target repo's root - it operates on the caller's cwd (writing `docs/chain-state.md`, reading `config/repo-state.md` there), never on the repo the script itself lives in.
 It writes and reads `docs/chain-state.md`, which is the runtime source of truth for the mode (not `_loop.md`, not session memory).
 
 Setting the mode always ends with a one-line confirmation of the new mode.

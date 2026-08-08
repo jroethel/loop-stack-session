@@ -19,7 +19,7 @@ tracker: github
 | Archive       | `docs/archive/`           | Moved work lands here.                         |
 
 The committed per-repo autonomy default is a line-anchored `autonomy-default:` key in this same file (value `pause` or `auto`).
-The runtime value in `docs/chain-state.md` overrides it; `scripts/loop-auto.sh default get|set|clear` reads, writes, and removes it.
+The runtime value in `docs/chain-state.md` overrides it; `skills/loop-auto/loop-auto.sh default get|set|clear` reads, writes, and removes it.
 
 The committed tracker backend is a line-anchored `tracker:` key in this same file (value `github` or `local`).
 Every loop-stack script reads it and obeys it; none infers the backend from `git remote`.

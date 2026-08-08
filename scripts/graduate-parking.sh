@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Graduate parked items from a brief's "## Parking lot" section into backlog issues.
 # Resolves config/repo-state.md (the template source) from the caller's cwd repo, the same
-# convention scripts/loop-auto.sh uses - never from this script's own location.
+# convention skills/loop-auto/loop-auto.sh uses - never from this script's own location.
 set -uo pipefail
 
 fail() { echo "graduate-parking: $1" >&2; exit 1; }

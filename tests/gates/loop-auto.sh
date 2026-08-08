@@ -4,12 +4,12 @@
 set -uo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$HERE/../.." && pwd)"
-LA="$REPO/scripts/loop-auto.sh"
+LA="$REPO/skills/loop-auto/loop-auto.sh"
 SKILL="$REPO/skills/loop-auto/SKILL.md"
 CMD="$REPO/claude-md/fable.md"
 SAMPLE="$REPO/docs/reviews/2026-08-02-sample-batch-review.md"
 fail() { echo "FAIL: $1" >&2; exit 1; }
-[ -x "$LA" ]    || fail "scripts/loop-auto.sh missing or not executable"
+[ -x "$LA" ]    || fail "skills/loop-auto/loop-auto.sh missing or not executable"
 [ -f "$SKILL" ] || fail "skills/loop-auto/SKILL.md missing"
 
 # set/get persistence in an isolated repo with a .gitignored chain-state (mirrors the real repo)

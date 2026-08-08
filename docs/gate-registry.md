@@ -1,4 +1,4 @@
-<!-- generated: 2026-08-04T13:44:44Z -->
+<!-- generated: 2026-08-07T21:02:35Z -->
 <!-- regenerate: scripts/gen-gate-registry.sh . -->
 <!-- DO NOT EDIT -->
 <!-- This registry reflects tagged gates only and is not a completeness guarantee. -->
@@ -7,7 +7,7 @@
 
 | skill | type | trigger |
 |---|---|---|
-| loop-brainstorm | ASK | ## Step 3 - Clarifying questions |
+| loop-brainstorm | ASK | ## Step 3 - Clarifying questions in rounds |
 | loop-plan | ASK | ## Step 2 - Resolve the open questions |
 | loop-which | ASK | ### 2. Ask what's actually available |
 | loop-drive | STOP | Effort: cap everything at **high**; exceeding high requires an explicit ... |
