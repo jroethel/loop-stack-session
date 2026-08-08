@@ -89,4 +89,75 @@ EOS
 grep -q 'already migrated issue' "$GHCALLS" && fail "resume recreated issue #1 which already carried migrated:"
 grep -q 'still pending issue'    "$GHCALLS" || fail "resume did not create the un-migrated issue #2"
 grep -q '^migrated:' "$RB/docs/issues/002-still-pending.md" || fail "resume did not stamp issue #2 after creating it"
-echo "PASS: migrate-tracker dry-run emits one create per local issue with title/labels preserved, closes closed ones; resume skips stamped files"
+
+# --- freeze + removal offer: real run freezes state: to migrated and offers git rm of exactly those files ---
+FB="$(mktemp -d)"; FBIN="$(mktemp -d)"; trap 'rm -rf "$SB" "$RB" "$RBIN" "$FB" "$FBIN"' EXIT
+cat > "$FBIN/gh" <<EOF
+#!/usr/bin/env bash
+case "\$1" in
+  auth)  exit 0 ;;
+  label) exit 0 ;;
+  issue) [ "\$2" = create ] && { echo "https://github.com/x/y/issues/77"; exit 0; }; exit 0 ;;
+esac
+exit 0
+EOF
+chmod +x "$FBIN/gh"
+( cd "$FB" && git init -q )
+mkdir -p "$FB/docs/issues" "$FB/config" "$FB/scripts"
+printf 'tracker: local\n' > "$FB/config/repo-state.md"
+cp "$REPO/scripts/tracker.sh" "$FB/scripts/tracker.sh"; chmod +x "$FB/scripts/tracker.sh"
+cat > "$FB/docs/issues/001-alpha.md" <<'EOS'
+---
+number: 1
+title: alpha issue
+labels: bug
+state: open
+updated: 2026-08-04T00:00:00Z
+---
+alpha body
+EOS
+cat > "$FB/docs/issues/002-beta.md" <<'EOS'
+---
+number: 2
+title: beta issue
+labels: bug
+state: closed
+updated: 2026-08-04T00:00:00Z
+---
+beta body
+EOS
+( cd "$FB" && git add -A && git commit -qm init )
+( cd "$FB" && PATH="$FBIN:$PATH" LOOP_ASSUME_YES=1 bash "$M" ) >/dev/null || fail "freeze migration exited non-zero"
+# freeze: no migrated file carries a live state: line
+grep -REq '^state: (open|closed)$' "$FB/docs/issues/" \
+  && fail "a migrated file still carries a live state: (open|closed) line"
+grep -q '^state: migrated$' "$FB/docs/issues/001-alpha.md" || fail "issue #1 state was not frozen to migrated"
+grep -q '^migrated:' "$FB/docs/issues/001-alpha.md"        || fail "issue #1 lost its migrated: audit line"
+# accepted removal staged git rm of exactly the two migrated ledger files
+staged="$( cd "$FB" && git diff --cached --name-only --diff-filter=D | sort )"
+expected="$(printf 'docs/issues/001-alpha.md\ndocs/issues/002-beta.md\n')"
+[ "$staged" = "$expected" ] || fail "git rm did not stage exactly the migrated files (got: $staged)"
+
+# --- decline removal keeps the ledger files on disk (still frozen) ---
+DB="$(mktemp -d)"; trap 'rm -rf "$SB" "$RB" "$RBIN" "$FB" "$FBIN" "$DB"' EXIT
+( cd "$DB" && git init -q )
+mkdir -p "$DB/docs/issues" "$DB/config" "$DB/scripts"
+printf 'tracker: local\n' > "$DB/config/repo-state.md"
+cp "$REPO/scripts/tracker.sh" "$DB/scripts/tracker.sh"; chmod +x "$DB/scripts/tracker.sh"
+cat > "$DB/docs/issues/001-alpha.md" <<'EOS'
+---
+number: 1
+title: alpha issue
+labels: bug
+state: open
+updated: 2026-08-04T00:00:00Z
+---
+alpha body
+EOS
+( cd "$DB" && git add -A && git commit -qm init )
+( cd "$DB" && PATH="$FBIN:$PATH" LOOP_ASSUME_NO=1 bash "$M" ) >/dev/null || fail "declined-removal migration exited non-zero"
+[ -f "$DB/docs/issues/001-alpha.md" ] || fail "declined removal deleted the ledger file"
+[ -z "$( cd "$DB" && git diff --cached --name-only --diff-filter=D )" ] || fail "declined removal wrongly staged a git rm"
+grep -q '^state: migrated$' "$DB/docs/issues/001-alpha.md" || fail "freeze must happen even when removal is declined"
+
+echo "PASS: migrate-tracker dry-run one-create-per-issue; resume skips stamped files; freeze rewrites state: to migrated; accepted git rm stages exactly the migrated files, declined keeps them"

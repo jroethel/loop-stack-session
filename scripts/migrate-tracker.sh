@@ -3,6 +3,12 @@
 # MIGRATE_DRY_RUN=1 prints the gh commands without executing. Real runs flip tracker: github at the end.
 set -uo pipefail
 fail() { echo "migrate-tracker: $1" >&2; exit 1; }
+ask() {   # $1 = prompt; 0 = yes, 1 = no
+  [ "${LOOP_ASSUME_YES:-0}" = 1 ] && return 0
+  [ "${LOOP_ASSUME_NO:-0}"  = 1 ] && return 1
+  local a; printf '%s [y/N]: ' "$1" >&2; read -r a || return 1
+  case "$a" in [yY]*) return 0;; *) return 1;; esac
+}
 ISSUE_DIR="docs/issues"
 DRY=0; [ "${MIGRATE_DRY_RUN:-0}" = "1" ] && DRY=1
 fm() { grep -E "^$2:" "$1" | head -1 | sed -E "s/^$2:[[:space:]]*//; s/[[:space:]]*$//"; }
@@ -10,6 +16,14 @@ body_of() { awk 'f{print} /^---$/{c++; if(c==2){f=1}}' "$1"; }   # everything af
 stamp_migrated() {   # append a migrated: <url> line inside the FIRST frontmatter block (before its closing ---)
   local f="$1" u="$2" tmp; tmp="$(mktemp)"
   awk -v u="$u" '/^---$/ { d++; if (d==2) print "migrated: " u } { print }' "$f" > "$tmp" && mv "$tmp" "$f"
+}
+freeze_state() {   # rewrite the state: VALUE to the frozen marker inside the FIRST frontmatter block
+  local f="$1" tmp; tmp="$(mktemp)"
+  awk '
+    /^---$/ { d++; print; next }
+    d==1 && /^state:/ { print "state: migrated"; next }
+    { print }
+  ' "$f" > "$tmp" && mv "$tmp" "$f"
 }
 
 if [ "$DRY" = 0 ]; then
@@ -47,10 +61,20 @@ for f in "${files[@]}"; do
       || fail "gh issue create failed for local #$num ($title)"
     new="${url##*/}"
     stamp_migrated "$f" "$url"   # record BEFORE anything else so a re-run after a later failure skips this file
+    freeze_state "$f"
     echo "migrated local #$num -> $url"
     [ "$state" = closed ] && { gh issue close "$new" >/dev/null && echo "  re-closed #$new (was closed locally)"; }
   fi
 done
 if [ "$DRY" = 0 ]; then
   scripts/tracker.sh mode set github >/dev/null; echo "flipped tracker: github"
+fi
+if [ "$DRY" = 0 ] && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  mig=()
+  for f in "${files[@]}"; do grep -q '^migrated:' "$f" && mig+=("$f"); done
+  if [ "${#mig[@]}" -gt 0 ] && ask "git rm the ${#mig[@]} migrated ledger file(s)?"; then
+    # -f: freeze_state modified these files vs HEAD, and plain `git rm` refuses modified files.
+    # --cached: stage the deletion in the index but leave the frozen audit file on disk for review.
+    git rm -qf --cached "${mig[@]}" && echo "staged git rm of ${#mig[@]} migrated ledger file(s)"
+  fi
 fi
