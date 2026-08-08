@@ -40,7 +40,7 @@ Resolve the spec source in this fixed order, stopping at the first hit.
    Fetch the referenced issue with the `gh` CLI (`gh issue view <n>`) if `gh` is available and authenticated.
    If it is not, record the reference text as the spec pointer and note it was not fetched.
 5. If nothing matched, there is no spec for this run: skip the Spec axis, still run the Standards axis, and produce the full report in this same response - never park it on a question, since a one-shot response cannot receive an answer back.
-   The disclosure reports the no-spec state plainly: as confirmed when the user's own invocation already said no spec exists, otherwise as a warning that says how discovery failed and how to fix it (pass an explicit path, or confirm none exists).
+   The disclosure reports the no-spec state plainly, always with the exact phrase "no spec available": as "no spec available (confirmed: none exists)" when the user's own invocation already said no spec exists, otherwise as a "no spec available" warning that says how discovery failed and how to fix it (pass an explicit path, or confirm none exists).
    If plans or briefs exist but none matched the branch, name the most recent by `YYYY-MM-DD` filename date as a labeled suggestion inside that warning, but do not auto-resolve to it.
 
 There is no dependency on `docs/agents/` or any setup file.
