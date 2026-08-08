@@ -139,7 +139,7 @@ case "$sub" in
     mode="$(tracker_mode_get)" || fail "no tracker mode declared in $RS (run loop-setup)"
     if [ "$mode" = github ]; then
       gh_guard
-      gh issue list --state open --json number,title,labels,updatedAt
+      gh issue list --state open --limit 1000 --json number,title,labels,updatedAt
     else
       local_list
     fi
