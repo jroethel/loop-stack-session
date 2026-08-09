@@ -80,9 +80,16 @@ if [ ! -f scripts/graduate-parking.sh ]; then
   echo "installed scripts/graduate-parking.sh"
 fi
 
+MIG="$REPO/scripts/migrate-tracker.sh"
+[ -x "$MIG" ] || fail "migrate-tracker.sh not found or not executable: $MIG"
+if [ ! -f scripts/migrate-tracker.sh ]; then
+  mkdir -p scripts; cp "$MIG" scripts/migrate-tracker.sh && chmod +x scripts/migrate-tracker.sh
+  echo "installed scripts/migrate-tracker.sh"
+fi
+
 # Refresh vendored scripts that have drifted from loop-stack's current copies (content compare via
 # cmp -s, no version stamps). Each drifted file is offered on its own; declining leaves it untouched.
-for pair in "gen-mirrors.sh:$GEN" "tracker.sh:$TRK" "graduate-parking.sh:$GRAD"; do
+for pair in "gen-mirrors.sh:$GEN" "tracker.sh:$TRK" "graduate-parking.sh:$GRAD" "migrate-tracker.sh:$MIG"; do
   name="${pair%%:*}"; src="${pair#*:}"
   [ -f "scripts/$name" ] || continue
   cmp -s "scripts/$name" "$src" && continue
