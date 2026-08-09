@@ -13,8 +13,9 @@ The runnable, idempotent core is `setup.sh` next to this file; this skill narrat
 1. Writes `config/repo-state.md` by rendering `config/repo-state.template.md`.
    The template is the single schema source; never hand-copy a second schema.
 2. Declares the tracker mode - it does NOT infer it from `git remote`.
-   If `config/repo-state.md` already carries a `tracker:` key, setup skips the question entirely (idempotent, never re-asks).
-   Otherwise it reports the remote status, asks the mode once (`github` or `local`), and writes the key via `tracker.sh mode set`.
+   If `config/repo-state.md` already carries a `tracker:` key, setup skips the question entirely (idempotent, never re-asks the mode).
+   When the declared mode disagrees with a github or gitlab remote, setup states the disagreement and offers a declinable switch, silenced by a `tracker-remote-ack:` line in the config.
+   Otherwise it reports the remote status, asks the mode once (`github`, `gitlab`, or `local`), and writes the key via `tracker.sh mode set`.
 3. Creates the docs homes: root `ROADMAP.md`, `docs/handoffs/`, `docs/reviews/`, `docs/archive/`.
 4. With `tracker: github`:
    - Fails fast unless `gh` is authenticated (`gh auth status`; install gh and run `gh auth login`).
@@ -25,8 +26,13 @@ The runnable, idempotent core is `setup.sh` next to this file; this skill narrat
    - Creates `docs/issues/` (one file per issue; zero gh).
    - Generates `ISSUES.md` and `BACKLOG.md` via `scripts/gen-mirrors.sh .` from those local files.
 
-The remote is advisory only: when a GitHub remote is found, setup prints `GitHub remote found: <url> - suggesting tracker: github`.
-When none is found, it prints `No GitHub remote found - choose a tracker mode (no default)` and suggests nothing - it never assumes local.
+The remote is advisory only; it never picks the mode.
+Setup prints exactly one of:
+- `GitHub remote found: <url> - suggesting tracker: github`
+- `GitLab remote found: <url> - suggesting tracker: gitlab`
+- `Remote found: <url> - no backend inferred; choose a tracker mode (no default)`
+- `No remote found - choose a tracker mode (no default)`
+It never assumes local.
 
 ## Run it
 
@@ -36,7 +42,8 @@ From inside the target repo:
 /path/to/this/repo/skills/loop-setup/setup.sh
 ```
 
-Re-running is safe: a declared mode is never re-asked, and existing config, label, and docs homes are skipped.
+Re-running is safe: the mode question is never re-asked, and existing config, label, and docs homes are skipped.
+When the declared mode disagrees with a github or gitlab remote, setup states the disagreement and offers a declinable switch, silenced by a `tracker-remote-ack:` line in the config.
 The `ISSUES.md` / `BACKLOG.md` mirrors regenerate on every run via `scripts/gen-mirrors.sh`.
 
 ## Non-interactive hooks

@@ -63,7 +63,7 @@ LG2="$(mktemp -d)"; trap 'rm -rf "$L" "$G" "$LG1" "$LG2"' EXIT
 ( cd "$LG2" && git init -q )
 mkdir -p "$LG2/config"; printf '# legacy repo-state, no tracker key\n' > "$LG2/config/repo-state.md"
 out2="$( cd "$LG2" && LOOP_TRACKER_ANSWER=local "$SETUP" </dev/null )" || fail "legacy+no-remote setup errored"
-printf '%s\n' "$out2" | grep -q 'No GitHub remote found' || fail "legacy no-remote case did not report absence on stdout"
+printf '%s\n' "$out2" | grep -q 'No remote found' || fail "legacy no-remote case did not report absence on stdout"
 printf '%s\n' "$out2" | grep -q 'suggesting tracker: github' && fail "no-remote case wrongly suggested github"
 grep -q '^tracker: local' "$LG2/config/repo-state.md" || fail "legacy no-remote re-ask did not write the key"
 
