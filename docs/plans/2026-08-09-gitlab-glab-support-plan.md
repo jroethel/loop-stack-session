@@ -45,14 +45,17 @@ An executor does not need to re-derive them, but every one is re-checked by a ta
   A live label named `In: Container App` was observed, so `wayfinder:map` needs no renaming.
 - `config/repo-state.md` in this repo carries no `template-version` line; `/home/jjrdar/claude/forge` carries `template-version: 1`, `tracker: local`, and the false line `Remote: none (local tracker; see the Local tracker section)`.
 - `forge`'s `whats_next.md` sits at the repo root, which the current `reconcile_import` scan roots (`docs`, `.planning`, `.ralph`, `.scratch/*/issues`) do not cover.
-- Ungating the sweep in this repo, **with the repo-root scan Task 4 adds**, surfaces 9 candidates: 7 under `docs/plans/` (including this plan file), plus `PLAN.md` by filename keyword and `fixing-agent-errors.md` by content shape.
-  An earlier count of 6 was measured before the root scan existed and is superseded.
+- Ungating the sweep in this repo **without new exclusions** would surface 9 candidates: 7 under `docs/plans/` (including this plan file) from the existing roots, plus `PLAN.md` by filename keyword and `fixing-agent-errors.md` by content shape from the repo-root scan Task 4 adds.
+  An earlier count of 6 was measured before the root scan existed; the re-derived pre-root-scan figure is 7, and both are superseded.
+  With Task 4's exclusions (`docs/plans/*` and the depth-1 root project names), the steady-state count in this repo is exactly 1: `fixing-agent-errors.md`, offered by content shape, deliberately - it is a repo-specific document, not a conventional project file.
 - `ISSUES.md` and `BACKLOG.md` are gitignored in this repo, but `is_excluded` already drops them by basename, so gitignore-awareness is not load-bearing for them.
 - Both `glab issue list --group university-advancement --label idea` and the subgroup form `--group university-advancement/crm --label idea` exit 0 against the live instance.
   The top-level group form that gets rendered into the config is usable, not merely plausible.
 - `glab issue list` has **no** `--state` flag.
   It exposes only `-A/--all` and `-c/--closed`, and its documented default is open items only.
   The open-only guarantee is therefore an absence of flags, not a flag.
+- Two cleanup commands in Task 7 are **named risks, not verified facts**: `glab api --method DELETE "projects/:id/issues/<iid>"` (including whether the `:id` placeholder substitutes) and `glab issue update <iid> --title` were never exercised during planning.
+  Task 7 Step 2b proves both on one throwaway issue before any smoke issue exists, so a wrong guess strands nothing colleague-visible.
 
 ## Resolved planning decisions
 
@@ -85,7 +88,7 @@ Criterion 8 is read in the scope its parent sentence gives it (brief lines 39-41
 
 ## Review record
 
-This plan was revised twice.
+This plan was revised three times.
 
 **First, a two-lens fresh-context (Rubix) review.**
 Twenty-one findings were applied in full; three were applied only in part, and the reason each was narrowed is recorded in the table below.
@@ -95,17 +98,26 @@ Its verdict: the script seam (`tracker.sh`, mirrors, rendered config) is justifi
 All of it was cut; several Rubix findings (the ledger-format mismatch, the `env -u` stripping, the `DRY_REMOTE`-versus-offer interaction, the decline-then-accept break in `reconcile.sh`) resolved by deletion, and `tests/loop-setup/reconcile.sh` and `tests/repo-state/config.sh` are back to untouched.
 The named upgrade path if decline re-offers prove annoying in practice: a skip file of `path|cksum` lines, roughly ten lines of bash, deliberately not built now.
 
+**Third, a second Rubix review after the bloat cut** (findings recorded in `docs/handoffs/2026-08-09-gitlab-plan-rubix-findings.md`).
+Two fresh-context lenses re-reviewed the post-cut text and produced 23 deduplicated findings; all 23 were applied, two narrowed per the table below.
+The blocking one: the ungated sweep would have offered and archived every `docs/plans/*` file in this repo - a blast radius the prior handoff had measured and blessed as "expected" without ever classifying it.
+Findings 1 through 5 together changed Task 4's sweep design rather than its wording: `docs/plans/*` joined the exclusions (plan and brief archival stays owned by the Archive-and-graduation rules), the archive move gained collision and repo-boundary guards, the root scan no longer rides the empty-roots early return, the unattended remote gate is stated as a literal condition, and `--dry-run-remote` now also gates the sweep's remote creation.
+Because those five were a design change, the revised Task 4 then got its own fresh-context cold read (same blind method, scoped to the revision), which produced ten repairs, all applied in place: `tests/loop-setup/import.sh`'s `MARKER_PLAN` fixture retargeted from imported to excluded (the revision would have failed its own gate on that suite), an observable capture-and-re-emit mechanism for the `$TIDY` offer counter, the empty-array expansion idiom struck as a false substitute for the roots guard, sweep-specific skip strings with their output stream pinned to stdout, a create-failure scenario, a false-direction assertion on the summary line, announce-on-success for the archive move, a corrected `tidy.sh` line cite, and the remote report suppressed on settled no-remote repos.
+
 | Reviewer proposal | Verdict | Reason |
 | --- | --- | --- |
 | Add `--state opened` to the `glab issue list` call | Declined as written, intent adopted | The flag does not exist: `glab issue list` exposes only `-A/--all` and `-c/--closed`, and defaults to open. Task 1 instead asserts the call passes **neither** flag, which is the checkable form of the same guarantee |
 | Pass `-R/--repo` on every `glab issue` call so the guard's host cannot diverge from glab's target | Declined | glab already resolves host and project from the same repo remote, so the two cannot diverge today. Adding `-R` introduces a second, independently-derivable target and a new way for them to disagree. The underlying fork-layout concern is addressed instead by fixing remote classification (Task 3) |
 | Add a `setup.sh --reopen <path>` subcommand to clear one ledger line | Declined, then mooted | Declined at triage as an unearned CLI surface; the bloat review then removed the ledger it would have operated on. Reopening a decision is now `git mv docs/archive/<file> .` - moving the file back is the whole mechanism |
-| Top-level `backlog-group` may be unusable on a university-wide instance | Premise declined, check adopted | `glab issue list --group university-advancement --label idea` exits 0 against the live instance, so the rendered command works. Task 7 still fires the rendered command, because a verified command beats a plausible one |
+| Top-level `backlog-group` may be unusable on a university-wide instance | Premise declined, check adopted | `glab issue list --group university-advancement --label idea` exits 0 against the live instance, so the rendered command works. Task 7 still fires the rendered command, because a verified command beats a plausible one. The second round added a classification to that check: exit 0 alone cannot distinguish a correctly scoped group from a university-wide one, so Task 7 Step 4 also inspects the returned projects and names the by-hand `backlog-group:` override as the action on any foreign row |
+| Swap the mode-switch trigger to "the `Remote:` line is absent or starts with `none`" (round-2 finding 8) | Declined as written, defect adopted | The mode-versus-remote disagreement is what produces criterion 5's observable in forge, and Task 7 Step 2 stops the run if the offer never appears - replacing the trigger would remove the plan's own tripwire. The real defect was the missing acknowledgment path: a declined switch now names a line-anchored `tracker-remote-ack:` key as the recorded off switch, and SKILL.md's absolute "never re-asks" claims are corrected in Task 3 |
+| Trim the new root-exclusion names to the three that exist in this repo (round-2 finding 17) | Declined as written, depth fix adopted | `setup.sh` is vendored into repos where `AGENTS.md`, `CHANGELOG.md`, `LICENSE.md`, and `CONTRIBUTING.md` do exist, so the defensive names stay. What was wrong was the scope: the names now match depth-1 normalized paths only, not basenames at any depth, and the exclusion set is declared in the template where a user can find it |
 
 ## Dependency graph
 
 ```
 Wave 1 (parallel):  Task 1 (tracker.sh)      Task 2 (gen-mirrors.sh)
+                          |________________________|
                           |
 Wave 2:             Task 3 (setup.sh: gitlab mode)
                           |
@@ -119,6 +131,7 @@ Wave 6:             Task 7 (live forge smoke - HUMAN CHECKPOINT)
 ```
 
 Tasks 1 and 2 touch disjoint files and have no path between them, so they are parallel-eligible.
+Task 3 consumes both: Task 1's subcommands, and Task 2's `GitLab issues` disclosure string, which the gitlab finalize greps for in the target repo's vendored `gen-mirrors.sh`.
 Tasks 3, 4, and 5 all modify `skills/loop-setup/setup.sh` and are therefore strictly sequential; that is a deliberate serialization, not a missing edge.
 
 ## Human checkpoints
@@ -632,13 +645,14 @@ echo "PASS: gen-mirrors gitlab disclosure"
 
 ### Task 3: `setup.sh` gitlab mode - remote detection, render, finalize
 
-Depends on: Task 1
+Depends on: Task 1, Task 2 (the finalize's provenance guard greps for Task 2's `GitLab issues` string)
 
 **Files (exclusive ownership):**
 
 - Modify: `skills/loop-setup/setup.sh`
 - Modify: `config/repo-state.template.md`
 - Modify: `tests/loop-setup/acceptance.sh:56,66` (the two remote-report string assertions)
+- Modify: `skills/loop-setup/SKILL.md` (step k only: the remote-report strings and the two "never re-asks" claims; Task 6 owns the full rewrite and asserts these strings)
 - Test: `tests/loop-setup/gitlab-setup.sh` (create)
 
 **Interfaces:**
@@ -657,7 +671,8 @@ Produces, for Tasks 4 through 7:
 - `determine_mode` accepts and validates `github|gitlab|local`; `LOOP_TRACKER_ANSWER=gitlab` supplies it non-interactively.
 - The template carries `template-version: 2`.
 
-**Acceptance check:** `bash tests/loop-setup/gitlab-setup.sh` exits 0 `[executed-check]`
+**Acceptance check:** `bash tests/loop-setup/gitlab-setup.sh && bash tests/run.sh` exits 0 `[executed-check]`
+The full-suite half is load-bearing: this task edits the shared `setup.sh` and `tests/loop-setup/acceptance.sh`, so the new suite alone cannot gate what the task can break.
 
 - [ ] **Step 1: Write the failing test.**
       Create `tests/loop-setup/gitlab-setup.sh` with exactly this content:
@@ -665,12 +680,15 @@ Produces, for Tasks 4 through 7:
 ```bash
 #!/usr/bin/env bash
 # loop-setup in gitlab mode: remote detection and suggestion, config render with the derived
-# backlog group, gitlab finalize (host-scoped auth, idea label), and repair of a false
-# "Remote: none" line inherited from a local-mode config.
+# backlog group, gitlab finalize (host-scoped auth, idea label, gen-mirrors provenance guard),
+# repair of a false "Remote: none" line inherited from a local-mode config, gitlab-only lines
+# dropped from github and local renders, and the tracker-remote-ack off switch for a deliberate
+# mode-versus-remote disagreement.
 set -uo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$HERE/../.." && pwd)"
 SETUP="$REPO/skills/loop-setup/setup.sh"
+FIX="$REPO/tests/repo-state/fixtures/issues.json"
 fail() { echo "FAIL: $1" >&2; exit 1; }
 [ -x "$SETUP" ] || fail "setup.sh missing"
 
@@ -727,7 +745,11 @@ grep -E 'GLAB CALLED: auth status$' "$LOG" && fail "gitlab finalize ran a BARE g
 grep -q 'GLAB CALLED: label create --name idea' "$LOG" \
   || fail "gitlab finalize did not create the idea label"
 
-# ---------- scenario B: an existing local config with a FALSE "Remote: none" line ----------
+# ---------- scenario B: a gitlab-DECLARED config still carrying the local-tracker Remote ----------
+# ---------- placeholder; the re-render must repair the false "Remote: none" line     ----------
+# (The declared-local-plus-GitLab-remote disagreement - forge's actual shape - is scenario E's
+# job, not this one: here existing_mode is already gitlab, so only reconcile_config's new
+# none-prefix fallback is exercised.)
 B="$(mktemp -d)"; trap 'rm -rf "$BIN" "$A" "$B"' EXIT
 ( cd "$B" && git init -q \
     && git remote add origin 'ssh://git@gitlab.code.rit.edu:2222/university-advancement/crm/forge.git' )
@@ -760,8 +782,23 @@ printf '%s\n' "$out" | grep -q 'Remote found: https://git.example.org/team/thing
 printf '%s\n' "$out" | grep -qi 'no remote found' \
   && fail "a repo WITH a remote was reported as having none (the forge bug)"
 
+# the gitlab-only lines are DROPPED from a local render, never substituted into
+grep -q '{{BACKLOG_GROUP}}' "$C/config/repo-state.md" && fail "an unsubstituted placeholder leaked into a local render"
+grep -q '^backlog-group:' "$C/config/repo-state.md"   && fail "a local render kept the gitlab backlog-group key"
+grep -q 'glab issue list' "$C/config/repo-state.md"   && fail "a local render kept the gitlab backlog-view lines"
+
+# ---------- scenario C2: a github render carries the widened sentence and no gitlab lines ----------
+C2="$(mktemp -d)"; trap 'rm -rf "$BIN" "$A" "$B" "$C" "$C2"' EXIT
+( cd "$C2" && git init -q && git remote add origin 'https://github.com/acme/x.git' )
+( cd "$C2" && LOOP_TRACKER_ANSWER=github MIRRORS_JSON_FILE="$FIX" "$SETUP" --dry-run-remote </dev/null >/dev/null 2>&1 ) \
+  || fail "github render run exited non-zero"
+grep -q '(github, gitlab, or local)' "$C2/config/repo-state.md" \
+  || fail "a github render still says (github or local): setup.sh's hardcoded replacement sentence was never widened"
+grep -q '^backlog-group:' "$C2/config/repo-state.md" && fail "a github render kept a bare backlog-group key"
+grep -q 'glab issue list' "$C2/config/repo-state.md" && fail "a github render kept the gitlab backlog-view lines"
+
 # ---------- scenario D: an unknown mode answer is rejected ----------
-D="$(mktemp -d)"; trap 'rm -rf "$BIN" "$A" "$B" "$C" "$D"' EXIT
+D="$(mktemp -d)"; trap 'rm -rf "$BIN" "$A" "$B" "$C" "$C2" "$D"' EXIT
 ( cd "$D" && git init -q )
 ( cd "$D" && LOOP_TRACKER_ANSWER=bitbucket "$SETUP" </dev/null >/dev/null 2>&1 ) \
   && fail "setup accepted an unknown tracker mode"
@@ -769,7 +806,7 @@ D="$(mktemp -d)"; trap 'rm -rf "$BIN" "$A" "$B" "$C" "$D"' EXIT
 # ---------- scenario E: THE FORGE CASE - a declared mode that disagrees with the remote ----------
 # This is the shape of /home/jjrdar/claude/forge: tracker: local declared, GitLab remote present.
 # Before this fix, setup.sh short-circuited at line 203 and none of the above was reachable there.
-E="$(mktemp -d)"; trap 'rm -rf "$BIN" "$A" "$B" "$C" "$D" "$E"' EXIT
+E="$(mktemp -d)"; trap 'rm -rf "$BIN" "$A" "$B" "$C" "$C2" "$D" "$E"' EXIT
 ( cd "$E" && git init -q \
     && git remote add origin 'ssh://git@gitlab.code.rit.edu:2222/university-advancement/crm/forge.git' )
 mkdir -p "$E/config" "$E/scripts"
@@ -786,6 +823,17 @@ printf '%s\n' "$out" | grep -q 'declared tracker: local, but the remote is gitla
 [ "$(grep '^tracker:' "$E/config/repo-state.md")" = "tracker: local" ] \
   || fail "a DECLINED switch changed the tracker mode anyway"
 
+# a declined switch names the off switch, and the ack key silences the offer without silencing
+# the remote report - a deliberate tracker: local behind a remote must be recordable
+printf '%s\n' "$out" | grep -q 'tracker-remote-ack' \
+  || fail "the declined switch did not name the tracker-remote-ack acknowledgment key"
+printf 'tracker-remote-ack: gitlab\n' >> "$E/config/repo-state.md"
+out="$( cd "$E" && LOOP_ASSUME_NO=1 "$SETUP" </dev/null 2>&1 )" || fail "acknowledged run exited non-zero"
+printf '%s\n' "$out" | grep -q 'but the remote is' && fail "an acknowledged disagreement was still nagged"
+printf '%s\n' "$out" | grep -q 'GitLab remote found' \
+  || fail "the ack silenced the remote report too (it must only silence the switch offer)"
+sed -i.bak '/^tracker-remote-ack:/d' "$E/config/repo-state.md" && rm -f "$E/config/repo-state.md.bak"
+
 # accepting the switch flips the mode AND corrects the false Remote line on the same run
 out="$( cd "$E" && LOOP_ASSUME_YES=1 "$SETUP" </dev/null 2>&1 )" || fail "accepted switch exited non-zero"
 [ "$(grep '^tracker:' "$E/config/repo-state.md")" = "tracker: gitlab" ] \
@@ -800,7 +848,7 @@ out="$( cd "$E" && "$SETUP" </dev/null 2>&1 )" || fail "settled forge-shaped re-
 printf '%s\n' "$out" | grep -q 'but the remote is' && fail "an agreeing repo was offered a mode switch"
 
 # ---------- scenario F: a vendored tracker.sh that rejects the mode fails the run loudly ----------
-F="$(mktemp -d)"; trap 'rm -rf "$BIN" "$A" "$B" "$C" "$D" "$E" "$F"' EXIT
+F="$(mktemp -d)"; trap 'rm -rf "$BIN" "$A" "$B" "$C" "$C2" "$D" "$E" "$F"' EXIT
 ( cd "$F" && git init -q && git remote add origin 'ssh://git@gitlab.example.com:2222/grp/repo.git' )
 mkdir -p "$F/scripts"
 # A pre-gitlab tracker.sh: its mode set rejects 'gitlab'. It must report NO declared mode, so the
@@ -813,6 +861,20 @@ out="$( cd "$F" && LOOP_TRACKER_ANSWER=gitlab LOOP_ASSUME_NO=1 "$SETUP" </dev/nu
   && fail "setup exited 0 although the vendored tracker.sh rejected the mode (silent today via >/dev/null)"
 printf '%s\n' "$out" | grep -q 'accept the drift refresh' \
   || fail "the mode-set failure did not name the fix (accept the drift refresh and re-run)"
+
+# ---------- scenario G: the gitlab finalize refuses a gen-mirrors.sh that cannot disclose GitLab ----------
+# A declined gen-mirrors.sh drift refresh must not produce mirrors claiming GitHub as the source
+# of truth on a GitLab repo - the file's entire purpose is disclosure.
+G="$(mktemp -d)"; trap 'rm -rf "$BIN" "$A" "$B" "$C" "$C2" "$D" "$E" "$F" "$G"' EXIT
+( cd "$G" && git init -q && git remote add origin 'ssh://git@gitlab.example.com:2222/grp/repo.git' )
+mkdir -p "$G/scripts"
+printf '#!/usr/bin/env bash\n# legacy: knows only GitHub issues as a remote source\nexit 0\n' \
+  > "$G/scripts/gen-mirrors.sh"
+chmod +x "$G/scripts/gen-mirrors.sh"
+out="$( cd "$G" && LOOP_TRACKER_ANSWER=gitlab LOOP_ASSUME_NO=1 "$SETUP" </dev/null 2>&1 )" \
+  && fail "the gitlab finalize exited 0 with a gen-mirrors.sh that would disclose GitHub"
+printf '%s\n' "$out" | grep -q 'drift refresh' \
+  || fail "the provenance failure did not name the fix (accept the gen-mirrors.sh drift refresh)"
 
 echo "PASS: loop-setup gitlab mode"
 ```
@@ -832,7 +894,11 @@ echo "PASS: loop-setup gitlab mode"
        `Backlog cross-repo view, gitlab: `glab issue list --group {{BACKLOG_GROUP}} --label idea`.`
        `Per-repo fallback, gitlab: `glab issue list --label idea`.`
      - In the Local tracker section, change the wayfinder limitation from `wayfinder requires `tracker: github`` to `wayfinder requires a remote tracker (`github` or `gitlab`); its map is issue-shaped end to end, with no local-tracker variant`.
+     - In the same section's numbering limitation, change the ending `shared or branched work should use `tracker: github`` to `shared or branched work should use a remote tracker (`github` or `gitlab`)` - the second github-only assertion in that block, easy to miss because the wayfinder line sits two lines above it.
      - Add one line to the Local tracker section's migration paragraph naming gitlab as a migration target: `Migration targets either remote backend; `scripts/migrate-tracker.sh --to gitlab` recreates every local issue as a GitLab issue.`
+     - After the Lanes table, add the autonomy-default paragraph verbatim from the shipped `config/repo-state.md` (the two sentences beginning `The committed per-repo autonomy default is a line-anchored \`autonomy-default:\` key`).
+       The shipped config carries it and the template does not, so today's config is a hand-maintained superset a re-render would silently destroy; a v2 render must round-trip it.
+     - After the sentence claiming the file is "the definitive list", add one sentence declaring the import sweep's exclusions, so the set is discoverable where the claim is made: the sweep never offers the root project files `README.md`, `CLAUDE.md`, `AGENTS.md`, `PLAN.md`, `CHANGELOG.md`, `LICENSE.md`, `CONTRIBUTING.md`, nor anything under `docs/plans/`, `docs/briefs/`, `docs/issues/`, `docs/handoffs/`, `docs/reviews/`, or `docs/archive/`.
 
   b. In `skills/loop-setup/setup.sh`, replace the remote detection at lines 38-47.
      Capture a remote, preferring `origin` but falling back to the first remote of any name, then classify it:
@@ -859,7 +925,9 @@ echo "PASS: loop-setup gitlab mode"
 
   e. Add `render_gitlab`, modelled on `render_github` but taking two arguments.
      It strips the `## Local tracker` section by heading exactly as `render_github` does, replaces `{{REMOTE_OR_FALLBACK}}` with `Remote: <url>`, replaces every `{{BACKLOG_GROUP}}` occurrence with the group, rewrites the "the Local tracker section governs local mode" sentence to `The tracker backend (github, gitlab, or local) is declared in the `tracker:` key below.`, and drops the "Render it into" line.
-     Also update `render_github` and `render_local` to substitute `{{BACKLOG_GROUP}}`: `render_github` with the derived group (empty is acceptable and yields an empty value), `render_local` with `n/a (local tracker)`.
+     Also update `render_github` and `render_local` to **drop the gitlab-only lines outright** rather than substituting into them: the `backlog-group:` line and the two gitlab backlog-view lines are removed with the same `index($0, ...)`/`next` awk mechanism already used for the "Render it into" line.
+     Substituting would render a broken `glab issue list --group n/a (local tracker) --label idea` command into every local config and a bare `backlog-group:` line into every github config, and no existing suite diffs a github or local render against the template.
+     And update the hardcoded sentence `render_github` emits at `setup.sh:99` from `(github or local)` to `(github, gitlab, or local)`, so a github render matches the widened template it claims to be a render of.
 
   f. Repair `reconcile_config` (lines 139-145) so a remote mode never preserves a local-tracker placeholder as its Remote value.
      Read the recorded `Remote:` value; if it is empty **or** begins with `none`, fall back to `$remote_url`.
@@ -875,12 +943,17 @@ echo "PASS: loop-setup gitlab mode"
 
      Keep the "never silently re-ask" property, but stop being silent when the declared mode and the remote disagree.
      In the `if [ -n "$existing_mode" ]` branch, after setting `MODE`:
-     - Always call `report_remote`, so the remote is stated on every run rather than only on first setup.
+     - Call `report_remote` whenever `remote_kind` is not `none`, so the remote is stated on every run rather than only on first setup.
+       When `remote_kind` is `none` on this declared-mode path, print nothing: the fresh-setup wording ends in "choose a tracker mode (no default)", which would be a standing false instruction on every run of a settled no-remote repo.
      - When `remote_kind` is `github` or `gitlab` and it differs from `existing_mode`, print
        `declared tracker: <existing_mode>, but the remote is <remote_kind>: <url>`
        and offer, via the existing `ask`, `switch this repo to tracker: <remote_kind>?`.
      - On accept, run `scripts/tracker.sh mode set "<remote_kind>"` (guarded per g3), set `MODE` to it, and let `reconcile_config` render the correct config on the same run.
-     - On decline, leave everything untouched; the offer repeats on the next run, which is the intended durability for a live disagreement between the declared mode and the remote.
+     - On decline, leave everything untouched and print one line naming the off switch: `to stop this suggestion, add 'tracker-remote-ack: <remote_kind>' to config/repo-state.md`.
+       Without the ack, the offer repeats on the next run - the intended durability for a live, unacknowledged disagreement.
+     - Skip the offer (but never the `report_remote` line) when the config carries a line-anchored `tracker-remote-ack:` key whose value equals `remote_kind`.
+       This is the acknowledgment path for a deliberate `tracker: local` behind a remote, which `config/repo-state.md`'s own guidance tells users to choose for branched work: without it, that documented choice is the one offer with unbounded repeat and no off switch.
+       The ack is written by the user or agent by hand, never by `setup.sh` - an auto-recorded decline would be the durable-decline ledger this plan already cut.
      A `remote_kind` of `other` or `none` never triggers the offer: there is nothing to suggest.
 
   g3. **Check the exit status of every `tracker.sh mode set` call.**
@@ -904,19 +977,31 @@ echo "PASS: loop-setup gitlab mode"
      ```
      Under dry-run, echo `dry-run-remote: skipping glab auth check and glab label create`.
      Both remote branches end with the existing `scripts/gen-mirrors.sh . || fail "gen-mirrors.sh failed"`.
+     Before that call, the gitlab branch (dry-run included) verifies the target repo's vendored copy can disclose GitLab:
+     ```bash
+     grep -q 'GitLab issues' scripts/gen-mirrors.sh \
+       || fail "scripts/gen-mirrors.sh predates the gitlab backend and would disclose GitHub as the source of truth - accept the gen-mirrors.sh drift refresh and re-run"
+     ```
+     The drift refresh at `setup.sh:75-87` is declinable per file, and a declined `gen-mirrors.sh` refresh would otherwise leave every mirror on a GitLab repo claiming `source of truth: GitHub issues` - a lie in the file whose entire purpose is disclosure.
+     A content grep is the right guard here (where g3 used an exit status) because `gen-mirrors.sh` defaults its `SRC_LABEL` silently; there is no failure to check.
 
   i. Update the header comment on lines 2-4 to name the gitlab finalize.
 
   j. In `tests/loop-setup/acceptance.sh`, update line 56's expected string to `GitHub remote found` (unchanged) and line 66's to `No remote found`, matching the new wording.
 
+  k. In `skills/loop-setup/SKILL.md`, make the three edits that would otherwise leave the skill naming strings the script no longer prints for the three commits until Task 6:
+     - Line 29 documents the literal `No GitHub remote found`, which lives in exactly two shipped places (`setup.sh:121` and this line); replace that sentence with the four exact `report_remote` lines from Interfaces.
+     - Line 16's "skips the question entirely (idempotent, never re-asks)" and line 39's "a declared mode is never re-asked" now promise the opposite of what g2 does; qualify both: the mode question is never re-asked, but when the declared mode disagrees with a github or gitlab remote, setup states the disagreement and offers a declinable switch, silenced by a `tracker-remote-ack:` line in the config.
+     This step is deliberately narrow; Task 6 owns the full SKILL.md rewrite and its test asserts these strings.
+
 - [ ] **Step 4: Run it.**
       `bash tests/loop-setup/gitlab-setup.sh` - expect PASS.
-      Then `bash tests/loop-setup/acceptance.sh`, `bash tests/loop-setup/reconcile.sh`, `bash tests/loop-setup/distribution.sh`, `bash tests/loop-setup/import.sh` - expect PASS.
+      Then `bash tests/run.sh` - expect `0 failed`; this task edits the shared `setup.sh` and `tests/loop-setup/acceptance.sh`, so the full suite is part of the gate, not a courtesy.
       Note: `tests/loop-setup/reconcile.sh` compares an accepted re-render against a fresh render, so it passes across the template bump without editing.
 
 - [ ] **Step 5: Commit.**
       ```bash
-      git add skills/loop-setup/setup.sh config/repo-state.template.md \
+      git add skills/loop-setup/setup.sh config/repo-state.template.md skills/loop-setup/SKILL.md \
               tests/loop-setup/gitlab-setup.sh tests/loop-setup/acceptance.sh
       git commit -m "loop-setup: gitlab mode with remote suggestion, derived backlog group, and glab finalize"
       ```
@@ -942,14 +1027,19 @@ Consumes, from Task 3: `render_gitlab`, the repaired `reconcile_config`, `report
 Produces, for Tasks 5 through 7:
 
 - `reconcile_import` runs in all three modes and additionally scans repo-root `*.md` non-recursively.
+- `is_excluded` grows two guards: the `docs/plans/*` prefix (plan documents are a governed lane; the Archive-and-graduation rules in `config/repo-state.md` own plan and brief archival, not the sweep), and the depth-1 root project names listed in step a.
 - Idempotence is state of the world, not a state file: an imported candidate is offered a move to `docs/archive/`, which `is_excluded` already skips, so a settled repo offers nothing on re-run; a declined-and-left candidate re-offers next run behind the gate question, one keystroke, by design.
+- The archive move never overwrites (an existing destination skips the move, with a message) and never reaches outside the repo (a candidate whose normalized path is absolute or starts with `../` is imported but gets no archive offer).
 - Before any per-item offer, the sweep prints `found N import candidate(s)` to stdout and asks one gate question, `review them?`, through the existing `ask()` - so `LOOP_ASSUME_YES`/`LOOP_ASSUME_NO` answer it like every other question, and the count line prints even when `ask()` short-circuits on those variables without showing its prompt.
 - A new hook, `LOOP_IMPORT_REMOTE=1`, required in addition to `LOOP_ASSUME_YES` before an unattended run may create issues on a **remote** backend.
+  The skip condition is stated literally in step a; it keys on the unattended-yes variable and on `DRY_REMOTE`, never on `MODE` alone, so interactive per-item answers are unaffected.
   Local mode ignores it.
   It exists because ungating the sweep changed the unattended blast radius from "writes local markdown" to "files an issue per candidate on a shared instance", and that escalation should be opted into explicitly rather than inherited from a blanket yes.
-- The run ends with a summary: `loop-setup complete - nothing to do` when neither the config reconcile nor the sweep made an offer, so quiet is a statement rather than an absence.
+- After a sweep that imported at least one candidate, the mirrors are re-rendered, so a run never ends by printing completion over an `ISSUES.md`/`BACKLOG.md` that lack the issues it just filed.
+- The run ends with a summary: `loop-setup complete - nothing to do` when no offer source fired, so quiet is a statement rather than an absence.
 
-**Acceptance check:** `bash tests/loop-setup/idempotence.sh` exits 0 `[executed-check]`
+**Acceptance check:** `bash tests/loop-setup/idempotence.sh && bash tests/run.sh` exits 0 `[executed-check]`
+The full-suite half is load-bearing: this task edits the shared `setup.sh` and `tests/loop-setup/import.sh`, so the new suite alone cannot gate what the task can break.
 
 - [ ] **Step 1: Write the failing test.**
       Create `tests/loop-setup/idempotence.sh` with exactly this content:
@@ -959,7 +1049,10 @@ Produces, for Tasks 5 through 7:
 # Criteria 7 and 8 (revised): the sweep runs in all three modes behind one gate question then
 # per-item confirmation; archive-on-import makes a settled repo offer nothing on re-run and SAY
 # so; a declined-and-left candidate re-offers next run (durability lives in the archive move,
-# not a state file); remote modes need LOOP_IMPORT_REMOTE for unattended creation.
+# not a state file); remote modes need LOOP_IMPORT_REMOTE for unattended creation, and the gate
+# keys on the unattended variable, never on MODE; --dry-run-remote never creates; docs/plans/
+# and root project files are never offered; the archive move never overwrites and never
+# reaches outside the repo; mirrors are re-rendered after an importing sweep.
 set -uo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$HERE/../.." && pwd)"
@@ -971,26 +1064,43 @@ mk() {   # $1 = dir; a local-mode repo with one root candidate and one docs cand
   mkdir -p "$1/docs"
   ( cd "$1" && git init -q )
   printf '# What is next\nLabel: idea\nship the thing\n' > "$1/whats_next.md"
-  printf '# The plan\nLabel: idea\ndo the work\n'        > "$1/docs/some-plan.md"
+  printf '# The todo\nLabel: idea\ndo the work\n'        > "$1/docs/some-todo.md"
 }
 
 # ---------- criterion 7: gate then per-item in local mode; the repo root is reached ----------
 A="$(mktemp -d)"; trap 'rm -rf "$A"' EXIT
 mk "$A"
+# never offered: docs/plans/ is a governed lane, and a root PLAN.md is a project document
+mkdir -p "$A/docs/plans" "$A/docs/nested"
+printf '# Old plan\nLabel: idea\nsettled work\n'   > "$A/docs/plans/2020-01-01-old-plan.md"
+printf '# Plan\nLabel: idea\nproject file\n'       > "$A/PLAN.md"
+# offered: the root-name exclusion is depth-1 only, so a nested PLAN.md stays a candidate
+printf '# Nested plan\nLabel: idea\nnested work\n' > "$A/docs/nested/PLAN.md"
 out="$( cd "$A" && LOOP_TRACKER_ANSWER=local LOOP_ASSUME_YES=1 "$SETUP" </dev/null 2>/dev/null )" \
   || fail "local sweep run exited non-zero"
 # the count line prints to stdout BEFORE the gate, because ask() returns without printing its
 # prompt when LOOP_ASSUME_* is set - the count is the only always-visible trace of the gate
-printf '%s\n' "$out" | grep -q 'found 2 import candidate' || fail "sweep did not announce its candidate count"
+printf '%s\n' "$out" | grep -q 'found 3 import candidate' || fail "sweep did not announce its candidate count"
 printf '%s\n' "$out" | grep -qi 'import candidate:' || fail "sweep offered no candidates in local mode"
 # the ROOT file is reached - the current scan roots miss it, which is the forge bug
 printf '%s\n' "$out" | grep -q 'whats_next.md' || fail "sweep did not reach the repo-root whats_next.md"
-printf '%s\n' "$out" | grep -q 'docs/some-plan.md' || fail "sweep did not reach docs/some-plan.md"
-[ "$(ls "$A/docs/issues"/*.md 2>/dev/null | wc -l)" -eq 2 ] || fail "accept-all did not create two issues"
-# accept-all also accepts the archive offer, so both sources moved and the originals are gone
+printf '%s\n' "$out" | grep -q 'docs/some-todo.md' || fail "sweep did not reach docs/some-todo.md"
+printf '%s\n' "$out" | grep -q 'docs/nested/PLAN.md' \
+  || fail "a nested PLAN.md stopped being a candidate (the root-name exclusion must be depth-1 only)"
+printf '%s\n' "$out" | grep -q 'docs/plans/' \
+  && fail "the sweep offered a plan-lane file (docs/plans/ archival is owned by the Archive-and-graduation rules)"
+printf '%s\n' "$out" | grep -q 'import candidate: PLAN.md ' \
+  && fail "the sweep offered the root PLAN.md project file"
+[ "$(ls "$A/docs/issues"/*.md 2>/dev/null | wc -l)" -eq 3 ] || fail "accept-all did not create three issues"
+# accept-all also accepts the archive offer, so the imported sources moved and the originals are gone
 [ -f "$A/docs/archive/whats_next.md" ] || fail "imported root candidate was not archived"
-[ -f "$A/docs/archive/some-plan.md" ]  || fail "imported docs candidate was not archived"
+[ -f "$A/docs/archive/some-todo.md" ]  || fail "imported docs candidate was not archived"
+[ -f "$A/docs/archive/PLAN.md" ]       || fail "imported nested candidate was not archived"
 [ -f "$A/whats_next.md" ] && fail "archived candidate still present at its original path"
+[ -f "$A/PLAN.md" ] || fail "the excluded root PLAN.md was moved or deleted"
+[ -f "$A/docs/plans/2020-01-01-old-plan.md" ] || fail "the excluded plan-lane file was moved or deleted"
+# an importing sweep re-renders the mirrors, so the run never ends over stale ISSUES/BACKLOG
+grep -q 'What is next' "$A/BACKLOG.md" || fail "the mirrors were not re-rendered after the sweep imported issues"
 
 # ---------- criterion 8 (revised): the settled repo offers nothing AND says so ----------
 # No state file: quiet follows from the archive move alone (docs/archive/* is excluded from the scan).
@@ -1012,6 +1122,8 @@ outB="$( cd "$B" && LOOP_TRACKER_ANSWER=local LOOP_ASSUME_NO=1 "$SETUP" </dev/nu
 [ "$(printf '%s\n' "$outB" | grep -c 'found 2 import candidate')" -eq 1 ] \
   || fail "the candidate count was not announced exactly once"
 printf '%s\n' "$outB" | grep -qi 'import candidate:' && fail "a declined gate still offered items"
+# the false direction of the summary line: a run that OFFERED the gate may never claim quiet
+printf '%s\n' "$outB" | grep -qi 'nothing to do' && fail "a run that offered the gate claimed nothing to do"
 [ -f "$B/whats_next.md" ] || fail "a declined run touched a candidate file"
 find "$B/docs/issues" -name '*.md' 2>/dev/null | grep -q . && fail "a declined run created issues"
 outB2="$( cd "$B" && LOOP_ASSUME_NO=1 "$SETUP" </dev/null 2>/dev/null )" \
@@ -1019,9 +1131,39 @@ outB2="$( cd "$B" && LOOP_ASSUME_NO=1 "$SETUP" </dev/null 2>/dev/null )" \
 printf '%s\n' "$outB2" | grep -q 'found 2 import candidate' \
   || fail "declined-and-left candidates were not re-offered on the next run (nothing may suppress them)"
 
+# ---------- the archive move never overwrites: same-basename candidates collide safely ----------
+K="$(mktemp -d)"; trap 'rm -rf "$A" "$B" "$K"' EXIT
+mkdir -p "$K/docs/a" "$K/docs/b"
+( cd "$K" && git init -q )
+printf '# First todo\nLabel: idea\none\n'  > "$K/docs/a/dup-todo.md"
+printf '# Second todo\nLabel: idea\ntwo\n' > "$K/docs/b/dup-todo.md"
+outK="$( cd "$K" && LOOP_TRACKER_ANSWER=local LOOP_ASSUME_YES=1 "$SETUP" </dev/null 2>/dev/null )" \
+  || fail "collision run exited non-zero"
+[ "$(ls "$K/docs/issues"/*.md 2>/dev/null | wc -l)" -eq 2 ] || fail "collision run did not import both candidates"
+[ -f "$K/docs/archive/dup-todo.md" ] || fail "no candidate reached the archive"
+[ -f "$K/docs/a/dup-todo.md" ] || [ -f "$K/docs/b/dup-todo.md" ] \
+  || fail "BOTH same-basename candidates were moved onto one archive path - the first was silently destroyed"
+printf '%s\n' "$outK" | grep -qi 'skip' || fail "the skipped collision move did not say so"
+
+# ---------- an out-of-tree --scan candidate is imported but NEVER archived into this repo ----------
+# tests/loop-setup/import.sh already runs `--scan "$(mktemp -d)"` under LOOP_ASSUME_YES, so
+# without this guard the existing suite's first post-Task-4 run would move a file out of an
+# unrelated directory and stay green.
+L="$(mktemp -d)"; XT="$(mktemp -d)"; trap 'rm -rf "$A" "$B" "$K" "$L" "$XT"' EXIT
+( cd "$L" && git init -q )
+printf '# Extra todo\nLabel: idea\nelsewhere\n' > "$XT/extra-todo.md"
+outL="$( cd "$L" && LOOP_TRACKER_ANSWER=local LOOP_ASSUME_YES=1 "$SETUP" --scan "$XT" </dev/null 2>/dev/null )" \
+  || fail "out-of-tree scan run exited non-zero"
+printf '%s\n' "$outL" | grep -q 'found 1 import candidate' || fail "the --scan candidate was not found"
+[ "$(ls "$L/docs/issues"/*.md 2>/dev/null | wc -l)" -eq 1 ] || fail "the --scan candidate was not imported"
+[ -f "$XT/extra-todo.md" ] \
+  || fail "an out-of-tree candidate was moved out of its directory (no archive offer may reach outside the repo)"
+find "$L/docs/archive" -name 'extra-todo.md' 2>/dev/null | grep -q . \
+  && fail "an out-of-tree candidate landed in this repo's archive"
+
 # ---------- criterion 7: the sweep also runs in github mode ----------
 D="$(mktemp -d)"; FIX="$REPO/tests/repo-state/fixtures/issues.json"
-trap 'rm -rf "$A" "$B" "$D"' EXIT
+trap 'rm -rf "$A" "$B" "$K" "$L" "$XT" "$D"' EXIT
 mk "$D"
 ( cd "$D" && git remote add origin https://github.com/acme/x.git )
 out6="$( cd "$D" && LOOP_TRACKER_ANSWER=github MIRRORS_JSON_FILE="$FIX" LOOP_ASSUME_NO=1 \
@@ -1031,7 +1173,7 @@ printf '%s\n' "$out6" | grep -q 'found 2 import candidate' \
 
 # ---------- criterion 7: gitlab mode, and the remote-creation safety gate ----------
 BIN="$(mktemp -d)"; E="$(mktemp -d)"
-trap 'rm -rf "$A" "$B" "$D" "$BIN" "$E"' EXIT
+trap 'rm -rf "$A" "$B" "$K" "$L" "$XT" "$D" "$BIN" "$E"' EXIT
 GLOG="$BIN/glab.calls"
 cat > "$BIN/glab" <<'STUB'
 #!/usr/bin/env bash
@@ -1042,6 +1184,7 @@ if [ "$1" = auth ] && [ "$2" = status ]; then
 fi
 if [ "$1" = issue ] && [ "$2" = list ]; then exit 0; fi
 if [ "$1" = issue ] && [ "$2" = create ]; then
+  [ "${GLAB_CREATE_FAIL:-0}" = 1 ] && { echo "ERROR 403" >&2; exit 1; }
   n=$(( $(cat "$GLAB_N" 2>/dev/null || echo 200) + 1 )); echo "$n" > "$GLAB_N"
   echo "https://gitlab.example.com/grp/repo/-/issues/$n"; exit 0
 fi
@@ -1065,7 +1208,19 @@ grep -q 'GLAB CALLED: issue create' "$GLOG" \
 [ -f "$E/whats_next.md" ] \
   || fail "a skipped remote import still archived or removed the candidate (nothing was imported)"
 
+# --dry-run-remote keeps its promise even with every unattended gate open: nothing is created.
+# Without a DRY_REMOTE term in the sweep's gate, this exact invocation would file real issues.
+: > "$GLOG"
+outDR="$( cd "$E" && PATH="$BIN:$PATH" MIRRORS_JSON_FILE="$FIX" LOOP_ASSUME_YES=1 LOOP_IMPORT_REMOTE=1 \
+          "$SETUP" --dry-run-remote </dev/null 2>&1 )" || fail "dry-run gitlab sweep exited non-zero"
+grep -q 'GLAB CALLED: issue create' "$GLOG" \
+  && fail "--dry-run-remote created remote issues (the flag promises no remote calls)"
+printf '%s\n' "$outDR" | grep -q 'skipping remote import of' \
+  || fail "the dry-run remote-import skip was silent (the finalize's own dry-run line does not count)"
+[ -f "$E/whats_next.md" ] || fail "a dry-run archived a candidate whose issue was never created"
+
 # With the explicit opt-in, the sweep creates through the glab backend and archives the sources.
+: > "$GLOG"
 out8="$( cd "$E" && PATH="$BIN:$PATH" LOOP_ASSUME_YES=1 LOOP_IMPORT_REMOTE=1 \
          "$SETUP" </dev/null 2>&1 )" || fail "opted-in gitlab sweep exited non-zero"
 [ "$(grep -c 'GLAB CALLED: issue create' "$GLOG")" -eq 2 ] \
@@ -1073,6 +1228,37 @@ out8="$( cd "$E" && PATH="$BIN:$PATH" LOOP_ASSUME_YES=1 LOOP_IMPORT_REMOTE=1 \
 [ -f "$E/docs/archive/whats_next.md" ] || fail "the opted-in sweep did not archive the imported candidate"
 find "$E/docs/issues" -name '*.md' 2>/dev/null | grep -q . \
   && fail "gitlab mode wrote local issue files instead of creating remote issues"
+
+# ---------- the remote gate keys on the unattended variable, never on MODE ----------
+# Interactive per-item answers create remote issues with no extra variable; a gate that keyed
+# on MODE being remote would break exactly the interactive path Task 7 Steps 2 and 3 rely on.
+M="$(mktemp -d)"; trap 'rm -rf "$A" "$B" "$K" "$L" "$XT" "$D" "$BIN" "$E" "$M"' EXIT
+mk "$M"
+( cd "$M" && git remote add origin 'ssh://git@gitlab.example.com:2222/grp/repo.git' )
+: > "$GLOG"
+outM="$( cd "$M" && printf 'y\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\n' | \
+         PATH="$BIN:$PATH" LOOP_TRACKER_ANSWER=gitlab "$SETUP" 2>&1 )" \
+  || fail "interactive gitlab sweep exited non-zero"
+[ "$(grep -c 'GLAB CALLED: issue create' "$GLOG")" -eq 2 ] \
+  || fail "interactive per-item yes did not create both remote issues (the gate must key on LOOP_ASSUME_YES, not MODE)"
+printf '%s\n' "$outM" | grep -q 'set LOOP_IMPORT_REMOTE=1' \
+  && fail "an interactive run was told to set LOOP_IMPORT_REMOTE (the variable gates unattended runs only)"
+
+# ---------- a failed create is never treated as imported: no archive, no "imported" line ----------
+# On a shared instance a create can fail partway (label, permission, rate); archiving a file
+# whose issue does not exist would lose the only copy of the work item.
+N="$(mktemp -d)"; trap 'rm -rf "$A" "$B" "$K" "$L" "$XT" "$D" "$BIN" "$E" "$M" "$N"' EXIT
+mk "$N"
+( cd "$N" && git remote add origin 'ssh://git@gitlab.example.com:2222/grp/repo.git' )
+: > "$GLOG"
+outN="$( cd "$N" && PATH="$BIN:$PATH" GLAB_CREATE_FAIL=1 LOOP_TRACKER_ANSWER=gitlab \
+         LOOP_ASSUME_YES=1 LOOP_IMPORT_REMOTE=1 "$SETUP" </dev/null 2>&1 )" \
+  || fail "a run with failing creates aborted instead of skipping and continuing"
+printf '%s\n' "$outN" | grep -q 'create failed' || fail "a failed create was not reported"
+printf '%s\n' "$outN" | grep -q 'imported '     && fail "a failed create was announced as imported"
+[ -f "$N/whats_next.md" ] || fail "a candidate whose create failed was archived or removed"
+find "$N/docs/archive" -name '*.md' 2>/dev/null | grep -q . \
+  && fail "a failed create still produced an archive move"
 
 echo "PASS: loop-setup universal sweep"
 ```
@@ -1086,11 +1272,20 @@ echo "PASS: loop-setup universal sweep"
 
   a. Rework `reconcile_import` into the universal sweep.
      - Add the repo root as a non-recursive root: collect `*.md` at depth 1 via a separate `find . -maxdepth 1 -type f -name '*.md'` pass, merged with the existing recursive `find` over the other roots.
+       **The root pass runs unconditionally; the guard structure must change to allow that.**
+       `setup.sh:178`'s `[ "${#roots[@]}" -gt 0 ] || return 0` exists because `find` with an empty array silently expands to `find .` and scans the whole tree (confirmed by running it during review).
+       In practice `roots` is never empty here - `setup.sh:49` creates `docs/` unconditionally before the sweep runs - so the restructure is defensive, but the shape still matters: an implementer who merges the root pass into the same guarded `find` reintroduces the full-tree hazard the guard exists to prevent.
+       Keep the recursive pass strictly inside the `[ "${#roots[@]}" -gt 0 ]` test, run the root pass first regardless, and return early only when the merged candidate list is empty.
+       The `${roots[@]+"${roots[@]}"}` expansion idiom at `setup.sh:177` is **not** a substitute for the guard on a `find` call: with an empty array it passes `find` no path operand at all, which is the full-tree scan again (confirmed by running it).
      - **Normalize every path with `f="${f#./}"` before `is_excluded` and the offer.**
-       The root pass yields `./whats_next.md` while the recursive pass yields `docs/some-plan.md`; the offer lines and archive moves should show one consistent repo-relative spelling.
-     - Extend `is_excluded` with these root basenames, which are project documents rather than issue candidates:
+       The root pass yields `./whats_next.md` while the recursive pass yields `docs/some-todo.md`; the offer lines and archive moves should show one consistent repo-relative spelling.
+     - Extend `is_excluded` twice.
+       First, add `docs/plans/*` to the existing prefix case (alongside `docs/briefs/*`, which is already there): plan documents are a governed lane, and `config/repo-state.md`'s Archive-and-graduation rules own plan and brief archival ("a brief archives when its plan archives; they travel together"), so the sweep offering to archive a live plan would be reaching into a lane it does not own.
+       Without this line, every `docs/plans/*` file in this repo - including this plan - is offered for import and archival on the first ungated run.
+       Second, exclude these root project names, matched against the **normalized path** so only depth-1 files are excluded (a normalized depth-1 path contains no `/`; matching on `basename` would silently hide `docs/notes/PLAN.md` and any nested `README.md`, which is wider than intended):
        `README.md`, `CLAUDE.md`, `AGENTS.md`, `PLAN.md`, `CHANGELOG.md`, `LICENSE.md`, `CONTRIBUTING.md`.
-       Measured in this repo, the root pass without these exclusions surfaces `PLAN.md` by filename keyword and `fixing-agent-errors.md` by content shape, taking the candidate count from 6 to 9.
+       The list is deliberately wider than this repo's own root `ls`: `setup.sh` is vendored into other repos where all seven exist.
+       Measured in this repo, the un-excluded count would be 9 (7 plan-lane files, `PLAN.md`, `fixing-agent-errors.md`); with both exclusions the steady state is exactly 1.
        `fixing-agent-errors.md` is deliberately still offered: it is a repo-specific document, not a conventional project file, and declining it is one keystroke.
      - Build the candidate list first.
        When it is empty, return without printing anything; the end-of-run summary is what says "nothing to do".
@@ -1099,9 +1294,17 @@ echo "PASS: loop-setup universal sweep"
        A declined gate returns without recording anything anywhere, so the same candidates are announced again next run - re-offering is the contract, and durability comes from archiving, not from remembering declines.
      - For each candidate, print the existing `import candidate: <path> (title: <title>, label: <label>)` line and ask per item, exactly as today.
      - **The per-item confirmation is not satisfied by `LOOP_ASSUME_YES` alone when `MODE` is `github` or `gitlab`.**
-       Until now the worst an unattended sweep could do was write local markdown; ungating it means a single `LOOP_ASSUME_YES=1` files an issue per candidate on a shared corporate instance, which in this repo is 9 issues and in forge is the `university-advancement` group.
-       Remote creation additionally requires `LOOP_IMPORT_REMOTE=1`; without it, a `LOOP_ASSUME_YES` run in a remote mode prints `skipping remote import of <path> (set LOOP_IMPORT_REMOTE=1 to allow unattended remote creation)`, skips that file's archive offer too (nothing was imported), and the candidate is offered again next run.
-       Local mode and interactive per-item answers are unaffected.
+       Until now the worst an unattended sweep could do was write local markdown; ungating it means a single blanket yes files an issue per candidate on a shared corporate instance, which in forge is the `university-advancement` group.
+       The skip condition, stated literally so no reading keys it on `MODE` alone:
+       ```bash
+       # remote creation is skipped for this candidate when MODE is github or gitlab AND:
+       [ "$DRY_REMOTE" -eq 1 ] || { [ "${LOOP_ASSUME_YES:-0}" = 1 ] && [ "${LOOP_IMPORT_REMOTE:-0}" != 1 ]; }
+       ```
+       The second term keys on the unattended-yes variable, never on the mode: an interactive per-item `y` in gitlab mode creates the issue with no extra variable, because `ask()` at `setup.sh:8-13` returns 0 for both a blanket yes and an interactive `y`, and only the blanket form carries the escalation this gate exists for.
+       The first term is `--dry-run-remote` keeping its documented promise (`SKILL.md:50`: no remote calls); without it, `--dry-run-remote LOOP_ASSUME_YES=1 LOOP_IMPORT_REMOTE=1` would file real issues.
+       On a skip, print **to stdout** `skipping remote import of <path> (set LOOP_IMPORT_REMOTE=1 to allow unattended remote creation)` under the unattended gate, or `dry-run-remote: skipping remote import of <path>` under dry-run; skip that file's archive offer too (nothing was imported), and the candidate is offered again next run.
+       The dry-run string must contain `skipping remote import of` verbatim - the finalize already prints a different `dry-run-remote:` line on every dry run, so the test greps for the sweep-specific text.
+       Local mode ignores the gate entirely.
      - On accept, guard the create - the code being replaced has `&& echo "imported $f"` and the rewrite must not lose the guard:
        ```bash
        num="$(scripts/tracker.sh create --label "$label" --title "$title" --body "$body")" \
@@ -1113,24 +1316,45 @@ echo "PASS: loop-setup universal sweep"
      - After a successful create, ask `move <path> to docs/archive/?`; on accept `mkdir -p docs/archive`, then `git mv` when the file is tracked else `mv`, and announce the move.
        The archive move is the idempotence mechanism: `is_excluded` already skips `docs/archive/*`, so an archived candidate never re-offers, with zero bookkeeping.
        A declined move leaves the file in place, and it will be offered again next run - by design, per the user's direction that a live loose end is worth speaking up about.
+       **Two guards on the move, both load-bearing:**
+       - Never offer the move for a candidate whose normalized path is absolute or starts with `../` - which is every `--scan` root outside the repo.
+         `setup.sh:33` accepts `--scan <dir>` with no in-tree requirement, and `tests/loop-setup/import.sh:68` already runs `--scan "$(mktemp -d)"` under `LOOP_ASSUME_YES=1`, so without this guard the existing suite's first post-Task-4 run moves a file out of an unrelated directory into the sandbox repo and stays green.
+         An out-of-tree candidate is imported normally; it just keeps its home, and re-offers next run like any declined move.
+       - Never overwrite: when `docs/archive/<basename>` already exists, skip the move, say so **on stdout** (`skipping archive move: docs/archive/<name> already exists; left at <path>`), and leave the file in place.
+         Two candidates sharing a basename would otherwise collapse onto one destination and the first would be destroyed with no message.
+         Stdout matters: the test captures stdout only, and the create-failure message four lines up goes to stderr - an implementer following that neighboring convention would fail scenario K on a correct guard.
+       Announce the move only when the `git mv`/`mv` actually succeeded; on failure print `archive move failed for <path>; left in place` to stdout and continue.
+       A false "moved" line in the mechanism the idempotence model rests on is worse than no move at all.
+     - After the per-item loop, when at least one candidate was imported, re-run `scripts/gen-mirrors.sh . || fail "gen-mirrors.sh failed"` once.
+       The finalize renders mirrors at `setup.sh:235-238` and `reconcile_import` runs after them at `:240`, so a sweep that just filed issues would otherwise end by printing completion over mirrors that lack every one of them - and only the local backend even mentions staleness (`scripts/tracker.sh:73`); the remote create paths say nothing.
      - Keep the frontmatter-versus-prose title and label extraction unchanged.
      - The create call is backend-agnostic because it routes through `scripts/tracker.sh`, so the sweep needs no per-mode branch of its own beyond the `LOOP_IMPORT_REMOTE` gate.
 
   b. Remove the `[ "$MODE" = local ]` gate at line 240 so `reconcile_import` runs in every mode.
 
-  c. Replace the final `echo "loop-setup complete"` with a summary, tracked by a counter that `reconcile_config` and the sweep each increment when they make an offer.
+  c. Replace the final `echo "loop-setup complete"` with a summary, tracked by a counter incremented by **every** offer source: `reconcile_config`, the sweep, the per-file drift-refresh loop at `setup.sh:75-87`, and the `$TIDY` byproduct pass at `setup.sh:241` (`scripts/tidy.sh:16-22` prints `byproduct:` per item and asks).
+     `$TIDY` is a child process whose offers `setup.sh` cannot otherwise observe (tidy always exits 0), so capture and re-emit:
+     ```bash
+     t="$("$TIDY")" || true
+     [ -n "$t" ] && printf '%s\n' "$t"
+     printf '%s' "$t" | grep -q '^byproduct:' && offers=$((offers + 1))
+     ```
+     Re-emitting keeps `tests/loop-setup/tidy.sh`'s byproduct-lines-on-stdout assertion true, and the interactive ordering stays usable because tidy's per-item prompt names the file (`delete <f>?`, on stderr).
      When the counter is zero, print `loop-setup complete - nothing to do`.
-     The line exists so quiet is a statement rather than an absence: the brief asks for "finds nothing to do and **says so**".
+     The line exists so quiet is a statement rather than an absence: the brief bought exactly one line here ("finds nothing to do and **says so**"), so it is the one line that must never be false - a run that asked four drift-refresh questions and then claimed nothing to do would be worse than the current silence.
 
-  d. Update `tests/loop-setup/import.sh`.
-     Its `LOOP_ASSUME_YES=1` scenarios accept the new gate the same way they accept every other question, so they are unaffected; its decline-all scenario now declines at the gate instead of per item, which still satisfies its "nothing imported" assertions.
+  d. Update `tests/loop-setup/import.sh` - it is **not** unaffected, in one load-bearing way.
+     The suite's `docs/plans/big-plan.md` fixture (`import.sh:29-33`, content `MARKER_PLAN`) now sits in the excluded plan lane, so move `MARKER_PLAN` from the imported-candidates loop at `import.sh:72` to the excluded-content loop at `import.sh:88`, and note at the fixture that the plan lane is exercised as an exclusion.
+     Without that move, this task's own `tests/run.sh` gate fails on this suite.
+     Its `LOOP_ASSUME_YES=1` scenarios accept the new gate the same way they accept every other question; its decline-all scenario now declines at the gate instead of per item, which still satisfies its "nothing imported" assertions.
      If any assertion expects per-item `import candidate:` lines under `LOOP_ASSUME_NO=1`, retarget it at the `found N import candidate(s)` line, which is what a declined-gate run prints.
      Update the header comment to say the sweep runs in all three modes.
-     Accept-all scenarios must also answer the new archive offers, which `LOOP_ASSUME_YES=1` does; where a scenario then asserts a candidate file still exists at its original path, change it to assert the file now lives under `docs/archive/`.
+     Accept-all scenarios must also answer the new archive offers, which `LOOP_ASSUME_YES=1` does; where a scenario then asserts a candidate file still exists at its original path, change it to assert the file now lives under `docs/archive/` - with one exception: `$EXTRA/extra-plan.md`, the out-of-tree `--scan` candidate, must be asserted to **survive at its original path** (add that assertion; the suite currently never checks it), because out-of-tree candidates are imported but never archived.
 
 - [ ] **Step 4: Run it.**
       `bash tests/loop-setup/idempotence.sh` - expect PASS.
-      Then `bash tests/loop-setup/import.sh`, `bash tests/loop-setup/reconcile.sh` (untouched, must still pass), `bash tests/loop-setup/acceptance.sh`, `bash tests/loop-setup/gitlab-setup.sh` - expect PASS.
+      Then `bash tests/run.sh` - expect `0 failed`; this task edits the shared `setup.sh` and `tests/loop-setup/import.sh`, so the full suite is part of the gate, not a courtesy.
+      `tests/loop-setup/reconcile.sh` is untouched and must still pass unmodified.
 
 - [ ] **Step 5: Commit.**
       ```bash
@@ -1164,7 +1388,8 @@ Produces:
 - `scripts/migrate-tracker.sh [--to github|gitlab]`, defaulting to `github` so every existing invocation behaves identically.
 - The script vendored into every repo loop-setup touches, so the `SKILL.md` suggestion names a path that exists.
 
-**Acceptance check:** `bash tests/repo-state/migrate-gitlab.sh` exits 0 `[executed-check]`
+**Acceptance check:** `bash tests/repo-state/migrate-gitlab.sh && bash tests/run.sh` exits 0 `[executed-check]`
+The full-suite half is load-bearing: this task edits the shared `setup.sh`, so the new suite alone cannot gate what the task can break.
 
 - [ ] **Step 1: Write the failing test.**
       Create `tests/repo-state/migrate-gitlab.sh` with exactly this content:
@@ -1198,6 +1423,14 @@ fi
 exit 0
 EOF
 chmod +x "$BIN/glab"
+# gh stub: the default-target dry run below must not depend on this host's real gh auth state
+cat > "$BIN/gh" <<'STUB'
+#!/usr/bin/env bash
+[ "$1" = auth ] && exit 0
+if [ "$1" = issue ] && [ "$2" = create ]; then echo "https://github.com/acme/x/issues/9"; exit 0; fi
+exit 0
+STUB
+chmod +x "$BIN/gh"
 export PATH="$BIN:$PATH"
 
 mkdir -p "$SB/scripts" "$SB/config" "$SB/docs/issues"
@@ -1235,6 +1468,13 @@ printf '%s\n' "$out" | grep -q 'glab label create' || fail "dry run did not prin
 [ "$before" = "$(cat "$SB/docs/issues/001-open-one.md")" ] || fail "dry run modified a local issue file"
 [ "$(grep '^tracker:' "$SB/config/repo-state.md")" = "tracker: local" ] || fail "dry run flipped the mode"
 
+# --- the default target is still github, asserted POSITIVELY while the files are unstamped ---
+# `|| true` with only a negative grep would pass vacuously if --to became mandatory (a usage
+# error contains no glab line either); this must run BEFORE the real run stamps every file.
+out2="$( cd "$SB" && MIGRATE_DRY_RUN=1 "$M" )" || fail "default-target dry run exited non-zero"
+printf '%s\n' "$out2" | grep -q 'gh issue create'   || fail "the default github dry run printed no gh issue create"
+printf '%s\n' "$out2" | grep -q 'glab issue create' && fail "the default target became gitlab"
+
 # --- real run ---
 ( cd "$SB" && LOOP_ASSUME_NO=1 "$M" --to gitlab >/dev/null 2>&1 ) || fail "real run exited non-zero"
 grep -q 'GLAB CALLED: auth status --hostname gitlab.example.com' "$LOG" \
@@ -1252,10 +1492,6 @@ grep -q '^state: migrated' "$SB/docs/issues/001-open-one.md" || fail "migrated f
 : > "$LOG"
 ( cd "$SB" && LOOP_ASSUME_NO=1 "$M" --to gitlab >/dev/null 2>&1 ) || fail "re-run exited non-zero"
 grep -q 'GLAB CALLED: issue create' "$LOG" && fail "re-run re-created an already-migrated issue"
-
-# --- the default target is still github (no behavior change for existing callers) ---
-out2="$( cd "$SB" && MIGRATE_DRY_RUN=1 "$M" 2>&1 )" || true
-printf '%s\n' "$out2" | grep -q 'glab issue create' && fail "the default target became gitlab"
 
 # --- an unknown target is rejected ---
 ( cd "$SB" && MIGRATE_DRY_RUN=1 "$M" --to bitbucket >/dev/null 2>&1 ) && fail "an unknown target was accepted"
@@ -1327,7 +1563,7 @@ echo "PASS: migrate-tracker gitlab target"
 
 - [ ] **Step 4: Run it.**
       `bash tests/repo-state/migrate-gitlab.sh` - expect PASS.
-      Then `bash tests/repo-state/migrate.sh`, `bash tests/repo-state/migrate-unlabeled.sh`, `bash tests/loop-setup/idempotence.sh` - expect PASS.
+      Then `bash tests/run.sh` - expect `0 failed`; this task edits the shared `setup.sh`, so the full suite is part of the gate, not a courtesy.
 
 - [ ] **Step 5: Commit.**
       ```bash
@@ -1398,6 +1634,21 @@ grep -q 'Migration to GitHub' "$CFG" \
   && fail "config/repo-state.md still describes migration as GitHub-only"
 grep -qi 'gitlab' "$CFG" || fail "config/repo-state.md never mentions gitlab"
 
+# the second github-only assertion (the numbering limitation) is widened in both files
+grep -q 'shared or branched work should use `tracker: github`' "$CFG" \
+  && fail "config/repo-state.md still tells shared work to use github only"
+grep -q 'shared or branched work should use `tracker: github`' "$TPL" \
+  && fail "the template still tells shared work to use github only"
+
+# the config round-trips the v2 template: the autonomy-default prose survives a render
+grep -q 'autonomy-default' "$TPL" \
+  || fail "the template lacks the autonomy-default paragraph (a v2 re-render would silently drop it from the config)"
+grep -q 'autonomy-default' "$CFG" || fail "config/repo-state.md lost its autonomy-default paragraph"
+
+# the sweep's root exclusions are declared where the config claims to be the definitive list
+grep -q 'CONTRIBUTING.md' "$TPL" || fail "the template does not declare the sweep's root exclusions"
+grep -q 'CONTRIBUTING.md' "$CFG" || fail "config/repo-state.md does not declare the sweep's root exclusions"
+
 # loop-setup SKILL.md documents all three modes and points at the triage reference
 for w in github gitlab local; do
   grep -q "$w" "$SK" || fail "loop-setup SKILL.md does not mention $w"
@@ -1409,6 +1660,8 @@ grep -q 'LOOP_TRACKER_ANSWER=gitlab' "$SK" || fail "SKILL.md does not document t
 grep -qi 'but the remote is' "$SK" || fail "SKILL.md does not document the mode-switch offer"
 grep -q 'migrate-tracker.sh --to' "$SK" \
   || fail "SKILL.md does not tell the agent when to suggest the standalone migration (criterion 10)"
+grep -q 'tracker-remote-ack' "$SK" \
+  || fail "SKILL.md does not document the tracker-remote-ack off switch for the mode-switch offer"
 grep -qi 'declin' "$SK" \
   || fail "SKILL.md does not explain that declining the mechanical import routes a file to the triage prose"
 [ -f "$REF" ] || fail "skills/loop-setup/references/import-triage.md missing"
@@ -1448,12 +1701,13 @@ echo "PASS: gitlab doc and skill sweep"
   a. `skills/wayfinder/SKILL.md`: change line 15 to state that wayfinder requires a remote tracker, `github` or `gitlab`, with no local-tracker variant.
      Change "on the repo's GitHub issues" and "a single GitHub issue" to backend-neutral phrasing ("the repo's issue tracker", "a single tracker issue"), and add one sentence recording the verified fact that `wayfinder:map` needs no renaming on GitLab, because a single colon is an ordinary label character and only `::` marks a scoped label.
 
-  b. `config/repo-state.md` (this repo): bring it to the current render.
-     Add `template-version: 2` above the `Remote:` line, add the `backlog-group:` line with an empty-or-`n/a` value appropriate for a github repo, add the gitlab backlog-view lines, and widen the two "github or local" sentences to name gitlab.
-     **Also rewrite its Local-tracker lines 56 and 58-60**, which the earlier draft of this task missed: line 56's `wayfinder requires \`tracker: github\`` and the "Migration to GitHub" paragraph both still assert github-only behavior.
-     This is the file an agent orienting in the repo actually reads, so leaving it stale would have it contradict both the template and `skills/wayfinder/SKILL.md` while the test still passed.
-     Match the template's new wording exactly in all four places.
-     Do not change `tracker: github`.
+  b. `config/repo-state.md` (this repo): bring it to what `render_github` of the v2 template emits, keeping the two hand-set values (`Remote:` and `tracker: github`).
+     Add `template-version: 2` above the `Remote:` line and widen the two "(github or local)" sentences to "(github, gitlab, or local)".
+     Do **not** add a `backlog-group:` line or the gitlab backlog-view lines: Task 3's `render_github` drops those from github renders, and adding them by hand would recreate exactly the config-versus-render divergence this task exists to close.
+     **Also rewrite the Local-tracker limitation prose, locating it by string rather than line number** (an earlier draft cited line numbers that were off by one on disk, and an executor with zero context edits by line number): the sentence containing `wayfinder requires \`tracker: github\``, the sentence ending `shared or branched work should use \`tracker: github\``, and the "Migration to GitHub" paragraph all still assert github-only behavior.
+     This is the file an agent orienting in the repo actually reads, so leaving any of them stale would have it contradict both the template and `skills/wayfinder/SKILL.md` while the test still passed.
+     Match the template's new wording exactly in all of these places, and carry over the sweep root-exclusion sentence Task 3 added to the template.
+     Do not change `tracker: github`, and do not remove the `autonomy-default:` paragraph - Task 3 added it to the template precisely so this file's render round-trips it.
 
   c. `skills/loop-improve/SKILL.md:60-61`: state that `tracker.sh list` returns gh-shaped JSON in all three modes, and add the gitlab read path `glab issue view N` next to the existing `gh issue view N` and `docs/issues/NNN-*.md`.
 
@@ -1477,6 +1731,8 @@ echo "PASS: gitlab doc and skill sweep"
      Describe the sweep: it runs in all three modes, scans the repo root, asks one gate question then per-item confirmations, offers a declinable archive move after each import, and re-offers anything declined-and-left on the next run - idempotence comes from the archive move, not from any state file.
      State the division of labor with `references/import-triage.md` (mechanical imports in bash; split/merge judgment in prose) and link it.
      Add one line for migration: when `docs/issues/` holds unmigrated files and the repo has a github or gitlab remote, suggest `scripts/migrate-tracker.sh --to <target>` - the agent suggests, the user fires, `setup.sh` never runs it.
+     Correct line 50's `--dry-run-remote` description: the flag now also skips the sweep's remote issue creation, not only the finalize's gh/glab calls - the old wording would tell a test author the exact lie finding the gate exists to prevent.
+     Document `tracker-remote-ack:` as the recorded acknowledgment that silences the mode-switch offer for a deliberate mode-versus-remote disagreement (written by hand, never by `setup.sh`).
      Keep it short; detail belongs in the reference file.
 
 - [ ] **Step 4: Run it.**
@@ -1521,6 +1777,7 @@ It is staged below for the user, who fires each command and records what came ba
 | --- | --- | --- | --- |
 | 1 | `bash tests/run.sh` | `0 failed` | |
 | 2 | `setup.sh` in forge | reports the GitLab remote, offers the mode switch | |
+| 2b | cleanup probe: rename then delete one throwaway issue | at least one route works; the route is recorded | |
 | 3 | proposed `whats_next.md` split | titles approved by a human | |
 | 4 | create / list / mirror / close | iid created, appears in BACKLOG.md, gone after close | |
 | 5 | bare `glab auth status` vs `tracker.sh list` | bare non-zero, tracker exit 0 | |
@@ -1550,12 +1807,31 @@ It is staged below for the user, who fires each command and records what came ba
       `setup.sh`'s drift-refresh loop offers to **replace** forge's vendored `scripts/tracker.sh`, `gen-mirrors.sh`, `graduate-parking.sh`, and now `migrate-tracker.sh` with loop-stack's copies, and it warns that local edits are lost.
       forge has its own `scripts/` tree with many unrelated Python files; a branch makes accepting those refreshes reversible with one command.
 
+      For gitlab mode, two of those refreshes are required, not optional: `tracker.sh` (a declined refresh leaves a copy whose `mode set` rejects `gitlab`, which g3 turns into a loud stop) and `gen-mirrors.sh` (a declined refresh would leave forge's mirrors disclosing GitHub as the source of truth on a GitLab repo, which Task 3's finalize guard turns into a named failure).
+      Accept both; decline any other at will.
+
       Expected, in order: `GitLab remote found: ssh://git@gitlab.code.rit.edu:2222/university-advancement/crm/forge.git - suggesting tracker: gitlab`; then, because forge already declares `tracker: local`, `declared tracker: local, but the remote is gitlab: <url>` and the offer to switch; a drift-refresh offer per vendored script; a config re-render offer that replaces `Remote: none (local tracker; see the Local tracker section)` with the real URL and adds `backlog-group: university-advancement`; then the import sweep's count line and gate question covering `whats_next.md`.
 
       **Decline the sweep's mechanical import offer for `whats_next.md`.**
       The bash sweep would file the whole 7433-byte file as one issue, which is exactly what criterion 13 forbids; per `references/import-triage.md`, a file that needs splitting is declined at the bash prompt and handled by the agent in Step 3.
 
       If the mode-switch offer does not appear, stop: Task 3's g2 did not land, and everything downstream of it in forge is unreachable.
+
+- [ ] **Step 2b: Verify the cleanup surface before anything permanent is created - the user fires.**
+      Step 7b's cleanup rests on two `glab` commands the planning session never verified (they are named risks in the Verified facts section): `glab api --method DELETE "projects/:id/issues/<iid>"`, including whether the `:id` placeholder substitutes, and `glab issue update <iid> --title`.
+      Prove both on one throwaway issue now, while zero smoke issues exist, so a wrong guess strands nothing colleague-visible later:
+
+      ```bash
+      cd /home/jjrdar/claude/forge
+      p=$(scripts/tracker.sh create --label idea --title "loop-stack cleanup probe" --body "Delete me immediately. Verifying the cleanup route before the smoke run.")
+      echo "probe #$p"
+      glab issue update "$p" --title "[probe] loop-stack cleanup probe" ; echo "update exit: $?"
+      glab api --method DELETE "projects/:id/issues/$p" ; echo "delete exit: $?"
+      ```
+
+      Record in the results table which of the two worked.
+      If the delete fails (owner rights, or the `:id` placeholder does not substitute), Step 7b's rename route is the committed fallback - that decision is made here, not after three smoke issues exist.
+      If **both** fail, stop before Step 4: the plan's own standard says closed "Delete me" tickets left in the shared project are not an acceptable end state, so do not create what cannot be cleaned up or clearly marked.
 
 - [ ] **Step 3: Criterion 13 - the human judgment, before any issue exists.**
       Read `/home/jjrdar/claude/forge/whats_next.md` (7433 bytes) against `skills/loop-setup/references/import-triage.md`.
@@ -1589,8 +1865,16 @@ It is staged below for the user, who fires each command and records what came ba
       glab issue list --group university-advancement --label idea ; echo "exit: $?"
       ```
 
-      Expect exit 0.
-      Both this top-level form and the subgroup form were confirmed working during planning, so a non-zero exit here means the derivation produced the wrong group, not that the approach is wrong: change Task 1's `gitlab_group` to keep all path segments except the last (`university-advancement/crm`) and re-render.
+      Expect exit 0 - and then classify the rows, because exit 0 alone cannot distinguish a correctly scoped group from a university-wide one that would pull other teams' `idea` issues into this repo's declared backlog view (the live query currently returns `[]`, which passes either way):
+
+      ```bash
+      glab issue list --group university-advancement --label idea -O json --jq '.[].web_url'
+      ```
+
+      An empty result or rows all under `https://gitlab.code.rit.edu/university-advancement/crm/` both pass; any row from a project outside `university-advancement/crm/` means the top-level group is too wide for this instance.
+      On a non-zero exit or a foreign row, set `backlog-group: university-advancement/crm` **by hand** in `config/repo-state.md` - the key is documented as an overridable, re-render-surviving value, and that is the whole mechanism.
+      Do **not** change Task 1's `gitlab_group` derivation: its committed test asserts the first-segment derivation at three URL shapes, so changing it reopens a done task and turns `tests/run.sh` red inside the task whose acceptance check is `0 failed`.
+      If the derivation itself proves wrong for this instance, file a follow-up issue rather than patching it mid-checkpoint.
 
 - [ ] **Step 5: Criterion 4 - the dead-token regression, fired by the user.**
       With the `gitlab.com` token still dead on this host:
@@ -1660,13 +1944,14 @@ It is staged below for the user, who fires each command and records what came ba
       glab issue list --all --search "smoke" -O json --jq '.[] | "\(.iid) \(.title) \(.state)"'
       ```
 
-      GitLab issue deletion requires owner rights and is not exposed by `glab issue`; if the user has them, delete via the API, one iid at a time, each confirmed:
+      Use the route Step 2b proved on the throwaway issue - both commands were verified there before anything permanent existed.
+      If the delete route worked, delete one iid at a time, each confirmed:
 
       ```bash
       glab api --method DELETE "projects/:id/issues/<iid>"
       ```
 
-      If deletion is unavailable or unwanted, rename each to mark it clearly instead:
+      If Step 2b recorded the rename fallback instead, mark each clearly:
 
       ```bash
       glab issue update <iid> --title "[closed test artifact] <original title>"

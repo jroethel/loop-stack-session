@@ -38,8 +38,10 @@ That serialization is deliberate and recorded in the plan, not an oversight to b
 
 Idempotence is state of the world, not a state file: an imported candidate is archived (and `docs/archive/*` is excluded from the scan), so a settled repo offers nothing; a declined-and-left candidate re-offers next run behind the gate question, by design.
 
-Blast radius worth knowing before driving: ungating the sweep surfaces **9** import candidates in this repo on the first run, including `PLAN.md` and this repo's own plan files.
-That is expected; archiving or importing settles them, and repeated declining costs one gate keystroke per run.
+Blast radius worth knowing before driving: without exclusions, ungating the sweep would have surfaced **9** import candidates in this repo on the first run, including `PLAN.md` and this repo's own plan files.
+**Correction (2026-08-09, second Rubix review):** this handoff originally called that count "expected"; two blind review lenses independently classified it as a defect - the count was measured but never classified.
+The plan now excludes `docs/plans/*` (plan archival is owned by the Archive-and-graduation rules) and the depth-1 root project files, leaving a steady state of 1 candidate in this repo.
+Do not re-close this from the original sentence; see `docs/handoffs/2026-08-09-gitlab-plan-rubix-findings.md`, finding 1.
 
 ## Decisions made this session, and who made them
 

@@ -37,7 +37,8 @@ scripts/graduate-parking.sh <brief-path>   # opens real GitLab issues
 And `loop-setup`, run in forge, walks the user through `whats_next.md` into issues rather than leaving it an orphan file.
 
 Re-running `loop-setup` immediately afterward, with the same answers and nothing else changed, finds nothing to do and says so.
-It acts again only when something it depends on has moved: a changed config answer, a bumped config `template-version`, or a bumped stamp on the setup logic itself.
+It acts again only when something it depends on has moved: a changed config answer, a bumped config `template-version`, or new candidate content.
+(Revised at the bloat review, with the user's pre-authorization: the original sentence also named "a bumped stamp on the setup logic itself", but the setup-logic stamp was cut with the decision ledger - archive-on-import is the idempotence mechanism, and declined-and-left content re-offers by design.)
 
 ## Assets and options
 
@@ -88,9 +89,9 @@ Declined.
 | 5  | `setup.sh` in forge reports a GitLab remote and suggests `tracker: gitlab`, where today it prints "No GitHub remote found"                                        | `[executed-check]` |
 | 6  | `setup.sh` parses `ssh://git@gitlab.code.rit.edu:2222/university-advancement/crm/forge.git` and derives backlog group `university-advancement`                     | `[executed-check]` |
 | 7  | The import sweep runs in all three modes, offers every candidate, and creates nothing without a per-item confirmation                                             | `[executed-check]` |
-| 8  | Running `loop-setup` to completion and immediately re-running it with the same answers produces zero offers on the second run, and says so rather than going quiet | `[executed-check]` |
-| 9  | Bumping the config `template-version`, or the stamp covering the setup logic itself, makes the next `loop-setup` run offer the affected work again                | `[executed-check]` |
-| 10 | Migration is offered during `loop-setup`, is declinable, and the identical operation runs standalone afterward with the same result                               | `[executed-check]` |
+| 8  | (revised at the bloat review) A re-run offers nothing for content already imported and archived, and says so; declined-and-left content may re-offer              | `[executed-check]` |
+| 9  | (revised at the bloat review) The shipped config `template-version` mechanism re-offers the render when the template moves; the setup-logic stamp was cut         | `[executed-check]` |
+| 10 | (revised at the bloat review) Migration is documented and suggested during setup; `scripts/migrate-tracker.sh --to <target>` is the operation, and re-runs safely | `[executed-check]` |
 | 11 | wayfinder creates its map issue and a decision ticket in a gitlab repo; its SKILL.md no longer states a github-only requirement                                   | `[executed-check]` |
 | 12 | Offline fixture tests cover gitlab mode, and `tests/run.sh` passes                                                                                               | `[executed-check]` |
 | 13 | The sweep's proposed split of `whats_next.md` yields issues that each name one actionable item, with no proposal spanning two unrelated items                     | `[judgment]`       |
