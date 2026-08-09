@@ -18,7 +18,7 @@ Autonomy: auto (session); Task 7 is a human checkpoint regardless.
 | 3    | task-4-sweep (+ opus review)   | done    |
 | 4    | task-5-migrate                 | done    |
 | 5    | task-6-docs (+ opus review)    | done    |
-| 6    | task-7-forge-smoke (HUMAN)     | pending |
+| 6    | task-7-forge-smoke (HUMAN)     | READY - STOPPED FOR THE USER |
 
 ## Pre-flight log
 
@@ -95,3 +95,21 @@ Autonomy: auto (session); Task 7 is a human checkpoint regardless.
 - Repair: task-6-fix (glm-5.2, code-fix) recorded fail-after-retry, ATTRIBUTED AT THE GATE as a check bug: an unwinnable gate between the manifest check and the stale `acceptance.sh` scratch ban (premise false since afc7fbd). Stale line deleted, worker's audited diff salvaged from the worktree, all three sites re-verified by hand, suite 36/36. Amendment row in the ringer repo's AMENDMENTS-PENDING.md; journal entry 4.
 - Distill: multi-site prose sweeps need the occurrence list enumerated in the spec or a review layer (recorded in MODEL-NOTES; no further waves consume it this run).
 - MODEL-NOTES receipts committed in the ringer repo (`7a2fb0d`).
+
+### Terminal review - advisory /loop-review a8c6680 (done)
+
+- Standards axis: no hard violations; 6 judgment-call smells (worst: Repeated Switches in migrate-tracker.sh, duplicated glab auth guard x3); one soft one-sentence-per-line deviation in the _loop.md footnotes.
+- Spec axis: (1) Task 6b Local-tracker prose deleted rather than rewritten - the spec's two sentences contradict, slipped to the checkpoint; (2) the acceptance.sh scratch-ban deletion flagged as unauthorized - already journal entry 4; (3) --dry-run-remote misclassification, reproduced live - REPAIRED as task-3-fix, committed `d5ea8c2` with a regression scenario, repro re-run by the orchestrator post-apply, suite 36/36.
+
+### Slip list for the final human checkpoint
+
+1. `nothing to do` summary wording on a fresh-install run (task-4-review advisory).
+2. `LOOP_IMPORT_REMOTE` undocumented in SKILL.md (task-4-review advisory; adding it to Task 6's spec was STOP-class).
+3. render_gitlab keeps the github backlog-view lines in a gitlab config (task-3 worker flag, independently corroborated by the Standards axis).
+4. Task 6b spec contradiction: config/repo-state.md's Local-tracker prose was deleted per one spec sentence, not rewritten per the other; decide which sentence wins.
+5. Standards judgment calls: migrate-tracker Repeated Switches; glab auth guard duplicated at three sites (a `tracker.sh guard` subcommand would collapse them).
+
+### Waves 1-5 complete
+
+Integration branch `integration/gitlab-glab-loop` is green (36 suites, 0 failed) at `d5ea8c2`.
+Wave 6 (Task 7, live forge smoke) is a human checkpoint: every write to gitlab.code.rit.edu is staged for the user to fire.
