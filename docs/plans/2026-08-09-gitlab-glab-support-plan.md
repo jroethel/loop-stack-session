@@ -1775,15 +1775,15 @@ It is staged below for the user, who fires each command and records what came ba
 
 | Step | What was fired | Expected | Observed |
 | --- | --- | --- | --- |
-| 1 | `bash tests/run.sh` | `0 failed` | |
-| 2 | `setup.sh` in forge | reports the GitLab remote, offers the mode switch | |
-| 2b | cleanup probe: rename then delete one throwaway issue | at least one route works; the route is recorded | |
-| 3 | proposed `whats_next.md` split | titles approved by a human | |
-| 4 | create / list / mirror / close | iid created, appears in BACKLOG.md, gone after close | |
-| 5 | bare `glab auth status` vs `tracker.sh list` | bare non-zero, tracker exit 0 | |
-| 6 | immediate re-run | `nothing to do`, zero `import candidate:` lines | |
-| 7 | wayfinder map + ticket | `wayfinder:map` accepted, excluded from both mirrors | |
-| 8 | cleanup | smoke issues removed, forge tree clean | |
+| 1 | `bash tests/run.sh` | `0 failed` | 36 suites, 0 failed at integration tip `d5ea8c2` |
+| 2 | `setup.sh` in forge | reports the GitLab remote, offers the mode switch | GitLab remote found + declared-local disagreement + switch accepted; v2 re-render with `backlog-group: university-advancement`; `created label idea` |
+| 2b | cleanup probe: rename then delete one throwaway issue | at least one route works; the route is recorded | both routes proven on issue #1: `issue update --title` exit 0, `api DELETE projects/:id/issues/1` exit 0; delete is the committed route |
+| 3 | proposed `whats_next.md` split | titles approved by a human | 8 titles approved (criterion 13), created as #3-#10; the mechanical monolith #1 deleted |
+| 4 | create / list / mirror / close | iid created, appears in BACKLOG.md, gone after close | #11 created, listed, rendered in BACKLOG only, gone after close; group query exit 0 with every row under `university-advancement/crm/` |
+| 5 | bare `glab auth status` vs `tracker.sh list` | bare non-zero, tracker exit 0 | tracker exit 0; bare exit 0 because the dead gitlab.com token no longer exists in glab's config (precondition gone); host-scoping proven by the offline suite's stub |
+| 6 | immediate re-run | `nothing to do`, zero `import candidate:` lines | observed exactly; `MIGRATE_DRY_RUN=1 --to gitlab` reported `no local issues in docs/issues` |
+| 7 | wayfinder map + ticket | `wayfinder:map` accepted, excluded from both mirrors | map #12 accepted with the single-colon label, 0 rows in both mirrors; ticket #13 rendered in ISSUES; both closed |
+| 8 | cleanup | smoke issues removed, forge tree clean | #11, #12, #13 deleted via the proven route; smoke search empty; forge adoption commit `1c15ac9` (10 files) on branch `loop-setup-gitlab-adoption` |
 
 - [ ] **Step 1: Run the full offline suite first.**
       `bash tests/run.sh`

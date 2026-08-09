@@ -18,7 +18,7 @@ Autonomy: auto (session); Task 7 is a human checkpoint regardless.
 | 3    | task-4-sweep (+ opus review)   | done    |
 | 4    | task-5-migrate                 | done    |
 | 5    | task-6-docs (+ opus review)    | done    |
-| 6    | task-7-forge-smoke (HUMAN)     | READY - STOPPED FOR THE USER |
+| 6    | task-7-forge-smoke (HUMAN)     | done    |
 
 ## Pre-flight log
 
@@ -126,3 +126,9 @@ Wave 6 (Task 7, live forge smoke) is a human checkpoint: every write to gitlab.c
 - Issue #2 deleted (exit 0); mirrors at expected counts (ISSUES 6 rows, BACKLOG 2).
 - Step 4 observed, all legs: mode gitlab; smoke #11 created; list showed "number":11; row rendered in BACKLOG not ISSUES; after close the row is gone; `backlog-group: university-advancement`; rendered group query exit 0 returning exactly the repo's two idea issues; classification clean - every web_url under university-advancement/crm/forge, no foreign rows, so the top-level group is correctly scoped on this instance.
 - Step 5 observed WITH CAVEAT: `tracker exit: 0` as required, but bare `glab auth status` exited 0 because the dead gitlab.com token no longer exists in glab's config (only gitlab.code.rit.edu is configured now) - the trap's precondition vanished between planning and the smoke. Host-scoping of the guard remains proven by the offline suite's stub assertion (bare auth status is never called); criterion 4's substance holds.
+- Steps 6, 7, 7b, 8 observed: re-run `nothing to do` with zero candidates; migrate dry-run correct; wayfinder map #12 accepted with mirror exclusion holding, ticket #13 in ISSUES, both closed; #11/#12/#13 deleted, smoke search empty; forge adoption commit `1c15ac9` (10 files) on `loop-setup-gitlab-adoption`.
+
+## RUN COMPLETE - 2026-08-09
+
+All 13 brief criteria observed (results table filled in the source plan's Task 7 section).
+Remaining user actions: accept/reverse the journal's BATCH/DEFAULT entries, merge `integration/gitlab-glab-loop` to main, merge forge's `loop-setup-gitlab-adoption`, and triage the 5-item slip list.

@@ -35,3 +35,9 @@ ASK and STOP entries are record-only; BATCH and DEFAULT entries are the review o
 - Decision: of the advisory /loop-review's three Spec-axis findings, finding 3 (the `--dry-run-remote` branch classifies a real origin as github unconditionally, against plan line 918's stub-only instruction, reproduced live with a mode flip under a blanket yes) is repaired by a scoped fix task (task-3-fix, glm-5.2, code-fix) with a committed regression scenario. Findings 1 (Local-tracker prose deleted rather than rewritten - the spec's own two sentences contradict) and 2 (the acceptance.sh scratch-ban deletion - already journaled as entry 4) are slipped to the final human checkpoint.
 - Rationale: finding 3 makes the code match an already-approved spec line, which is completing approved scope, not new scope; it is also a live-misfire risk for Task 7, which runs setup.sh in forge. Finding 1 requires a judgment between the spec's two contradictory sentences, which is the human's call. Finding 2 is a decision already taken and journaled with its own reversal.
 - Reversal: `git revert` the task-3-fix commit; the dry-run behavior returns to the as-reviewed state.
+
+### 6. DEFAULT - Step 7 launch details question
+
+- Decision: the loop-drive Step 7 "See execution details before I launch?" question was auto-taken as its default (launch immediately) at wave-1 launch time, per auto mode. This entry was written retroactively at run closeout; the take itself happened at launch and was narrated in chat.
+- Rationale: the dry-run substance (lint, baseline, exact launches) executed anyway as the plan's own mandatory pre-flight, so the question's information content was delivered regardless.
+- Reversal: n/a for this run (the run completed); for a future run, `/loop-auto set pause` before `/loop-drive` restores the live question.
