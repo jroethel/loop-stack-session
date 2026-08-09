@@ -15,8 +15,8 @@ Autonomy: auto (session); Task 7 is a human checkpoint regardless.
 | ---  | ---                            | ---     |
 | 1    | task-1-tracker, task-2-mirrors | done    |
 | 2    | task-3-setup                   | done    |
-| 3    | task-4-sweep (+ opus review)   | running |
-| 4    | task-5-migrate                 | pending |
+| 3    | task-4-sweep (+ opus review)   | done    |
+| 4    | task-5-migrate                 | running |
 | 5    | task-6-docs (+ opus review)    | pending |
 | 6    | task-7-forge-smoke (HUMAN)     | pending |
 
@@ -62,3 +62,17 @@ Autonomy: auto (session); Task 7 is a human checkpoint regardless.
 
 - Manifest: `/home/jjrdar/.loop-work/gitlab-glab-loop/wave-3.json` (task-4-sweep opus/claude 3600s, pin:risk).
 - Gate plan: after apply+commit, run the task-4-review one-task manifest (opus, code-review) against the integration tip.
+
+### Wave 3 - gated (done)
+
+- Run `...T183113Z-p729665`: task-4-sweep (opus, pin:risk) PASS, 1 attempt; committed `5f310a0`; full suite 34 suites, 0 failed.
+- Review run `...T184144Z-p771725`: task-4-review verdict pass, 15 criteria, 0 FAIL; mutation-tested guards; the one moved assertion (`MARKER_PLAN`) confirmed a genuine retarget by running the pre-task import.sh against the new setup.sh (failed only at the authorized line) and a token-level restore (passed in full).
+- Worker judgment notes, both accepted: un-excluded candidate count re-derived as 10 not 9 (the extra is this run's own _loop.md, post-planning); one-line widening of Step 3c so the mode-switch offer counts as an offer source (the summary line must never be false).
+- SLIP LIST for the final human checkpoint (STOP-class to spec-edit, so deferred to the user):
+  1. `loop-setup complete - nothing to do` prints on a fresh-repo first install (spec defines the line by offers fired); consider "made no changes" wording in a later task.
+  2. `LOOP_IMPORT_REMOTE` is undocumented in SKILL.md; Task 6's fixed spec does not cover it.
+- MODEL-NOTES receipts committed in the ringer repo.
+
+### Wave 4 - launched
+
+- Manifest: `/home/jjrdar/.loop-work/gitlab-glab-loop/wave-4.json` (task-5-migrate glm-5.2/claude-zai 1800s).
