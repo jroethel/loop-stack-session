@@ -45,10 +45,15 @@ remote_url="$(git remote get-url origin 2>/dev/null || true)"
 [ -n "$remote_url" ] || remote_url="$(git remote -v 2>/dev/null | awk 'NR==1 {print $2}' || true)"
 remote_kind=none
 if [ "$DRY_REMOTE" -eq 1 ]; then
-  # Dry-run forces remote-present treatment; use origin if present, else a github stub so existing
-  # dry-run tests (which expect a github suggestion) keep their behavior.
-  [ -n "$remote_url" ] || remote_url="https://github.com/dry-run/remote.git"
-  remote_kind=github
+  # Dry-run forces remote-present treatment; only the github stub below is forced github so the
+  # no-remote dry-run tests keep their behavior - a real origin is classified exactly as the elif.
+  if [ -n "$remote_url" ]; then
+    remote_kind=other
+    case "$remote_url" in *github.com*) remote_kind=github ;; *gitlab*) remote_kind=gitlab ;; esac
+  else
+    remote_url="https://github.com/dry-run/remote.git"
+    remote_kind=github
+  fi
 elif [ -n "$remote_url" ]; then
   remote_kind=other
   case "$remote_url" in *github.com*) remote_kind=github ;; *gitlab*) remote_kind=gitlab ;; esac

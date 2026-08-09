@@ -196,4 +196,30 @@ out="$( cd "$G" && LOOP_TRACKER_ANSWER=gitlab LOOP_ASSUME_NO=1 "$SETUP" </dev/nu
 printf '%s\n' "$out" | grep -q 'drift refresh' \
   || fail "the provenance failure did not name the fix (accept the gen-mirrors.sh drift refresh)"
 
+# ---------- scenario H: --dry-run-remote classifies a real origin; only the stub is forced github ----------
+# A real GitLab origin under --dry-run-remote must be reported as GitLab, not coerced to github; a
+# no-remote dry-run keeps the github stub so existing dry-run tests still see the github suggestion.
+H1="$(mktemp -d)"; trap 'rm -rf "$BIN" "$A" "$B" "$C" "$C2" "$D" "$E" "$F" "$G" "$H1"' EXIT
+( cd "$H1" && git init -q \
+    && git remote add origin 'ssh://git@gitlab.example.com:2222/grp/repo.git' )
+mkdir -p "$H1/config" "$H1/scripts"
+cp "$REPO/scripts/tracker.sh" "$H1/scripts/tracker.sh"; chmod +x "$H1/scripts/tracker.sh"
+printf 'template-version: 2\n\nRemote: ssh://git@gitlab.example.com:2222/grp/repo.git\n\ntracker: gitlab\n' \
+  > "$H1/config/repo-state.md"
+out="$( cd "$H1" && LOOP_ASSUME_NO=1 "$SETUP" --dry-run-remote </dev/null 2>/dev/null )" \
+  || fail "dry-run-remote on a real GitLab origin exited non-zero"
+printf '%s\n' "$out" | grep -q 'GitLab remote found' \
+  || fail "dry-run misclassified a real GitLab origin as github"
+printf '%s\n' "$out" | grep -q 'GitHub remote found' \
+  && fail "dry-run misclassified a real GitLab origin as github"
+[ "$(grep '^tracker:' "$H1/config/repo-state.md")" = "tracker: gitlab" ] \
+  || fail "dry-run flipped the declared tracker mode"
+
+H2="$(mktemp -d)"; trap 'rm -rf "$BIN" "$A" "$B" "$C" "$C2" "$D" "$E" "$F" "$G" "$H1" "$H2"' EXIT
+( cd "$H2" && git init -q )
+out="$( cd "$H2" && LOOP_TRACKER_ANSWER=local "$SETUP" --dry-run-remote </dev/null 2>/dev/null )" \
+  || fail "no-remote dry-run exited non-zero"
+printf '%s\n' "$out" | grep -q 'GitHub remote found' \
+  || fail "no-remote dry-run lost the github stub behavior"
+
 echo "PASS: loop-setup gitlab mode"
