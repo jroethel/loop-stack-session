@@ -6,13 +6,14 @@ disable-model-invocation: true
 
 A loose idea has arrived - too big for one agent session, and wrapped in fog: the way from here to the **destination** isn't visible yet.
 Wayfinding is about finding that way, not charging at the destination.
-This skill charts the way as a **shared map** on the repo's GitHub issues, then works its **decision tickets** - questions whose resolution is a decision, not slices of a build to execute - one at a time until the route is clear.
+This skill charts the way as a **shared map** on the repo's issue tracker, then works its **decision tickets** - questions whose resolution is a decision, not slices of a build to execute - one at a time until the route is clear.
 
 The destination varies per effort, and naming it is the first act of charting - it shapes every ticket.
 It might be a spec to hand off and iterate on, a decision to lock before planning starts, or a change made in place like a data-structure migration.
 The map is domain-agnostic - engineering work, course content, whatever fits the shape.
 
-Wayfinder requires `tracker: github`: its map and tickets are GitHub issues end to end, with no local-tracker variant (a disclosed limitation, promotable later).
+Wayfinder requires a remote tracker (`github` or `gitlab`): its map and tickets are tracker issues end to end, with no local-tracker variant.
+The `wayfinder:map` label needs no renaming on GitLab, because a single colon is an ordinary label character and only `::` marks a scoped label.
 
 ## Plan, don't do
 
@@ -30,7 +31,7 @@ The id and URL don't vanish - a name wraps its link - but they ride *inside* the
 
 ## The Map
 
-The map is a single GitHub issue on this repo, labelled `wayfinder:map` - the canonical artifact.
+The map is a single tracker issue on this repo, labelled `wayfinder:map` - the canonical artifact.
 Its tickets are child issues of the map.
 
 The map is an **index**, not a store.

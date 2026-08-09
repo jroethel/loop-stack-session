@@ -14,7 +14,8 @@ The runnable, idempotent core is `setup.sh` next to this file; this skill narrat
    The template is the single schema source; never hand-copy a second schema.
 2. Declares the tracker mode - it does NOT infer it from `git remote`.
    If `config/repo-state.md` already carries a `tracker:` key, setup skips the question entirely (idempotent, never re-asks the mode).
-   When the declared mode disagrees with a github or gitlab remote, setup states the disagreement and offers a declinable switch, silenced by a `tracker-remote-ack:` line in the config.
+   When the declared mode disagrees with a github or gitlab remote, setup prints "declared tracker: X, but the remote is Y" and offers a declinable switch to the remote's backend.
+   The offer is silenced by a `tracker-remote-ack:` line in the config - a hand-written acknowledgment of a deliberate mode-versus-remote disagreement that `setup.sh` never writes itself.
    Otherwise it reports the remote status, asks the mode once (`github`, `gitlab`, or `local`), and writes the key via `tracker.sh mode set`.
 3. Creates the docs homes: root `ROADMAP.md`, `docs/handoffs/`, `docs/reviews/`, `docs/archive/`.
 4. With `tracker: github`:
@@ -22,7 +23,11 @@ The runnable, idempotent core is `setup.sh` next to this file; this skill narrat
    - Offers `gh repo create --private` when no remote exists.
    - Ensures the `idea` label exists (`gh label create idea`, skipped if already present).
    - Generates `ISSUES.md` and `BACKLOG.md` via `scripts/gen-mirrors.sh .`.
-5. With `tracker: local`:
+5. With `tracker: gitlab`:
+   - Fails fast unless `glab` is authenticated to the remote's host (`glab auth status --hostname <host>`; install glab and run `glab auth login --hostname <host>`).
+   - Ensures the `idea` label exists (`glab label create --name idea`, skipped if already present).
+   - Generates `ISSUES.md` and `BACKLOG.md` via `scripts/gen-mirrors.sh .`.
+6. With `tracker: local`:
    - Creates `docs/issues/` (one file per issue; zero gh).
    - Generates `ISSUES.md` and `BACKLOG.md` via `scripts/gen-mirrors.sh .` from those local files.
 
@@ -34,6 +39,21 @@ Setup prints exactly one of:
 - `No remote found - choose a tracker mode (no default)`
 It never assumes local.
 
+## The import sweep
+
+The sweep runs in all three modes.
+It scans the repo root (depth 1) and the standard roots (`docs/`, `.planning/`, `.ralph/`), skipping governed lanes and root project files.
+It asks one gate question, then a per-item confirmation for each candidate.
+After each import it offers a declinable archive move to `docs/archive/` - idempotence comes from that archive move, not from any state file.
+Anything declined and left in place is re-offered on the next run, which is the design surfacing a live loose end, not a bug.
+The mechanical import only turns one file into one issue, verbatim; a file that needs splitting or merging is declined at the bash prompt and handled by the agent per `references/import-triage.md`.
+
+## Migration
+
+When `docs/issues/` holds unmigrated local files and the repo has a github or gitlab remote, suggest `scripts/migrate-tracker.sh --to <target>`.
+The agent suggests; the user fires it.
+`setup.sh` never runs the migration itself.
+
 ## Run it
 
 From inside the target repo:
@@ -43,15 +63,17 @@ From inside the target repo:
 ```
 
 Re-running is safe: the mode question is never re-asked, and existing config, label, and docs homes are skipped.
-When the declared mode disagrees with a github or gitlab remote, setup states the disagreement and offers a declinable switch, silenced by a `tracker-remote-ack:` line in the config.
 The `ISSUES.md` / `BACKLOG.md` mirrors regenerate on every run via `scripts/gen-mirrors.sh`.
 
 ## Non-interactive hooks
 
 ```bash
 LOOP_TRACKER_ANSWER=github /path/to/setup.sh
+LOOP_TRACKER_ANSWER=gitlab /path/to/setup.sh
+LOOP_IMPORT_REMOTE=1 LOOP_ASSUME_YES=1 /path/to/setup.sh
 MIRRORS_JSON_FILE=./issues.json /path/to/setup.sh --dry-run-remote
 ```
 
-`LOOP_TRACKER_ANSWER=github|local` supplies the mode answer without prompting (used in tests and unattended runs).
-`--dry-run-remote` treats the repo as remote-present, skips the gh auth fail-fast and `gh label create`, and (with `MIRRORS_JSON_FILE`) generates mirrors from a fixture JSON instead of calling gh.
+`LOOP_TRACKER_ANSWER=github|gitlab|local` supplies the mode answer without prompting (used in tests and unattended runs).
+`LOOP_IMPORT_REMOTE=1` is required alongside `LOOP_ASSUME_YES` before an unattended run may create issues on a remote backend; without it, remote candidates are skipped with a note.
+`--dry-run-remote` treats the repo as remote-present, skips the gh/glab auth fail-fast and label create, skips the sweep's remote issue creation, and (with `MIRRORS_JSON_FILE`) generates mirrors from a fixture JSON instead of calling gh or glab.
