@@ -13,8 +13,8 @@ Autonomy: auto (session); Task 7 is a human checkpoint regardless.
 
 | Wave | Units                          | Status  |
 | ---  | ---                            | ---     |
-| 1    | task-1-tracker, task-2-mirrors | running |
-| 2    | task-3-setup                   | pending |
+| 1    | task-1-tracker, task-2-mirrors | done    |
+| 2    | task-3-setup                   | running |
 | 3    | task-4-sweep (+ opus review)   | pending |
 | 4    | task-5-migrate                 | pending |
 | 5    | task-6-docs (+ opus review)    | pending |
@@ -37,3 +37,16 @@ Autonomy: auto (session); Task 7 is a human checkpoint regardless.
 - Manifest: `/home/jjrdar/.loop-work/gitlab-glab-loop/wave-1.json` (task-1-tracker glm-5.2/claude-zai 2400s, task-2-mirrors glm-5.2/claude-zai 1800s, max_parallel 2).
 - Lint: 4 advisory findings, all the known worktree deliverable/commit pattern, mitigated by the checks' patch export and the preamble's never-commit rule.
 - Baseline: 2/2 checks FAIL only on new-behavior assertions (suite not yet created, report.md absent) - checks proven satisfiable.
+
+### Wave 1 - gated (done)
+
+- Run `gitlab-glab-loop-20260809T180654Z-p672191`: both tasks PASS, 1 attempt each, no retries; run JSON confirms.
+- Spot-checked task-1's report snapshot and both patch stats; patches touched only owned files.
+- Applied and committed: `7b6b959` (tracker gitlab backend), `55b2000` (gen-mirrors disclosure).
+- Full suite on integration branch, main checkout, live.sh included: 32 suites, 0 failed.
+- MODEL-NOTES receipt committed in the ringer repo.
+- Distill: nothing to distill - no failure pattern, both first-try.
+
+### Wave 2 - launched
+
+- Manifest: `/home/jjrdar/.loop-work/gitlab-glab-loop/wave-2.json` (task-3-setup glm-5.2/claude-zai 3600s).
