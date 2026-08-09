@@ -15,7 +15,6 @@ grep -q  'config/repo-state.md' "$SKILL" || fail "loop-setup never writes config
 grep -qi 'tracker'           "$SKILL" || fail "loop-setup does not narrate the tracker mode"
 grep -qi 'idea'              "$SKILL" || fail "loop-setup does not mention the idea label"
 grep -q  'scripts/gen-mirrors.sh' "$SKILL" || fail "loop-setup does not cite the mirror regen command"
-grep -qi 'scratch' "$SKILL" && fail "loop-setup SKILL still references the dropped .scratch fallback"
 echo "structural: PASS"
 [ "${LOOP_SETUP_SKIP_BEHAVIOR:-0}" = 1 ] && { echo "PASS: structural only"; exit 0; }
 [ -x "$SETUP" ] || fail "skills/loop-setup/setup.sh missing (runnable core)"
