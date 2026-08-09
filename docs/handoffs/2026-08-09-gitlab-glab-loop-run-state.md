@@ -14,8 +14,8 @@ Autonomy: auto (session); Task 7 is a human checkpoint regardless.
 | Wave | Units                          | Status  |
 | ---  | ---                            | ---     |
 | 1    | task-1-tracker, task-2-mirrors | done    |
-| 2    | task-3-setup                   | running |
-| 3    | task-4-sweep (+ opus review)   | pending |
+| 2    | task-3-setup                   | done    |
+| 3    | task-4-sweep (+ opus review)   | running |
 | 4    | task-5-migrate                 | pending |
 | 5    | task-6-docs (+ opus review)    | pending |
 | 6    | task-7-forge-smoke (HUMAN)     | pending |
@@ -50,3 +50,15 @@ Autonomy: auto (session); Task 7 is a human checkpoint regardless.
 ### Wave 2 - launched
 
 - Manifest: `/home/jjrdar/.loop-work/gitlab-glab-loop/wave-2.json` (task-3-setup glm-5.2/claude-zai 3600s).
+
+### Wave 2 - gated (done)
+
+- Run `gitlab-glab-loop-20260809T181655Z-p698149`: task-3-setup PASS, 1 attempt; run JSON confirms.
+- Applied and committed on integration; full suite 33 suites, 0 failed.
+- Worker recorded two conservative readings: (a) render_gitlab keeps the github backlog-view lines because the spec's step 3e does not list dropping them - recorded for the Task 7 live config inspection, not silently widened; (b) SKILL.md's LOOP_TRACKER_ANSWER hook line left for Task 6, which owns the full rewrite.
+- MODEL-NOTES receipt committed in the ringer repo.
+
+### Wave 3 - launched
+
+- Manifest: `/home/jjrdar/.loop-work/gitlab-glab-loop/wave-3.json` (task-4-sweep opus/claude 3600s, pin:risk).
+- Gate plan: after apply+commit, run the task-4-review one-task manifest (opus, code-review) against the integration tip.
