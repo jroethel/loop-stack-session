@@ -42,7 +42,7 @@ It never assumes local.
 ## The import sweep
 
 The sweep runs in all three modes.
-It scans the repo root (depth 1) and the standard roots (`docs/`, `.planning/`, `.ralph/`), skipping governed lanes and root project files.
+It scans the repo root (depth 1) and the standard roots (`docs/`, `.planning/`, `.ralph/`, `.scratch/*/issues`, plus any `--scan` roots), skipping governed lanes and root project files.
 It asks one gate question, then a per-item confirmation for each candidate.
 After each import it offers a declinable archive move to `docs/archive/` - idempotence comes from that archive move, not from any state file.
 Anything declined and left in place is re-offered on the next run, which is the design surfacing a live loose end, not a bug.

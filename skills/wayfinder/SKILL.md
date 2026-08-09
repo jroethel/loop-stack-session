@@ -24,7 +24,7 @@ An effort can override this in its **Notes** - carrying execution into the map i
 
 ## Refer by name
 
-Every map and ticket is a GitHub issue, so it has a **name** - its title.
+Every map and ticket is a tracker issue, so it has a **name** - its title.
 In everything the human reads - narration, the map's Decisions-so-far - refer to it by that name, never by a bare id, number, or slug.
 A wall of `#42, #43, #44` is illegible; names read at a glance.
 The id and URL don't vanish - a name wraps its link - but they ride *inside* the name, never stand in for it.
@@ -82,7 +82,7 @@ Each ticket carries one of these labels: `wayfinder:research`, `wayfinder:protot
 A session **claims** a ticket by assigning it to the dev driving the map, **first**, before any work, so concurrent sessions skip it.
 That assignee _is_ the claim: an open, unassigned ticket is unclaimed.
 
-Blocking uses an issue-body convention, since GitHub issues have no native blocking relationship: a blocked ticket writes `Blocked by: #N` in its body for each ticket that must close first.
+Blocking uses an issue-body convention, since tracker issues have no native blocking relationship: a blocked ticket writes `Blocked by: #N` in its body for each ticket that must close first.
 A ticket is **unblocked** when every ticket blocking it is closed; the **frontier** is the open, unblocked, unclaimed children - the edge of the known.
 
 Per-ticket model choice follows the loop-drive evidence chain: scoreboard posterior, else benchmark prior, else orchestrator pin.
