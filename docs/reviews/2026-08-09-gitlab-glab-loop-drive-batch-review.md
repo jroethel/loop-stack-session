@@ -23,3 +23,9 @@ ASK and STOP entries are record-only; BATCH and DEFAULT entries are the review o
 - Decision: task-6-docs' review verdict was fail (two residual GitHub-only prose sites in wayfinder's SKILL.md, one understated scan-root list in loop-setup's SKILL.md); repaired via a scoped one-task fix manifest (glm-5.2, code-fix) carrying the reviewer's exact findings, instead of a full-unit relaunch.
 - Rationale: the unit's patch is already committed and green; the review enumerated every other criterion as PASS with citations, so the unfinished remainder is exactly three named sentence-level edits. A full relaunch would redo a passing unit against a spec whose test-first step no longer applies.
 - Reversal: `git revert` the fix commit and relaunch task-6-docs in full from its section-8 template.
+
+### 4. BATCH - check-bug attribution and stale-test fix at the wave-5 gate
+
+- Decision: attributed task-6-fix's recorded FAIL to an unwinnable gate (my manifest check required `.scratch/*/issues` documented in loop-setup SKILL.md; the repo's stale `tests/loop-setup/acceptance.sh:18` failed the suite on any `scratch` substring there). Deleted the one stale test line, salvaged the worker's audited diff from the surviving worktree, and committed both.
+- Rationale: verified by my own route, not the worker's narrative - `setup.sh:251` scans `.scratch/*/issues` on the integration tip, `import.sh` exercises it with a fixture, and git history shows the ban predates the scan's re-add in `afc7fbd`. The ban's premise ("dropped .scratch fallback") is false. All three fix sites re-read by hand post-apply; full suite 36/36.
+- Reversal: `git revert` the two commits (stale-line deletion and the salvaged fix); the alternate lean is restoring the ban and instead removing the scratch scan from setup.sh, which contradicts the shipped afc7fbd behavior and its tests.

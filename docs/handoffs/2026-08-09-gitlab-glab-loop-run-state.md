@@ -17,7 +17,7 @@ Autonomy: auto (session); Task 7 is a human checkpoint regardless.
 | 2    | task-3-setup                   | done    |
 | 3    | task-4-sweep (+ opus review)   | done    |
 | 4    | task-5-migrate                 | done    |
-| 5    | task-6-docs (+ opus review)    | running |
+| 5    | task-6-docs (+ opus review)    | done    |
 | 6    | task-7-forge-smoke (HUMAN)     | pending |
 
 ## Pre-flight log
@@ -87,3 +87,11 @@ Autonomy: auto (session); Task 7 is a human checkpoint regardless.
 
 - Manifest: `/home/jjrdar/.loop-work/gitlab-glab-loop/wave-5.json` (task-6-docs glm-5.2/claude-zai 2400s, docs).
 - Gate plan: after apply+commit, run task-6-review (opus, code-review), then the advisory /loop-review of the whole-run diff.
+
+### Wave 5 - gated (done)
+
+- Run `...T190004Z-p835593`: task-6-docs PASS, 1 attempt; committed `ed96490`; full suite 36 suites, 0 failed.
+- Review run `...T190825Z-p870545`: task-6-review verdict FAIL - 12 of 14 criteria pass; two real substance misses (wayfinder SKILL.md lines 27 and 85 still GitHub-only; loop-setup SKILL.md scan-root list understated).
+- Repair: task-6-fix (glm-5.2, code-fix) recorded fail-after-retry, ATTRIBUTED AT THE GATE as a check bug: an unwinnable gate between the manifest check and the stale `acceptance.sh` scratch ban (premise false since afc7fbd). Stale line deleted, worker's audited diff salvaged from the worktree, all three sites re-verified by hand, suite 36/36. Amendment row in the ringer repo's AMENDMENTS-PENDING.md; journal entry 4.
+- Distill: multi-site prose sweeps need the occurrence list enumerated in the spec or a review layer (recorded in MODEL-NOTES; no further waves consume it this run).
+- MODEL-NOTES receipts committed in the ringer repo (`7a2fb0d`).
