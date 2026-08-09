@@ -13,7 +13,7 @@ Autonomy: auto (session); Task 7 is a human checkpoint regardless.
 
 | Wave | Units                          | Status  |
 | ---  | ---                            | ---     |
-| 1    | task-1-tracker, task-2-mirrors | pending |
+| 1    | task-1-tracker, task-2-mirrors | running |
 | 2    | task-3-setup                   | pending |
 | 3    | task-4-sweep (+ opus review)   | pending |
 | 4    | task-5-migrate                 | pending |
@@ -31,3 +31,9 @@ Autonomy: auto (session); Task 7 is a human checkpoint regardless.
 ## Per-wave log
 
 (appended at every launch and gate)
+
+### Wave 1 - launched
+
+- Manifest: `/home/jjrdar/.loop-work/gitlab-glab-loop/wave-1.json` (task-1-tracker glm-5.2/claude-zai 2400s, task-2-mirrors glm-5.2/claude-zai 1800s, max_parallel 2).
+- Lint: 4 advisory findings, all the known worktree deliverable/commit pattern, mitigated by the checks' patch export and the preamble's never-commit rule.
+- Baseline: 2/2 checks FAIL only on new-behavior assertions (suite not yet created, report.md absent) - checks proven satisfiable.
