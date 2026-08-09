@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # tracker.sh - the single backend seam. Reads config/repo-state.md's tracker: key and
-# dispatches every issue operation to github (gh) or local (docs/issues/*.md) accordingly.
+# dispatches every issue operation to github (gh), gitlab (glab), or local (docs/issues/*.md)
+# accordingly.
 # Operates on the caller's cwd repo, never on this script's own location (cf. loop-auto.sh).
 set -uo pipefail
 fail() { echo "tracker: $1" >&2; exit 1; }
@@ -16,7 +17,7 @@ tracker_mode_get() {          # prints mode, or exits 3 when the key is absent
 }
 tracker_mode_set() {
   local m="$1"
-  case "$m" in github|local) ;; *) fail "mode set: must be 'github' or 'local' (got '$m')";; esac
+  case "$m" in github|gitlab|local) ;; *) fail "mode set: must be 'github', 'gitlab', or 'local' (got '$m')";; esac
   mkdir -p "$(dirname "$RS")"; touch "$RS"
   grep -v '^tracker:' "$RS" > "${RS}.tmp" || true
   printf 'tracker: %s\n' "$m" >> "${RS}.tmp"
@@ -27,6 +28,47 @@ tracker_mode_set() {
 gh_guard() {                  # fail-fast: covers gh-absent AND unauthenticated (criterion 3)
   command -v gh >/dev/null 2>&1 || fail "github mode requires the gh CLI, which is not on PATH"
   gh auth status >/dev/null 2>&1 || fail "github mode requires an authenticated gh CLI (run: gh auth login)"
+}
+
+# --- gitlab backend helpers ---
+gitlab_host() {               # prints the host of origin; nothing + non-zero when origin is absent
+  local url
+  url="$(git remote get-url origin 2>/dev/null)" || return 1
+  [ -n "$url" ] || return 1
+  printf '%s\n' "$url" | sed -E 's#^[a-z+]+://##; s#^[^@]*@##; s#[:/].*$##'
+}
+gitlab_group() {              # prints the first path segment after the host of origin
+  local url p
+  url="$(git remote get-url origin 2>/dev/null)" || return 1
+  [ -n "$url" ] || return 1
+  p="$(printf '%s\n' "$url" | sed -E 's#^[a-z+]+://##; s#^[^@]*@##; s#^[^:/]+##; s#^:[0-9]+/#/#; s#^:##; s#^/##')"
+  printf '%s\n' "${p%%/*}"
+}
+glab_guard() {                # fail-fast: host-scoped auth check (never bare `glab auth status`)
+  command -v glab >/dev/null 2>&1 || fail "gitlab mode requires the glab CLI, which is not on PATH"
+  local host
+  host="$(gitlab_host)" || fail "gitlab mode requires an origin remote to resolve the GitLab host (found none)"
+  [ -n "$host" ] || fail "gitlab mode requires an origin remote to resolve the GitLab host (found none)"
+  glab auth status --hostname "$host" >/dev/null 2>&1 \
+    || fail "gitlab mode requires glab authenticated to $host (run: glab auth login --hostname $host)"
+}
+# ponytail: 50 pages x 100 = a 5000-open-issue ceiling. GitLab caps per_page at 100, so a
+# page loop is the only correct form; raise the cap or switch to keyset pagination if a repo
+# ever exceeds it. The loop stops on the first short page, so the cap costs nothing normally.
+gitlab_list() {
+  local page=1 rows n all=""
+  while [ "$page" -le 50 ]; do
+    # declare first, assign second: `local rows="$(...)" || fail` would test local's status.
+    rows="$(glab issue list --per-page 100 --page "$page" -O json \
+      --jq '.[] | {number:.iid, title:.title, labels:[.labels[]|{name:.}], updatedAt:.updated_at}')" \
+      || fail "glab issue list failed on page $page"
+    [ -n "$rows" ] || break
+    all="${all:+$all,}$(printf '%s' "$rows" | paste -sd, -)"
+    n="$(printf '%s\n' "$rows" | grep -c .)"
+    [ "$n" -lt 100 ] && break
+    page=$((page + 1))
+  done
+  printf '[%s]\n' "$all"
 }
 
 # --- local backend helpers ---
@@ -111,8 +153,10 @@ local_list() {                # emit gh-shaped JSON for open issues
 usage() {
   cat >&2 <<EOF
 Usage: tracker.sh <command> [args]
-  mode get                       print the declared tracker mode (github|local); exit 3 if the key is absent
-  mode set <github|local>        write the line-anchored tracker: key
+  mode get                       print the declared tracker mode (github|gitlab|local); exit 3 if the key is absent
+  mode set <github|gitlab|local> write the line-anchored tracker: key
+  host                           print the GitLab host derived from origin
+  group                          print the first path segment of origin (the backlog group)
   list                           print a gh-shaped issue-JSON array for open issues
   create --label L --title T --body B   create an issue, print its number
   close <num>                    close an issue by number
@@ -128,7 +172,7 @@ case "$sub" in
     msub="$1"; shift
     case "$msub" in
       get) tracker_mode_get ;;
-      set) [ $# -ge 1 ] || fail "mode set: requires 'github' or 'local'"; tracker_mode_set "$1" ;;
+      set) [ $# -ge 1 ] || fail "mode set: requires 'github', 'gitlab', or 'local'"; tracker_mode_set "$1" ;;
       *)   usage; exit 1 ;;
     esac
     ;;
@@ -137,12 +181,12 @@ case "$sub" in
     # return-3s on a keyless repo; the parent-scope `|| fail` then aborts non-zero. A subshell
     # `fail` would exit only the subshell and the parent would fall into the local branch.
     mode="$(tracker_mode_get)" || fail "no tracker mode declared in $RS (run loop-setup)"
-    if [ "$mode" = github ]; then
-      gh_guard
-      gh issue list --state open --limit 1000 --json number,title,labels,updatedAt
-    else
-      local_list
-    fi
+    case "$mode" in
+      github) gh_guard; gh issue list --state open --limit 1000 --json number,title,labels,updatedAt ;;
+      gitlab) glab_guard; gitlab_list ;;
+      local)  local_list ;;
+      *)      fail "unknown tracker mode '$mode' in $RS (expected github, gitlab, or local)" ;;
+    esac
     ;;
   create)
     label=""; title=""; body=""
@@ -156,25 +200,46 @@ case "$sub" in
     done
     [ $# -eq 0 ] || fail "create: unpaired arguments"
     mode="$(tracker_mode_get)" || fail "no tracker mode declared in $RS (run loop-setup)"
-    if [ "$mode" = github ]; then
-      gh_guard
-      url="$(gh issue create --label "$label" --title "$title" --body "$body")"
-      printf '%s\n' "${url##*/}"
-    else
-      local_create "$label" "$title" "$body"
-    fi
+    case "$mode" in
+      github)
+        gh_guard
+        args=(issue create --title "$title" --body "$body")
+        [ -n "$label" ] && args+=(--label "$label")
+        url="$(gh "${args[@]}")" || fail "gh issue create failed"
+        printf '%s\n' "${url##*/}"
+        ;;
+      gitlab)
+        glab_guard
+        args=(issue create --yes --no-editor -t "$title" -d "$body")
+        [ -n "$label" ] && args+=(-l "$label")
+        out="$(glab "${args[@]}")" || fail "glab issue create failed"
+        iid="$(printf '%s' "$out" | grep -oE '/issues/[0-9]+' | tail -1 | sed 's#.*/##')"
+        [ -n "$iid" ] || fail "glab issue create returned no parseable issue URL"
+        printf '%s\n' "$iid"
+        ;;
+      local)
+        local_create "$label" "$title" "$body"
+        ;;
+      *)
+        fail "unknown tracker mode '$mode' in $RS (expected github, gitlab, or local)"
+        ;;
+    esac
     ;;
   close|reopen)
     [ $# -ge 1 ] || fail "$sub: requires an issue number"
     num="$1"
     mode="$(tracker_mode_get)" || fail "no tracker mode declared in $RS (run loop-setup)"
-    if [ "$mode" = github ]; then
-      gh_guard
-      gh issue "$sub" "$num"
-    else
-      if [ "$sub" = close ]; then local_set_state "$num" closed
-      else                           local_set_state "$num" open; fi
-    fi
+    case "$mode" in
+      github) gh_guard; gh issue "$sub" "$num" ;;
+      gitlab) glab_guard; glab issue "$sub" "$num" ;;
+      local)
+        if [ "$sub" = close ]; then local_set_state "$num" closed
+        else                           local_set_state "$num" open; fi
+        ;;
+      *)      fail "unknown tracker mode '$mode' in $RS (expected github, gitlab, or local)" ;;
+    esac
     ;;
+  host)   gitlab_host || fail "no origin remote" ;;
+  group)  gitlab_group || fail "no origin remote" ;;
   *) usage; exit 1 ;;
 esac
