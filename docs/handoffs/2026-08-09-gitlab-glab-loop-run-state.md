@@ -113,3 +113,10 @@ Autonomy: auto (session); Task 7 is a human checkpoint regardless.
 
 Integration branch `integration/gitlab-glab-loop` is green (36 suites, 0 failed) at `d5ea8c2`.
 Wave 6 (Task 7, live forge smoke) is a human checkpoint: every write to gitlab.code.rit.edu is staged for the user to fire.
+
+### Wave 6 - in progress (user-fired)
+
+- Step 2 observed: drift refresh offered and accepted for gen-mirrors.sh and tracker.sh (required pair); `GitLab remote found ... suggesting tracker: gitlab`; declared-local disagreement line printed; switch accepted -> `tracker: gitlab`; re-render to template-version 2 with `backlog-group: university-advancement` and real Remote URL; `created label idea`; mirrors rendered disclosing `GitLab issues`; sweep found 2 candidates.
+- DEVIATION from the staged script: the user accepted the sweep's mechanical import of BOTH candidates - `whats_next.md` became monolithic issue #1 (the plan staged a decline pending the criterion-13 split) and `docs/02-dataforge-workflow-plan.md` (a 36KB initiation/reference doc, not an actionable item) became issue #2. Both files archived. Recovery: prove the Step 2b cleanup routes on #1 itself (it must be removed regardless), split #1 per criterion 13 after title approval, remove #2.
+- Silver lining recorded: create/list/mirror are already live-proven by #1 and #2 - `tracker.sh list` returned the gh shape from GitLab and both rows rendered into ISSUES.md (unlabeled lane, correct).
+- Step 2b/3 pending user: title approval for the split, disposition of issue #2 and its file.
