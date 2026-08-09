@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Import (criterion 2): local-mode setup scans standard + --scan roots, offers each
-# issue-shaped/keyword .md for import, infers the label, and never lists excluded dirs.
+# Import (criterion 2): the sweep runs in all three modes, scanning the repo root plus the
+# standard and --scan roots, offering each issue-shaped/keyword .md for import, inferring the
+# label, and never listing excluded dirs.
 set -uo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$HERE/../.." && pwd)"
@@ -27,6 +28,8 @@ EOS
 
 # candidates in each standard root
 mkdir -p "$A/docs/plans" "$A/.planning" "$A/.ralph" "$A/.scratch/old/issues"
+# docs/plans/ is a governed lane, not a scan root: this fixture is exercised as an EXCLUSION
+# (MARKER_PLAN below), because the Archive-and-graduation rules own plan and brief archival.
 cat > "$A/docs/plans/big-plan.md" <<'EOS'
 # Big plan
 Label: idea
@@ -69,7 +72,7 @@ out="$( cd "$A" && LOOP_ASSUME_YES=1 LOOP_TRACKER_ANSWER=local "$SETUP" --scan "
   || fail "import setup (accept-all) errored"
 
 # every candidate landed as a tracker issue
-for m in MARKER_PLAN MARKER_NOTES MARKER_NEXT MARKER_TODO MARKER_SCRATCH MARKER_FM MARKER_EXTRA; do
+for m in MARKER_NOTES MARKER_NEXT MARKER_TODO MARKER_SCRATCH MARKER_FM MARKER_EXTRA; do
   grep -Rq "$m" "$A/docs/issues/" || fail "candidate $m was not imported into docs/issues/"
 done
 # label inference: the Label: bug candidate produced a labels: bug issue
@@ -84,10 +87,18 @@ grep -q '2026-08-04T00:00:00Z' "$fmfile"             && fail "old frontmatter le
 # a no-label candidate still imports (writes an empty labels: line, no crash)
 grep -Rl 'MARKER_NEXT' "$A/docs/issues/" | head -1 | xargs grep -q '^labels:' \
   || fail "no-label candidate did not import with a labels: line"
-# excluded content is never imported
-for m in MARKER_HANDOFF MARKER_REVIEW MARKER_BRIEF MARKER_ARCHIVE MARKER_MIRROR; do
+# excluded content is never imported (MARKER_PLAN: docs/plans/ is the governed plan lane)
+for m in MARKER_PLAN MARKER_HANDOFF MARKER_REVIEW MARKER_BRIEF MARKER_ARCHIVE MARKER_MIRROR; do
   grep -Rq "$m" "$A/docs/issues/" && fail "excluded path content $m was wrongly imported"
 done
+# accept-all also accepted the archive offers, so every in-tree candidate now lives in docs/archive/
+for b in notes.md next.md todo.md 001-fix-thing.md 002-frontmatter.md; do
+  [ -f "$A/docs/archive/$b" ] || fail "imported candidate $b was not archived"
+done
+[ -f "$A/docs/plans/big-plan.md" ] || fail "the excluded plan-lane fixture was moved or deleted"
+# the out-of-tree --scan candidate is imported but NEVER archived: no offer reaches outside the repo
+[ -f "$EXTRA/extra-plan.md" ] \
+  || fail "the out-of-tree --scan candidate was moved out of its own directory"
 # the live tracker home is not re-imported (MARKER_LIVE still appears in exactly one file)
 [ "$(grep -Rl 'MARKER_LIVE' "$A/docs/issues/" | wc -l | tr -d ' ')" -eq 1 ] \
   || fail "live tracker issue was re-imported (duplicated)"

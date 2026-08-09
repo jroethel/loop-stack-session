@@ -28,6 +28,7 @@ TIDY="$REPO/scripts/tidy.sh"
 
 DRY_REMOTE=0
 SCAN_ROOTS=()
+offers=0     # incremented by every offer source; zero is what earns the "nothing to do" summary
 while [ $# -gt 0 ]; do
   case "$1" in
     --dry-run-remote) DRY_REMOTE=1; shift ;;
@@ -86,6 +87,7 @@ for pair in "gen-mirrors.sh:$GEN" "tracker.sh:$TRK" "graduate-parking.sh:$GRAD";
   [ -f "scripts/$name" ] || continue
   cmp -s "scripts/$name" "$src" && continue
   echo "scripts/$name differs from loop-stack's current copy"
+  offers=$((offers + 1))
   diff -u "scripts/$name" "$src" || true
   echo "note: accepting REPLACES scripts/$name with loop-stack's copy; any local edits shown above are lost."
   if ask "refresh scripts/$name from loop-stack?"; then
@@ -189,6 +191,7 @@ reconcile_config() {   # offer a re-render when the config's template-version di
       ;;
   esac
   cand="$cand"$'\n'"tracker: $MODE"             # mirror tracker.sh mode set's appended key
+  offers=$((offers + 1))
   echo "config/repo-state.md is stale (template-version '${cv:-none}' vs '$tv'); proposed re-render:"
   diff -u config/repo-state.md <(printf '%s\n' "$cand") || true
   echo "note: accepting REPLACES the whole file with the render above; any hand edits not shown as kept are lost."
@@ -200,9 +203,19 @@ reconcile_config() {   # offer a re-render when the config's template-version di
   fi
 }
 
-is_excluded() {   # $1 = path; true for the live tracker home, loop-stack's own dirs, and the ALL-CAPS mirrors
+is_excluded() {   # $1 = NORMALIZED path (no ./ prefix); true for the live tracker home, loop-stack's
+                  # own dirs, the ALL-CAPS mirrors, and the depth-1 root project documents
   case "$1" in
-    docs/issues/*|docs/handoffs/*|docs/reviews/*|docs/briefs/*|docs/archive/*) return 0 ;;
+    docs/issues/*|docs/handoffs/*|docs/reviews/*|docs/briefs/*|docs/plans/*|docs/archive/*) return 0 ;;
+  esac
+  # docs/plans/* is a governed lane: config/repo-state.md's Archive-and-graduation rules own plan
+  # and brief archival ("a brief archives when its plan archives"), so the sweep never offers one.
+  # Root project documents, matched against the whole normalized path so only depth-1 files are
+  # excluded - a normalized depth-1 path contains no `/`, and matching on basename would also
+  # hide docs/notes/PLAN.md and any nested README.md, which is wider than intended. The list is
+  # deliberately wider than this repo's own root ls: setup.sh is vendored into other repos.
+  case "$1" in
+    README.md|CLAUDE.md|AGENTS.md|PLAN.md|CHANGELOG.md|LICENSE.md|CONTRIBUTING.md) return 0 ;;
   esac
   case "$(basename "$1")" in ROADMAP.md|ISSUES.md|BACKLOG.md) return 0 ;; esac
   return 1
@@ -215,16 +228,69 @@ is_candidate() { # $1 = path; keyword filename OR issue-shaped content
   grep -qiE '^(number|title|state):' "$1" && return 0
   return 1
 }
-reconcile_import() {   # local mode only: scan standard + --scan roots, offer each candidate for import
-  local roots=() r f label title body
+collect_candidates() {   # print one normalized candidate path per line: repo root (depth 1) + the recursive roots
+  local roots=() r f
+  # The root pass runs UNCONDITIONALLY and stays out of the recursive find below. `find` with an
+  # empty path list expands to `find .` and scans the whole tree, which is what the roots guard
+  # exists to prevent; the ${roots[@]+...} idiom is no substitute, it passes no path operand at all.
+  while IFS= read -r f; do
+    f="${f#./}"                      # the root pass yields ./x.md, the recursive pass docs/x.md
+    [ -n "$f" ] || continue
+    is_excluded "$f" && continue
+    is_candidate "$f" || continue
+    printf '%s\n' "$f"
+  done < <(find . -maxdepth 1 -type f -name '*.md' | sort)
   for r in docs .planning .ralph; do [ -d "$r" ] && roots+=("$r"); done
   for r in .scratch/*/issues; do [ -d "$r" ] && roots+=("$r"); done
   for r in ${SCAN_ROOTS[@]+"${SCAN_ROOTS[@]}"}; do [ -d "$r" ] && roots+=("$r"); done
   [ "${#roots[@]}" -gt 0 ] || return 0
   while IFS= read -r f; do
+    f="${f#./}"
     [ -n "$f" ] || continue
     is_excluded "$f" && continue
     is_candidate "$f" || continue
+    printf '%s\n' "$f"
+  done < <(find "${roots[@]}" -type f -name '*.md' | sort)
+}
+
+archive_offer() {   # $1 = normalized candidate path; offer a move to docs/archive/ (the idempotence mechanism)
+  local f="$1" dest
+  # Never reach outside the repo: --scan takes any directory, so an out-of-tree candidate is
+  # imported normally and keeps its home rather than being dragged into this repo's archive.
+  case "$f" in /*|../*) return 0 ;; esac
+  ask "move $f to docs/archive/?" || return 0
+  dest="docs/archive/$(basename "$f")"
+  # Never overwrite: two candidates sharing a basename would collapse onto one destination and
+  # the first would be destroyed silently. Stdout, not stderr - this is a user-facing decision.
+  if [ -e "$dest" ]; then
+    echo "skipping archive move: $dest already exists; left at $f"
+    return 0
+  fi
+  mkdir -p docs/archive
+  if git ls-files --error-unmatch "$f" >/dev/null 2>&1; then
+    git mv "$f" "$dest" >/dev/null 2>&1 || { echo "archive move failed for $f; left in place"; return 0; }
+  else
+    mv "$f" "$dest" 2>/dev/null || { echo "archive move failed for $f; left in place"; return 0; }
+  fi
+  echo "moved $f to $dest"
+}
+
+reconcile_import() {   # all modes: scan repo root + standard/--scan roots, offer each candidate for import
+  local cands=() n f label title body num imported=0
+  while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    cands+=("$f")
+  done < <(collect_candidates)
+  n="${#cands[@]}"
+  [ "$n" -gt 0 ] || return 0                 # silent; the end-of-run summary is what says "nothing to do"
+  # The count line is separate from the gate prompt on purpose: ask() returns without printing when
+  # LOOP_ASSUME_YES/NO is set, so this is the only trace of the gate that survives an unattended run.
+  echo "found $n import candidate(s)"
+  offers=$((offers + 1))
+  # A declined gate records nothing anywhere, so the same candidates are announced again next run:
+  # re-offering is the contract, and durability comes from archiving, not from remembering declines.
+  ask "review them?" || return 0
+  for f in "${cands[@]}"; do
     if head -1 "$f" | grep -qE '^---$'; then
       # frontmatter-shaped file: read title/labels from frontmatter, strip the first frontmatter block from the body
       title="$(grep -E '^title:'  "$f" | head -1 | sed -E 's/^title:[[:space:]]*//; s/[[:space:]]*$//')"
@@ -238,11 +304,33 @@ reconcile_import() {   # local mode only: scan standard + --scan roots, offer ea
     fi
     [ -n "$title" ] || title="$(basename "$f" .md)"
     echo "import candidate: $f (title: $title, label: ${label:-none})"
-    if ask "import $f as a tracker issue?"; then
-      scripts/tracker.sh create --label "$label" --title "$title" --body "$body" >/dev/null \
-        && echo "imported $f"
+    ask "import $f as a tracker issue?" || continue
+    # Ungating the sweep changed the unattended blast radius from "writes local markdown" to "files
+    # an issue per candidate on a shared instance", so remote creation needs an explicit opt-in.
+    # The gate keys on the unattended-yes variable and on DRY_REMOTE, never on MODE alone: an
+    # interactive per-item `y` in github/gitlab mode creates the issue with no extra variable.
+    if [ "$MODE" != local ]; then
+      if [ "$DRY_REMOTE" -eq 1 ]; then
+        echo "dry-run-remote: skipping remote import of $f"
+        continue
+      elif [ "${LOOP_ASSUME_YES:-0}" = 1 ] && [ "${LOOP_IMPORT_REMOTE:-0}" != 1 ]; then
+        echo "skipping remote import of $f (set LOOP_IMPORT_REMOTE=1 to allow unattended remote creation)"
+        continue
+      fi
     fi
-  done < <(find "${roots[@]}" -type f -name '*.md' | sort)
+    # Guard the create: treating a failure as imported would archive a file whose issue does not
+    # exist, and on a shared instance a create can fail for label, permission, or rate reasons
+    # partway through a multi-candidate sweep.
+    num="$(scripts/tracker.sh create --label "$label" --title "$title" --body "$body")" \
+      || { echo "create failed for $f; skipping" >&2; continue; }
+    [ -n "$num" ] || { echo "create returned no issue number for $f; skipping" >&2; continue; }
+    echo "imported $f as issue #$num"
+    imported=1
+    archive_offer "$f"
+  done
+  # A sweep that just filed issues must not end by printing completion over mirrors that lack them.
+  [ "$imported" -eq 1 ] && { scripts/gen-mirrors.sh . || fail "gen-mirrors.sh failed"; }
+  return 0
 }
 
 existing_mode="$(scripts/tracker.sh mode get 2>/dev/null || true)"
@@ -259,6 +347,7 @@ if [ -n "$existing_mode" ]; then
       ack="$(grep -E '^tracker-remote-ack:' config/repo-state.md 2>/dev/null | head -1 | sed -E 's/^tracker-remote-ack:[[:space:]]*//')"
       if [ "$remote_kind" != "$existing_mode" ] && [ "$ack" != "$remote_kind" ]; then
         echo "declared tracker: $existing_mode, but the remote is $remote_kind: $remote_url"
+        offers=$((offers + 1))
         if ask "switch this repo to tracker: $remote_kind?"; then
           scripts/tracker.sh mode set "$remote_kind" \
             || fail "scripts/tracker.sh rejected mode '$remote_kind' - it may predate this backend; accept the drift refresh and re-run"
@@ -326,6 +415,17 @@ case "$MODE" in
     scripts/gen-mirrors.sh . || fail "gen-mirrors.sh failed"   # local source, zero gh
     ;;
 esac
-[ "$MODE" = local ] && reconcile_import
-"$TIDY"
-echo "loop-setup complete"
+reconcile_import
+# tidy is a child process that always exits 0, so its offers are invisible to the counter unless
+# captured. Capture and re-emit: tidy's byproduct: lines stay on stdout, and the interactive
+# ordering stays usable because tidy's own per-item prompt (`delete <f>?`, on stderr) names the file.
+t="$("$TIDY")" || true
+[ -n "$t" ] && printf '%s\n' "$t"
+printf '%s' "$t" | grep -q '^byproduct:' && offers=$((offers + 1))
+# The one line that must never be false: quiet is a statement, not an absence. A run that asked
+# four drift-refresh questions and then claimed nothing to do would be worse than silence.
+if [ "$offers" -eq 0 ]; then
+  echo "loop-setup complete - nothing to do"
+else
+  echo "loop-setup complete"
+fi
