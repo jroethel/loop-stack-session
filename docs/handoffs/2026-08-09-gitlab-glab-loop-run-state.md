@@ -121,3 +121,5 @@ Wave 6 (Task 7, live forge smoke) is a human checkpoint: every write to gitlab.c
 - Silver lining recorded: create/list/mirror are already live-proven by #1 and #2 - `tracker.sh list` returned the gh shape from GitLab and both rows rendered into ISSUES.md (unlabeled lane, correct).
 - Step 2b/3 pending user: title approval for the split, disposition of issue #2 and its file.
 - Criterion 13 satisfied: user approved the 8-title split of whats_next.md (human checkpoint 2); issue #2's file stays in docs/archive/ per user choice.
+- Step 2b observed: BOTH cleanup routes verified live on issue #1 - `glab issue update 1 --title` exit 0, `glab api --method DELETE "projects/:id/issues/1"` exit 0 (the `:id` placeholder substitutes). Delete is the committed cleanup route.
+- Step 3 observed: 8 split issues created as #3-#10 (a=3 ... h=10); triage issue #7 body carries `Blocked by: #6` correctly; mirrors regen shows 2 idea rows in BACKLOG (backlog lane proven live). Issue #2 still live - its delete is staged next.
