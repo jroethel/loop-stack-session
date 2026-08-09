@@ -16,8 +16,8 @@ Autonomy: auto (session); Task 7 is a human checkpoint regardless.
 | 1    | task-1-tracker, task-2-mirrors | done    |
 | 2    | task-3-setup                   | done    |
 | 3    | task-4-sweep (+ opus review)   | done    |
-| 4    | task-5-migrate                 | running |
-| 5    | task-6-docs (+ opus review)    | pending |
+| 4    | task-5-migrate                 | done    |
+| 5    | task-6-docs (+ opus review)    | running |
 | 6    | task-7-forge-smoke (HUMAN)     | pending |
 
 ## Pre-flight log
@@ -76,3 +76,14 @@ Autonomy: auto (session); Task 7 is a human checkpoint regardless.
 ### Wave 4 - launched
 
 - Manifest: `/home/jjrdar/.loop-work/gitlab-glab-loop/wave-4.json` (task-5-migrate glm-5.2/claude-zai 1800s).
+
+### Wave 4 - gated (done)
+
+- Run `...T185054Z-p798333`: task-5-migrate PASS, 1 attempt; committed on integration; full suite 35 suites, 0 failed.
+- No open questions in the report; only the standard commit-step deviation.
+- MODEL-NOTES receipt committed in the ringer repo.
+
+### Wave 5 - launched
+
+- Manifest: `/home/jjrdar/.loop-work/gitlab-glab-loop/wave-5.json` (task-6-docs glm-5.2/claude-zai 2400s, docs).
+- Gate plan: after apply+commit, run task-6-review (opus, code-review), then the advisory /loop-review of the whole-run diff.
