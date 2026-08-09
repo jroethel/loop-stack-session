@@ -41,3 +41,8 @@ ASK and STOP entries are record-only; BATCH and DEFAULT entries are the review o
 - Decision: the loop-drive Step 7 "See execution details before I launch?" question was auto-taken as its default (launch immediately) at wave-1 launch time, per auto mode. This entry was written retroactively at run closeout; the take itself happened at launch and was narrated in chat.
 - Rationale: the dry-run substance (lint, baseline, exact launches) executed anyway as the plan's own mandatory pre-flight, so the question's information content was delivered regardless.
 - Reversal: n/a for this run (the run completed); for a future run, `/loop-auto set pause` before `/loop-drive` restores the live question.
+
+## End-of-chain review - 2026-08-09
+
+The user reviewed entries 2 through 6 at the end-of-chain checkpoint and accepted all five.
+No reversals taken.
