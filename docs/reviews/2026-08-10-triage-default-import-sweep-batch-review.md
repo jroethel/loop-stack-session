@@ -54,3 +54,9 @@ ASK and STOP entries are record-only (resolved live); BATCH and DEFAULT entries 
    - Rationale: plan Section 6 step 5; both axes ran as fresh-context reviewers against the whole-run
      diff; no Spec-axis finding to slip downstream.
    - Reversal: n/a - advisory only, nothing taken.
+10. ASK - end-of-chain checkpoint resolved.
+    - Decision: user accepted the prose voice, deferred the field run to his own repeated live testing,
+      accepted the auto-taken decisions implicitly by authorizing merge and push, and ordered issue #17
+      closed as resolved.
+    - Rationale: n/a - resolved live.
+    - Reversal: n/a - resolved live.

@@ -17,11 +17,10 @@ Updated at every launch and gate; git is truth, this file is the pointer.
   as `f76dc36` (import-triage.md) and `15d013f` (SKILL.md); suite reran independently: 36/36.
 - Distill applied: wave-2 check templates in the orchestration plan print import.sh output on failure.
 - MODEL-NOTES receipt: written and committed in the ringer repo (`e65f332`), none owed.
-- Human checkpoints (prose review, field run): PENDING - the run's only remaining open items.
+- Human checkpoints: prose review ACCEPTED; field run deferred to the user's own live testing.
 - Advisory terminal review (/loop-review f9cbbd7): DONE - Spec clean, Standards ship-ready
   (2 accepted judgement calls, journal entry 9); nothing slipped downstream.
 
-All waves complete 2026-08-10; integration branch green at `15d013f`.
-Remaining: human prose review of the two docs, field run of /loop-setup, then merge decision.
+RUN CLOSED 2026-08-10: merged to main and pushed; issue #17 closed as resolved.
 
 Resume: use the verbatim resume prompt in Section 7 of the orchestration plan.
