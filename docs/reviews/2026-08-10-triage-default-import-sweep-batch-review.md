@@ -47,3 +47,10 @@ ASK and STOP entries are record-only (resolved live); BATCH and DEFAULT entries 
      style checks confirmed; the substantive voice judgment stays with the human checkpoint.
    - Reversal: `git revert 15d013f f76dc36` on the integration branch, or a scoped re-run of either
      unit with an alternate engine (the taste lean was glm-5.2 by user choice, entry 3).
+9. BATCH - advisory terminal loop-review executed (non-blocking, post-advancement).
+   - Decision: ran /loop-review f9cbbd7 from the integration branch; Spec axis clean (0 findings),
+     Standards axis ship-ready (2 judgement calls: LOOP_IMPORT_REMOTE naming debt, spec-mandated;
+     pre-existing duplicate filter bodies in collect_candidates, relocated not introduced).
+   - Rationale: plan Section 6 step 5; both axes ran as fresh-context reviewers against the whole-run
+     diff; no Spec-axis finding to slip downstream.
+   - Reversal: n/a - advisory only, nothing taken.

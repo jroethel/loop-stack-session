@@ -18,7 +18,8 @@ Updated at every launch and gate; git is truth, this file is the pointer.
 - Distill applied: wave-2 check templates in the orchestration plan print import.sh output on failure.
 - MODEL-NOTES receipt: written and committed in the ringer repo (`e65f332`), none owed.
 - Human checkpoints (prose review, field run): PENDING - the run's only remaining open items.
-- Advisory terminal review (/loop-review f9cbbd7): running; findings recorded at the checkpoint.
+- Advisory terminal review (/loop-review f9cbbd7): DONE - Spec clean, Standards ship-ready
+  (2 accepted judgement calls, journal entry 9); nothing slipped downstream.
 
 All waves complete 2026-08-10; integration branch green at `15d013f`.
 Remaining: human prose review of the two docs, field run of /loop-setup, then merge decision.
