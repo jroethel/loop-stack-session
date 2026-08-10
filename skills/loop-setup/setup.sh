@@ -26,16 +26,74 @@ GEN="$REPO/scripts/gen-mirrors.sh"
 TIDY="$REPO/scripts/tidy.sh"
 [ -x "$TIDY" ] || fail "tidy.sh not found or not executable: $TIDY"
 
+is_excluded() {   # $1 = NORMALIZED path (no ./ prefix); true for the live tracker home, loop-stack's
+                  # own dirs, the ALL-CAPS mirrors, and the depth-1 root project documents
+  case "$1" in
+    docs/issues/*|docs/handoffs/*|docs/reviews/*|docs/briefs/*|docs/plans/*|docs/archive/*) return 0 ;;
+  esac
+  # docs/plans/* is a governed lane: config/repo-state.md's Archive-and-graduation rules own plan
+  # and brief archival ("a brief archives when its plan archives"), so the sweep never offers one.
+  # Root project documents, matched against the whole normalized path so only depth-1 files are
+  # excluded - a normalized depth-1 path contains no `/`, and matching on basename would also
+  # hide docs/notes/PLAN.md and any nested README.md, which is wider than intended. The list is
+  # deliberately wider than this repo's own root ls: setup.sh is vendored into other repos.
+  case "$1" in
+    README.md|CLAUDE.md|AGENTS.md|PLAN.md|CHANGELOG.md|LICENSE.md|CONTRIBUTING.md) return 0 ;;
+  esac
+  case "$(basename "$1")" in ROADMAP.md|ISSUES.md|BACKLOG.md) return 0 ;; esac
+  return 1
+}
+is_candidate() { # $1 = path; keyword filename OR issue-shaped content
+  local base; base="$(basename "$1")"
+  # keyword match anchored to whole filename tokens so "fixture"/"explanation" do not match "fix"/"plan"
+  printf '%s' "$base" | grep -qiE '(^|[^a-z])(issues|next|backlog|plan|fix|todo)([^a-z]|$)' && return 0
+  if grep -qE '^# ' "$1" && grep -qiE '^(Label|Filed|Status):' "$1"; then return 0; fi
+  grep -qiE '^(number|title|state):' "$1" && return 0
+  return 1
+}
+collect_candidates() {   # print one normalized candidate path per line: repo root (depth 1) + the recursive roots
+  local roots=() r f
+  # The root pass runs UNCONDITIONALLY and stays out of the recursive find below. `find` with an
+  # empty path list expands to `find .` and scans the whole tree, which is what the roots guard
+  # exists to prevent; the ${roots[@]+...} idiom is no substitute, it passes no path operand at all.
+  while IFS= read -r f; do
+    f="${f#./}"                      # the root pass yields ./x.md, the recursive pass docs/x.md
+    [ -n "$f" ] || continue
+    is_excluded "$f" && continue
+    is_candidate "$f" || continue
+    printf '%s\n' "$f"
+  done < <(find . -maxdepth 1 -type f -name '*.md' | sort)
+  for r in docs .planning .ralph; do [ -d "$r" ] && roots+=("$r"); done
+  for r in .scratch/*/issues; do [ -d "$r" ] && roots+=("$r"); done
+  for r in ${SCAN_ROOTS[@]+"${SCAN_ROOTS[@]}"}; do [ -d "$r" ] && roots+=("$r"); done
+  [ "${#roots[@]}" -gt 0 ] || return 0
+  while IFS= read -r f; do
+    f="${f#./}"
+    [ -n "$f" ] || continue
+    is_excluded "$f" && continue
+    is_candidate "$f" || continue
+    printf '%s\n' "$f"
+  done < <(find "${roots[@]}" -type f -name '*.md' | sort)
+}
+
 DRY_REMOTE=0
+LIST_ONLY=0
 SCAN_ROOTS=()
 offers=0     # incremented by every offer source; zero is what earns the "nothing to do" summary
 while [ $# -gt 0 ]; do
   case "$1" in
     --dry-run-remote) DRY_REMOTE=1; shift ;;
+    --list-candidates) LIST_ONLY=1; shift ;;
     --scan) [ $# -ge 2 ] || fail "--scan requires a directory argument"; SCAN_ROOTS+=("$2"); shift 2 ;;
     *) fail "unknown argument: $1" ;;
   esac
 done
+
+# --list-candidates: print the candidate paths and stop, before any mkdir, install, or remote work.
+if [ "$LIST_ONLY" -eq 1 ]; then
+  collect_candidates
+  exit 0
+fi
 
 # Detect and classify the target repo's remote (the cwd we were called from).
 # Advisory only: it phrases the suggestion, never picks the mode.
@@ -215,56 +273,6 @@ reconcile_config() {   # offer a re-render when the config's template-version di
   fi
 }
 
-is_excluded() {   # $1 = NORMALIZED path (no ./ prefix); true for the live tracker home, loop-stack's
-                  # own dirs, the ALL-CAPS mirrors, and the depth-1 root project documents
-  case "$1" in
-    docs/issues/*|docs/handoffs/*|docs/reviews/*|docs/briefs/*|docs/plans/*|docs/archive/*) return 0 ;;
-  esac
-  # docs/plans/* is a governed lane: config/repo-state.md's Archive-and-graduation rules own plan
-  # and brief archival ("a brief archives when its plan archives"), so the sweep never offers one.
-  # Root project documents, matched against the whole normalized path so only depth-1 files are
-  # excluded - a normalized depth-1 path contains no `/`, and matching on basename would also
-  # hide docs/notes/PLAN.md and any nested README.md, which is wider than intended. The list is
-  # deliberately wider than this repo's own root ls: setup.sh is vendored into other repos.
-  case "$1" in
-    README.md|CLAUDE.md|AGENTS.md|PLAN.md|CHANGELOG.md|LICENSE.md|CONTRIBUTING.md) return 0 ;;
-  esac
-  case "$(basename "$1")" in ROADMAP.md|ISSUES.md|BACKLOG.md) return 0 ;; esac
-  return 1
-}
-is_candidate() { # $1 = path; keyword filename OR issue-shaped content
-  local base; base="$(basename "$1")"
-  # keyword match anchored to whole filename tokens so "fixture"/"explanation" do not match "fix"/"plan"
-  printf '%s' "$base" | grep -qiE '(^|[^a-z])(issues|next|backlog|plan|fix|todo)([^a-z]|$)' && return 0
-  if grep -qE '^# ' "$1" && grep -qiE '^(Label|Filed|Status):' "$1"; then return 0; fi
-  grep -qiE '^(number|title|state):' "$1" && return 0
-  return 1
-}
-collect_candidates() {   # print one normalized candidate path per line: repo root (depth 1) + the recursive roots
-  local roots=() r f
-  # The root pass runs UNCONDITIONALLY and stays out of the recursive find below. `find` with an
-  # empty path list expands to `find .` and scans the whole tree, which is what the roots guard
-  # exists to prevent; the ${roots[@]+...} idiom is no substitute, it passes no path operand at all.
-  while IFS= read -r f; do
-    f="${f#./}"                      # the root pass yields ./x.md, the recursive pass docs/x.md
-    [ -n "$f" ] || continue
-    is_excluded "$f" && continue
-    is_candidate "$f" || continue
-    printf '%s\n' "$f"
-  done < <(find . -maxdepth 1 -type f -name '*.md' | sort)
-  for r in docs .planning .ralph; do [ -d "$r" ] && roots+=("$r"); done
-  for r in .scratch/*/issues; do [ -d "$r" ] && roots+=("$r"); done
-  for r in ${SCAN_ROOTS[@]+"${SCAN_ROOTS[@]}"}; do [ -d "$r" ] && roots+=("$r"); done
-  [ "${#roots[@]}" -gt 0 ] || return 0
-  while IFS= read -r f; do
-    f="${f#./}"
-    [ -n "$f" ] || continue
-    is_excluded "$f" && continue
-    is_candidate "$f" || continue
-    printf '%s\n' "$f"
-  done < <(find "${roots[@]}" -type f -name '*.md' | sort)
-}
-
 archive_offer() {   # $1 = normalized candidate path; offer a move to docs/archive/ (the idempotence mechanism)
   local f="$1" dest
   # Never reach outside the repo: --scan takes any directory, so an out-of-tree candidate is
@@ -318,17 +326,22 @@ reconcile_import() {   # all modes: scan repo root + standard/--scan roots, offe
     echo "import candidate: $f (title: $title, label: ${label:-none})"
     ask "import $f as a tracker issue?" || continue
     # Ungating the sweep changed the unattended blast radius from "writes local markdown" to "files
-    # an issue per candidate on a shared instance", so remote creation needs an explicit opt-in.
-    # The gate keys on the unattended-yes variable and on DRY_REMOTE, never on MODE alone: an
-    # interactive per-item `y` in github/gitlab mode creates the issue with no extra variable.
+    # an issue per candidate on a shared instance", so unattended creation needs an explicit opt-in.
+    # The DRY_REMOTE skip stays MODE-gated (remote only) and ahead of the LOOP_IMPORT_REMOTE gate,
+    # so the dry-run diagnostic still wins when both apply.
     if [ "$MODE" != local ]; then
       if [ "$DRY_REMOTE" -eq 1 ]; then
         echo "dry-run-remote: skipping remote import of $f"
         continue
-      elif [ "${LOOP_ASSUME_YES:-0}" = 1 ] && [ "${LOOP_IMPORT_REMOTE:-0}" != 1 ]; then
-        echo "skipping remote import of $f (set LOOP_IMPORT_REMOTE=1 to allow unattended remote creation)"
-        continue
       fi
+    fi
+    # LOOP_IMPORT_REMOTE now gates unattended issue creation in ALL modes (local included), not just
+    # remote backends; the name is kept for compatibility (tests grep for set LOOP_IMPORT_REMOTE=1).
+    # The gate keys on the unattended-yes variable, never on MODE alone: an interactive per-item `y`
+    # in github/gitlab mode creates the issue with no extra variable.
+    if [ "${LOOP_ASSUME_YES:-0}" = 1 ] && [ "${LOOP_IMPORT_REMOTE:-0}" != 1 ]; then
+      echo "skipping unattended import of $f; set LOOP_IMPORT_REMOTE=1 to allow unattended issue creation"
+      continue
     fi
     # Guard the create: treating a failure as imported would archive a file whose issue does not
     # exist, and on a shared instance a create can fail for label, permission, or rate reasons

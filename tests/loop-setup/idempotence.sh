@@ -29,7 +29,7 @@ printf '# Old plan\nLabel: idea\nsettled work\n'   > "$A/docs/plans/2020-01-01-o
 printf '# Plan\nLabel: idea\nproject file\n'       > "$A/PLAN.md"
 # offered: the root-name exclusion is depth-1 only, so a nested PLAN.md stays a candidate
 printf '# Nested plan\nLabel: idea\nnested work\n' > "$A/docs/nested/PLAN.md"
-out="$( cd "$A" && LOOP_TRACKER_ANSWER=local LOOP_ASSUME_YES=1 "$SETUP" </dev/null 2>/dev/null )" \
+out="$( cd "$A" && LOOP_TRACKER_ANSWER=local LOOP_ASSUME_YES=1 LOOP_IMPORT_REMOTE=1 "$SETUP" </dev/null 2>/dev/null )" \
   || fail "local sweep run exited non-zero"
 # the count line prints to stdout BEFORE the gate, because ask() returns without printing its
 # prompt when LOOP_ASSUME_* is set - the count is the only always-visible trace of the gate
@@ -90,7 +90,7 @@ mkdir -p "$K/docs/a" "$K/docs/b"
 ( cd "$K" && git init -q )
 printf '# First todo\nLabel: idea\none\n'  > "$K/docs/a/dup-todo.md"
 printf '# Second todo\nLabel: idea\ntwo\n' > "$K/docs/b/dup-todo.md"
-outK="$( cd "$K" && LOOP_TRACKER_ANSWER=local LOOP_ASSUME_YES=1 "$SETUP" </dev/null 2>/dev/null )" \
+outK="$( cd "$K" && LOOP_TRACKER_ANSWER=local LOOP_ASSUME_YES=1 LOOP_IMPORT_REMOTE=1 "$SETUP" </dev/null 2>/dev/null )" \
   || fail "collision run exited non-zero"
 [ "$(ls "$K/docs/issues"/*.md 2>/dev/null | wc -l)" -eq 2 ] || fail "collision run did not import both candidates"
 [ -f "$K/docs/archive/dup-todo.md" ] || fail "no candidate reached the archive"
@@ -105,7 +105,7 @@ printf '%s\n' "$outK" | grep -qi 'skip' || fail "the skipped collision move did 
 L="$(mktemp -d)"; XT="$(mktemp -d)"; trap 'rm -rf "$A" "$B" "$K" "$L" "$XT"' EXIT
 ( cd "$L" && git init -q )
 printf '# Extra todo\nLabel: idea\nelsewhere\n' > "$XT/extra-todo.md"
-outL="$( cd "$L" && LOOP_TRACKER_ANSWER=local LOOP_ASSUME_YES=1 "$SETUP" --scan "$XT" </dev/null 2>/dev/null )" \
+outL="$( cd "$L" && LOOP_TRACKER_ANSWER=local LOOP_ASSUME_YES=1 LOOP_IMPORT_REMOTE=1 "$SETUP" --scan "$XT" </dev/null 2>/dev/null )" \
   || fail "out-of-tree scan run exited non-zero"
 printf '%s\n' "$outL" | grep -q 'found 1 import candidate' || fail "the --scan candidate was not found"
 [ "$(ls "$L/docs/issues"/*.md 2>/dev/null | wc -l)" -eq 1 ] || fail "the --scan candidate was not imported"

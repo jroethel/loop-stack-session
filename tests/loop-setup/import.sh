@@ -68,7 +68,7 @@ printf '# Brief plan\nStatus: open\nMARKER_BRIEF\n'      > "$A/docs/briefs/b.md"
 printf '# Archived plan\nStatus: open\nMARKER_ARCHIVE\n' > "$A/docs/archive/a.md"
 printf '# Issues plan\nStatus: open\nMARKER_MIRROR\n'    > "$A/docs/ISSUES.md"
 
-out="$( cd "$A" && LOOP_ASSUME_YES=1 LOOP_TRACKER_ANSWER=local "$SETUP" --scan "$EXTRA" </dev/null )" \
+out="$( cd "$A" && LOOP_ASSUME_YES=1 LOOP_IMPORT_REMOTE=1 LOOP_TRACKER_ANSWER=local "$SETUP" --scan "$EXTRA" </dev/null )" \
   || fail "import setup (accept-all) errored"
 
 # every candidate landed as a tracker issue
@@ -113,4 +113,45 @@ printf '# A plan\nLabel: idea\nMARKER_DECLINE\n' > "$B/docs/decline-plan.md"
 grep -Rq 'MARKER_DECLINE' "$B/docs/issues/" 2>/dev/null \
   && fail "declined candidate was imported anyway"
 
-echo "PASS: import - standard + --scan roots offered, labels inferred, excluded dirs never imported, decline skips"
+# ---------- scenario C: --list-candidates prints candidates only, zero side effects ----------
+C="$(mktemp -d)"; CE="$(mktemp -d)"; trap 'rm -rf "$A" "$EXTRA" "$B" "$C" "$CE"' EXIT
+( cd "$C" && git init -q )
+mkdir -p "$C/docs"
+printf '# C plan\nLabel: idea\nMARKER_C_PLAN\n'   > "$C/docs/c-plan.md"
+printf '# Readme\nStatus: open\nMARKER_C_README\n' > "$C/README.md"
+printf '# Scanned todo\nMARKER_C_SCAN\n'           > "$CE/todo.md"
+
+list="$( cd "$C" && "$SETUP" --list-candidates --scan "$CE" </dev/null )" \
+  || fail "--list-candidates exited nonzero"
+
+# it prints the in-tree candidate and the --scan candidate, honoring --scan
+printf '%s\n' "$list" | grep -qx 'docs/c-plan.md'   || fail "--list-candidates omitted docs/c-plan.md"
+printf '%s\n' "$list" | grep -qF "$CE/todo.md"       || fail "--list-candidates omitted the --scan candidate"
+# excluded root files never appear
+printf '%s\n' "$list" | grep -qx 'README.md'         && fail "--list-candidates listed an excluded root file"
+# nothing but candidate paths reaches stdout: no setup narration, no install lines
+printf '%s\n' "$list" | grep -q 'loop-setup complete' && fail "--list-candidates emitted setup narration"
+printf '%s\n' "$list" | grep -q 'installed'           && fail "--list-candidates emitted an install line"
+# zero side effects: no config, no vendored scripts, no docs homes created
+[ -f "$C/config/repo-state.md" ] && fail "--list-candidates wrote config/repo-state.md"
+[ -d "$C/scripts" ]              && fail "--list-candidates installed vendored scripts"
+[ -d "$C/docs/archive" ]         && fail "--list-candidates created docs/archive/"
+[ -d "$C/docs/issues" ]          && fail "--list-candidates created docs/issues/"
+
+# ---------- scenario D: unattended run (LOOP_ASSUME_YES, no LOOP_IMPORT_REMOTE) files nothing ----------
+D="$(mktemp -d)"; trap 'rm -rf "$A" "$EXTRA" "$B" "$C" "$CE" "$D"' EXIT
+( cd "$D" && git init -q )
+mkdir -p "$D/docs"
+printf '# D plan\nLabel: idea\nMARKER_D_PLAN\n' > "$D/docs/d-plan.md"
+
+outD="$( cd "$D" && LOOP_ASSUME_YES=1 LOOP_TRACKER_ANSWER=local "$SETUP" </dev/null )" \
+  || fail "unattended-gate setup errored"
+
+# local mode, unattended, no LOOP_IMPORT_REMOTE: nothing is filed
+grep -Rq 'MARKER_D_PLAN' "$D/docs/issues/" 2>/dev/null \
+  && fail "unattended run without LOOP_IMPORT_REMOTE filed an issue"
+# but the per-candidate line still prints (D3: the trace survives the skip)
+printf '%s\n' "$outD" | grep -q '^import candidate: docs/d-plan.md' \
+  || fail "unattended run did not print the import candidate line"
+
+echo "PASS: import - roots offered, labels inferred, exclusions honored, decline skips, --list-candidates clean, unattended files nothing"
