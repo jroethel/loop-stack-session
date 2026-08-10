@@ -41,12 +41,17 @@ It never assumes local.
 
 ## The import sweep
 
-The sweep runs in all three modes.
-It scans the repo root (depth 1) and the standard roots (`docs/`, `.planning/`, `.ralph/`, `.scratch/*/issues`, plus any `--scan` roots), skipping governed lanes and root project files.
-It asks one gate question, then a per-item confirmation for each candidate.
-After each import it offers a declinable archive move to `docs/archive/` - idempotence comes from that archive move, not from any state file.
+The sweep runs in all three modes, and its recommended default is the triage workflow documented in `references/import-triage.md`.
+After the mechanical config and mirror steps, the agent works the candidates as follows:
+1. Scan via `setup.sh --list-candidates`.
+2. Classify each discrete item as an issue (no label) or a backlog item (`idea`).
+3. Verify each item as outstanding vs already-built, with disclosed evidence for every drop.
+4. Present one batch disclosure table, then offer a per-candidate walkthrough for any items the user picks.
+5. On approval, file each outstanding item, archive each source doc, write the record doc, and regenerate the mirrors.
+The scan covers the repo root (depth 1) and the standard roots (`docs/`, `.planning/`, `.ralph/`, `.scratch/*/issues`, plus any `--scan` roots), skipping governed lanes and root project files.
+loop-setup is attended-only and ignores the `loop-auto` autonomy knob; there is no unattended triage mode.
+Verbatim one-file-one-issue import and skip remain explicitly offered fallbacks, and the bash per-item prompt is unchanged.
 Anything declined and left in place is re-offered on the next run, which is the design surfacing a live loose end, not a bug.
-The mechanical import only turns one file into one issue, verbatim; a file that needs splitting or merging is declined at the bash prompt and handled by the agent per `references/import-triage.md`.
 
 ## Migration
 
@@ -72,8 +77,10 @@ LOOP_TRACKER_ANSWER=github /path/to/setup.sh
 LOOP_TRACKER_ANSWER=gitlab /path/to/setup.sh
 LOOP_IMPORT_REMOTE=1 LOOP_ASSUME_YES=1 /path/to/setup.sh
 MIRRORS_JSON_FILE=./issues.json /path/to/setup.sh --dry-run-remote
+/path/to/setup.sh --list-candidates
 ```
 
 `LOOP_TRACKER_ANSWER=github|gitlab|local` supplies the mode answer without prompting (used in tests and unattended runs).
-`LOOP_IMPORT_REMOTE=1` is required alongside `LOOP_ASSUME_YES` before an unattended run may create issues on a remote backend; without it, remote candidates are skipped with a note.
+`LOOP_IMPORT_REMOTE=1` is required alongside `LOOP_ASSUME_YES` before an unattended run creates issues in any mode, local included; without it, candidates are skipped with a note in every mode.
 `--dry-run-remote` treats the repo as remote-present, skips the gh/glab auth fail-fast and label create, skips the sweep's remote issue creation, and (with `MIRRORS_JSON_FILE`) generates mirrors from a fixture JSON instead of calling gh or glab.
+`--list-candidates` prints the candidate paths, one normalized path per line (honoring `--scan`), exits 0 with no side effects, and serves as the triage scan entry point.
