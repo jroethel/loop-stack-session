@@ -39,3 +39,11 @@ ASK and STOP entries are record-only (resolved live); BATCH and DEFAULT entries 
      with wave 2 unlaunched and all receipts committed.
    - Rationale: n/a - resolved live.
    - Reversal: n/a - resolved live (resume prompt relaunches wave 2).
+8. BATCH - wave-2 gate accepted, both units.
+   - Decision: accepted task2-triage and task3-skill on first-attempt passes; patches scope-disjoint
+     (import-triage.md only, SKILL.md only), applied, suite independently reran 36/36, house-style
+     em-dash grep clean, prose spot-checked; committed as `f76dc36` and `15d013f`.
+   - Rationale: run JSON pass 2 fail 0, check rc=0 both; independent suite rerun and mechanical
+     style checks confirmed; the substantive voice judgment stays with the human checkpoint.
+   - Reversal: `git revert 15d013f f76dc36` on the integration branch, or a scoped re-run of either
+     unit with an alternate engine (the taste lean was glm-5.2 by user choice, entry 3).
