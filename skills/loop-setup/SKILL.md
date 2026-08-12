@@ -8,6 +8,18 @@ description: Declare a repo's tracker mode, write its repo-state map (config/rep
 Bootstraps the repo-state convention in the current repo.
 The runnable, idempotent core is `setup.sh` next to this file; this skill narrates and invokes it.
 
+## Tracker modes
+
+setup.sh supports three tracker modes: `github`, `gitlab`, and `local`.
+When an agent fronts the mode question in its own UI instead of letting setup.sh's stdin prompt through, it presents all three verbatim - never paraphrasing the list or silently dropping one - and states each one's viability caveat so the user can see which are usable in this environment:
+
+- `github` - needs an authenticated `gh` CLI (`gh auth status`).
+- `gitlab` - needs an origin remote to resolve the host, plus `glab` authenticated to that host (`glab auth status --hostname <host>`).
+- `local` - no external dependency; issues live in `docs/issues/`.
+
+Remote for code, local tracking: to run a repo whose code lives on a github or gitlab remote but whose issues stay local, choose `local` and add a `tracker-remote-ack: <github|gitlab>` line to config/repo-state.md.
+That line acknowledges the deliberate mode-versus-remote split and silences setup's switch offer; it is the supported way to pair a remote codebase with local issue tracking, and no multi-backend "combination" mode exists or is planned.
+
 ## What it does
 
 1. Writes `config/repo-state.md` by rendering `config/repo-state.template.md`.
