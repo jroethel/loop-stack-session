@@ -121,6 +121,14 @@ fi
 
 mkdir -p config docs/handoffs docs/reviews docs/archive
 
+# docs/chain-state.md is runtime state the config declares as gitignored; add it (all modes,
+# idempotent) so a repo following the config as written never commits its chain state.
+if ! grep -qxF 'docs/chain-state.md' .gitignore 2>/dev/null; then
+  echo 'docs/chain-state.md' >> .gitignore
+  echo "added docs/chain-state.md to .gitignore"
+  offers=$((offers + 1))
+fi
+
 # Install the mirror generator into the target repo (skip-if-exists), so the regen command the
 # config declares (`scripts/gen-mirrors.sh .`) is true locally - not a dangling pointer to loop-stack.
 if [ ! -f scripts/gen-mirrors.sh ]; then
@@ -202,12 +210,18 @@ render_local() {
 
 render_gitlab() {
   # Like render_github but substitutes the backlog group into the gitlab-only lines instead of
-  # dropping them. Strips the Local tracker section, drops the "Render it into" line, and rewrites
-  # the dangling "Local tracker section governs local mode" pointer.
-  awk -v url="$1" -v grp="$2" '
+  # dropping them, and rewrites the GitHub-named lanes/source-of-truth text to GitLab (the template
+  # is GitHub-first). Drops the two gh backlog-view lines the way render_github drops the glab ones.
+  # Prefixes ONLY the cross-repo glab query with GITLAB_HOST (it is run from outside any repo, where
+  # glab cannot resolve a host from context); the per-repo fallback stays host-free. Strips the Local
+  # tracker section, drops the "Render it into" line, rewrites the dangling Local-tracker pointer.
+  awk -v url="$1" -v grp="$2" -v host="$3" '
     BEGIN { skip = 0 }
-    { gsub(/{{BACKLOG_GROUP}}/, grp) }
+    { gsub(/{{BACKLOG_GROUP}}/, grp); gsub(/GitHub/, "GitLab") }
     index($0, "Render it into") { next }
+    index($0, "gh search issues") { next }
+    index($0, "gh issue list") { next }
+    index($0, "glab issue list --group") { if (host != "") sub(/glab issue list --group/, "GITLAB_HOST=" host " glab issue list --group") }
     index($0, "{{REMOTE_OR_FALLBACK}}") { print "Remote: " url; next }
     /^## Local tracker/ { skip = 1; next }
     /^## / { skip = 0 }
@@ -238,7 +252,7 @@ ensure_roadmap() {
 
 reconcile_config() {   # offer a re-render when the config's template-version differs from the template's
   [ -f config/repo-state.md ] || return 0
-  local tv cv cand remote grp
+  local tv cv cand remote grp host
   tv="$(version_of "$TPL")"
   cv="$(version_of config/repo-state.md)"
   [ "$cv" = "$tv" ] && return 0                 # already current -> report nothing
@@ -254,7 +268,8 @@ reconcile_config() {   # offer a re-render when the config's template-version di
       if [ -z "$remote" ] || [ "${remote#none}" != "$remote" ]; then remote="$remote_url"; fi
       grp="$(grep -E '^backlog-group:' config/repo-state.md | head -1 | sed -E 's/^backlog-group:[[:space:]]*//')"
       [ -n "$grp" ] || grp="$(scripts/tracker.sh group 2>/dev/null || true)"
-      cand="$(render_gitlab "$remote" "$grp")"
+      host="$(scripts/tracker.sh host 2>/dev/null || true)"
+      cand="$(render_gitlab "$remote" "$grp" "$host")"
       ;;
     *)
       cand="$(render_local)"
@@ -388,7 +403,7 @@ else
   if [ ! -f config/repo-state.md ]; then
     MODE="$(determine_mode)"
     case "$MODE" in github) render_github "$remote_url" > config/repo-state.md ;;
-                    gitlab)  render_gitlab "$remote_url" "$(scripts/tracker.sh group 2>/dev/null || true)" > config/repo-state.md ;;
+                    gitlab)  render_gitlab "$remote_url" "$(scripts/tracker.sh group 2>/dev/null || true)" "$(scripts/tracker.sh host 2>/dev/null || true)" > config/repo-state.md ;;
                     local)   render_local          > config/repo-state.md ;;
                     *) fail "tracker mode must be 'github', 'gitlab', or 'local' (got '$MODE')";; esac
     echo "wrote config/repo-state.md (tracker: $MODE)"
@@ -419,7 +434,11 @@ case "$MODE" in
   gitlab)
     if [ "$DRY_REMOTE" -eq 0 ]; then
       host="$(scripts/tracker.sh host 2>/dev/null || true)"
-      [ -n "$host" ] || fail "tracker: gitlab requires an origin remote to resolve the GitLab host"
+      if [ -z "$host" ]; then
+        echo "no remote - to create one: GITLAB_HOST=<host> glab repo create <name> --private --skipGitInit"
+        echo "then: git remote add origin <url>"
+        fail "tracker: gitlab requires an origin remote to resolve the GitLab host"
+      fi
       command -v glab >/dev/null 2>&1 && glab auth status --hostname "$host" >/dev/null 2>&1 \
         || fail "tracker: gitlab requires glab authenticated to $host (install glab and run: glab auth login --hostname $host)"
       if ! glab label list -F json --jq '.[].name' 2>/dev/null | grep -qx 'idea'; then

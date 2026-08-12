@@ -65,6 +65,36 @@ grep -E 'GLAB CALLED: auth status$' "$LOG" && fail "gitlab finalize ran a BARE g
 grep -q 'GLAB CALLED: label create --name idea' "$LOG" \
   || fail "gitlab finalize did not create the idea label"
 
+# #19: no GitHub source-of-truth text leaks into a gitlab render; the GitLab-correct text is present
+grep -q '^GitHub is the single source of truth' "$A/config/repo-state.md" \
+  && fail "gitlab render leaked 'GitHub is the single source of truth'"
+grep -q 'GitHub (open' "$A/config/repo-state.md" \
+  && fail "gitlab render leaked the GitHub Issues lane row"
+grep -q 'GitHub (label' "$A/config/repo-state.md" \
+  && fail "gitlab render leaked the GitHub Backlog lane row"
+grep -q 'gh search issues' "$A/config/repo-state.md" \
+  && fail "gitlab render leaked the gh cross-repo backlog view"
+grep -q 'gh issue list --label idea --state open' "$A/config/repo-state.md" \
+  && fail "gitlab render leaked the gh per-repo fallback"
+grep -q '^GitLab is the single source of truth' "$A/config/repo-state.md" \
+  || fail "gitlab render did not rewrite the source-of-truth line to GitLab"
+grep -q 'GitLab (open' "$A/config/repo-state.md" \
+  || fail "gitlab render did not rewrite the Issues lane row to GitLab"
+
+# #26: the cross-repo glab backlog view carries an explicit GITLAB_HOST; the per-repo fallback does not
+grep -q 'GITLAB_HOST=gitlab.code.rit.edu glab issue list --group university-advancement --label idea' "$A/config/repo-state.md" \
+  || fail "gitlab render did not prefix the cross-repo glab query with GITLAB_HOST"
+grep -q 'Per-repo fallback, gitlab: `glab issue list --label idea`' "$A/config/repo-state.md" \
+  || fail "gitlab render altered or dropped the host-free per-repo glab fallback"
+
+# #27: setup added docs/chain-state.md to the target repo's .gitignore, and does not duplicate it on re-run
+grep -qxF 'docs/chain-state.md' "$A/.gitignore" \
+  || fail "setup did not gitignore docs/chain-state.md"
+( cd "$A" && LOOP_ASSUME_NO=1 "$SETUP" </dev/null >/dev/null 2>&1 ) \
+  || fail "re-run of settled gitlab repo exited non-zero"
+[ "$(grep -c '^docs/chain-state\.md$' "$A/.gitignore")" -eq 1 ] \
+  || fail "re-running setup duplicated the chain-state gitignore line"
+
 # ---------- scenario B: a gitlab-DECLARED config still carrying the local-tracker Remote ----------
 # ---------- placeholder; the re-render must repair the false "Remote: none" line     ----------
 # (The declared-local-plus-GitLab-remote disagreement - forge's actual shape - is scenario E's
@@ -221,5 +251,15 @@ out="$( cd "$H2" && LOOP_TRACKER_ANSWER=local "$SETUP" --dry-run-remote </dev/nu
   || fail "no-remote dry-run exited non-zero"
 printf '%s\n' "$out" | grep -q 'GitHub remote found' \
   || fail "no-remote dry-run lost the github stub behavior"
+
+# ---------- scenario I: gitlab mode with no remote prints a creation hint before failing (#25) ----------
+I="$(mktemp -d)"; trap 'rm -rf "$BIN" "$A" "$B" "$C" "$C2" "$D" "$E" "$F" "$G" "$H1" "$H2" "$I"' EXIT
+( cd "$I" && git init -q )   # no origin remote
+out="$( cd "$I" && LOOP_TRACKER_ANSWER=gitlab "$SETUP" </dev/null 2>&1 )" \
+  && fail "gitlab setup with no remote exited 0 (should fail-fast on the missing host)"
+printf '%s\n' "$out" | grep -q 'glab repo create <name> --private --skipGitInit' \
+  || fail "gitlab no-remote path did not print the repo-creation hint"
+printf '%s\n' "$out" | grep -q 'git remote add origin' \
+  || fail "gitlab no-remote hint did not include the git remote add follow-up"
 
 echo "PASS: loop-setup gitlab mode"
