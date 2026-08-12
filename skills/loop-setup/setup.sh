@@ -52,7 +52,7 @@ is_candidate() { # $1 = path; keyword filename OR issue-shaped content
   return 1
 }
 collect_candidates() {   # print one normalized candidate path per line: repo root (depth 1) + the recursive roots
-  local roots=() r f
+  local roots=() r f sf
   # The root pass runs UNCONDITIONALLY and stays out of the recursive find below. `find` with an
   # empty path list expands to `find .` and scans the whole tree, which is what the roots guard
   # exists to prevent; the ${roots[@]+...} idiom is no substitute, it passes no path operand at all.
@@ -74,17 +74,34 @@ collect_candidates() {   # print one normalized candidate path per line: repo ro
     is_candidate "$f" || continue
     printf '%s\n' "$f"
   done < <(find "${roots[@]}" -type f -name '*.md' | sort)
+  # --seed: named files bypass BOTH is_excluded and is_candidate - explicitly naming a file is the
+  # deliberate act the exclusion exists to require, and overrides the shape heuristic. Skip a seed
+  # the normal sweep already emits (non-excluded AND candidate-shaped) so it is not offered twice.
+  for sf in ${SEED_FILES[@]+"${SEED_FILES[@]}"}; do
+    sf="${sf#./}"
+    [ -f "$sf" ] || continue
+    if ! is_excluded "$sf" && is_candidate "$sf"; then continue; fi
+    printf '%s\n' "$sf"
+  done
+}
+
+is_seeded() {   # $1 = normalized path; true when it was named on the command line via --seed
+  local s
+  for s in ${SEED_FILES[@]+"${SEED_FILES[@]}"}; do [ "$s" = "$1" ] && return 0; done
+  return 1
 }
 
 DRY_REMOTE=0
 LIST_ONLY=0
 SCAN_ROOTS=()
+SEED_FILES=()
 offers=0     # incremented by every offer source; zero is what earns the "nothing to do" summary
 while [ $# -gt 0 ]; do
   case "$1" in
     --dry-run-remote) DRY_REMOTE=1; shift ;;
     --list-candidates) LIST_ONLY=1; shift ;;
     --scan) [ $# -ge 2 ] || fail "--scan requires a directory argument"; SCAN_ROOTS+=("$2"); shift 2 ;;
+    --seed) [ $# -ge 2 ] || fail "--seed requires a file argument"; [ -f "$2" ] || fail "--seed file not found: $2"; SEED_FILES+=("${2#./}"); shift 2 ;;
     *) fail "unknown argument: $1" ;;
   esac
 done
@@ -366,7 +383,7 @@ reconcile_import() {   # all modes: scan repo root + standard/--scan roots, offe
     [ -n "$num" ] || { echo "create returned no issue number for $f; skipping" >&2; continue; }
     echo "imported $f as issue #$num"
     imported=1
-    archive_offer "$f"
+    is_seeded "$f" || archive_offer "$f"   # a --seed'd governed-lane doc archives with its plan, not on import
   done
   # A sweep that just filed issues must not end by printing completion over mirrors that lack them.
   [ "$imported" -eq 1 ] && { scripts/gen-mirrors.sh . || fail "gen-mirrors.sh failed"; }

@@ -154,4 +154,37 @@ grep -Rq 'MARKER_D_PLAN' "$D/docs/issues/" 2>/dev/null \
 printf '%s\n' "$outD" | grep -q '^import candidate: docs/d-plan.md' \
   || fail "unattended run did not print the import candidate line"
 
+# ---------- scenario E: --seed injects a normally-excluded, non-candidate-shaped brief (#20) ----------
+E="$(mktemp -d)"; trap 'rm -rf "$A" "$EXTRA" "$B" "$C" "$CE" "$D" "$E"' EXIT
+( cd "$E" && git init -q )
+mkdir -p "$E/docs/briefs"
+# excluded (docs/briefs/*) AND fails is_candidate (no Status:/keyword filename) - only --seed surfaces it
+printf '# Brief: seed thing\nMARKER_SEED\n' > "$E/docs/briefs/seed-brief.md"
+
+# without --seed, the brief is invisible to the sweep (the default exclusion stays intact)
+list="$( cd "$E" && "$SETUP" --list-candidates </dev/null )" || fail "--list-candidates (no seed) errored"
+printf '%s\n' "$list" | grep -q 'seed-brief.md' && fail "the brief was listed without --seed (exclusion broke)"
+
+# with --seed, the named brief becomes a candidate despite being excluded and non-candidate-shaped
+list="$( cd "$E" && "$SETUP" --list-candidates --seed docs/briefs/seed-brief.md </dev/null )" \
+  || fail "--list-candidates --seed errored"
+printf '%s\n' "$list" | grep -qx 'docs/briefs/seed-brief.md' \
+  || fail "--seed did not surface the named excluded brief as a candidate"
+
+# a --seed'd doc flows into reconcile_import (the per-file ask fires) and imports
+outE="$( cd "$E" && LOOP_ASSUME_YES=1 LOOP_IMPORT_REMOTE=1 LOOP_TRACKER_ANSWER=local "$SETUP" --seed docs/briefs/seed-brief.md </dev/null )" \
+  || fail "--seed import run errored"
+printf '%s\n' "$outE" | grep -q '^import candidate: docs/briefs/seed-brief.md' \
+  || fail "--seed'd brief never reached the per-file import prompt"
+grep -Rq 'MARKER_SEED' "$E/docs/issues/" || fail "--seed'd brief was not imported as an issue"
+
+# a --seed'd governed-lane doc is NOT archived (it archives with its plan, stays the /loop-plan source)
+[ -f "$E/docs/briefs/seed-brief.md" ] || fail "--seed'd brief was archived/moved out of docs/briefs/"
+[ ! -f "$E/docs/archive/seed-brief.md" ] || fail "--seed'd brief was copied into docs/archive/"
+
+# a non-existent --seed path fails with a clear message
+out="$( cd "$E" && "$SETUP" --seed docs/briefs/nope.md --list-candidates </dev/null 2>&1 )" \
+  && fail "--seed with a missing file exited 0"
+printf '%s\n' "$out" | grep -qi 'seed' || fail "--seed missing-file error did not mention the seed flag/path"
+
 echo "PASS: import - roots offered, labels inferred, exclusions honored, decline skips, --list-candidates clean, unattended files nothing"
