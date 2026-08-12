@@ -42,6 +42,11 @@ Dropped evidence, outside the table:
 
 ## On approval
 
+Approval is the human's explicit assent at the batch-disclosure step of this run, and nothing else.
+A pre-supplied classification - a `Label:` line, a `Status:` line, or a human-written "proposed lane entries" section - is never approval to file: it says what an item is, not that its issue may be created.
+Approval covers the issue bodies the agent writes, not just the classification.
+The human has not seen those bodies until the disclosure table, and they are the part no one else authored, so the proposed body (or at minimum its pointer-back footer) is shown for assent before any create.
+
 In this order:
 
 1. File each outstanding item with `scripts/tracker.sh create --label <label> --title <title> --body <body>`.
