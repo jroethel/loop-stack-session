@@ -31,6 +31,13 @@ Per-entry shape:
 - Premises: none expired (retirement relocates policy, it does not cut it).
 - Constraints re-confirmed: single-home-plus-pointers (benchmark leaf single-homed to loop-drive), portability/ringer-spine.
 
+## 2026-08-15 - config/routing/model-benchmarks.md (routing-chain canonical home)
+- Harness snapshot: v2.1.204; /workflows off.
+- Deleted (dedup): routing-chain narrative restated in 5 sites -> 1 home + pointers (loop-drive, wayfinder, ringer-substrate, loop-which[retired], frontier-sandwich[retired]). Sites convert to the pointer in Tasks 5/6/10.
+- Kept as policy: the narrative content is P7 (route by evidence) and is KEPT - consolidated, not cut; the ringer-absent degraded-routing fallback is preserved verbatim as operative portability policy in this single home.
+- Premises: none expired.
+- Constraints re-confirmed: single-home-plus-pointers, portability/ringer-spine (ringer-absent fallback survives the dedup).
+
 ## 2026-08-15 - skills/handoff/SKILL.md
 - Harness snapshot: 2026-08-15, thin refresh (Claude Code current, Opus 4.8); no live probe - smoke run validating /loop-molt on a lean 21-line artifact.
 - Deleted: none this pass (subtraction test not run; a smoke run does not edit a shared artifact).
