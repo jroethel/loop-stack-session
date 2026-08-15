@@ -1,4 +1,4 @@
-<!-- generated: 2026-08-08T14:35:34Z -->
+<!-- generated: 2026-08-15T17:47:21Z -->
 <!-- regenerate: scripts/gen-gate-registry.sh . -->
 <!-- DO NOT EDIT -->
 <!-- This registry reflects tagged gates only and is not a completeness guarantee. -->
@@ -9,6 +9,7 @@
 |---|---|---|
 | loop-brainstorm | ASK | ## Step 3 - Clarifying questions in rounds |
 | loop-improve | ASK | ## Step 4 - Present findings and select |
+| loop-molt | ASK | ### Step 1 - Constraint register FIRST |
 | loop-plan | ASK | ## Step 2 - Resolve the open questions |
 | loop-which | ASK | ### 2. Ask what's actually available |
 | loop-drive | STOP | Effort: cap everything at **high**; exceeding high requires an explicit ... |

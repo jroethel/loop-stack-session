@@ -33,6 +33,7 @@ This applies regardless of how obvious the fix looks.
 
 Parse the invocation for an optional focus argument and an effort keyword.
 A focus argument scopes the audit to one category (example: `/loop-improve security` audits only security); when absent, all categories run.
+The one reserved focus is `--focus harness-drift`: it delegates the whole audit to /loop-molt, which owns the harness-drift-audit protocol; loop-improve keeps no copy of that method.
 The effort knob is quick/standard/deep, default standard, and sets audit depth and coverage per the vendored playbook's effort table.
 
 ## Step 2 - Audit (read-only)
