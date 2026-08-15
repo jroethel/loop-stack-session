@@ -34,48 +34,14 @@ SKILL.md never restates those definitions; the reference is their single home.
 
 ## Steps
 
-Full procedure and rationale live in `references/protocol.md`; the pointers below are the running
-order, not a second copy.
+Full procedure and rationale live in `references/protocol.md`; the pointers below are the running order, not a second copy.
 
-### Step 0 - Refresh ground truth
-
-Never audit against remembered capability. Do a thin refresh (changelog scan + one live probe of
-any load-bearing feature claim) for a single artifact, a deep refresh (full research pull) only for
-a whole-stack recalibration. Date-stamp the snapshot; it is the evidence base and its expiry. See
-protocol step 0.
-
-### Step 1 - Constraint register FIRST`[gate:ASK]`
-
-Before classifying anything, ask the owner which design choices are deliberate standing constraints
-(portability, provider mix, cost, compliance) versus historical accident. This gate is mandatory
-and ASK-class: never classify a premise as expired without it - a deliberate constraint misread as
-stale is how the source session nearly flipped three recommendations. Deliberate constraints get
-kept AND labeled so the next audit does not re-litigate them. See protocol step 1.
-
-### Step 2 - Inventory
-
-Break the artifact into blocks: each instruction, gate, enumerated step, or embedded claim is one
-classifiable unit. For a skill family, inventory duplication too (a narrative in N places counts
-once, then N-1 deletions). See protocol step 2.
-
-### Step 3 - Classify
-
-Sort every block into the four bins using the definitions and policy membership test in the
-reference. Expired premise gets rewritten in place, never a bolted-on correction; a deliberate
-constraint gets kept and labeled. See protocol step 3.
-
-### Step 4 - Test by subtraction
-
-Delete the block, run the artifact's existing checks plus one real task, keep the deletion only if
-nothing degrades. An artifact with no checks gets a check before it gets an audit; the checkless
-fallback (delete, run one real task, compare to a pre-deletion run) is weaker. See protocol step 4.
-
-### Step 5 - Emit the drift ledger line
-
-Append one entry to the repo drift ledger, `docs/molt-ledger.md`: date, harness snapshot, blocks
-deleted by bin, blocks kept as policy, constraints re-confirmed. Per-entry shape:
-`## YYYY-MM-DD - <artifact path>` then those fields. On a first audit of a principles-less
-artifact, also emit the derived invariants as its starter principles sheet. See protocol step 5.
+0. **Refresh ground truth** - never audit against remembered capability; thin refresh (changelog + one live probe of a load-bearing claim) per artifact, deep refresh (full research pull) for a whole-stack recalibration. Date-stamp the snapshot - it is the evidence base and its expiry.
+1. **Constraint register FIRST**`[gate:ASK]` - before classifying anything, ask the owner which design choices are deliberate standing constraints (portability, provider mix, cost, compliance) versus historical accident. Mandatory and ASK-class: never classify a premise as expired without it (a constraint misread as stale nearly flipped three recommendations); deliberate constraints are kept AND labeled so the next audit does not re-litigate them.
+2. **Inventory** - break the artifact into blocks (each instruction, gate, step, or embedded claim is one unit); for a skill family, inventory duplication too (a narrative in N places counts once, then N-1 deletions).
+3. **Classify** - sort every block into the four bins using the reference's definitions and policy-membership test; an expired premise is rewritten in place (never a bolted-on correction), a deliberate constraint kept and labeled.
+4. **Test by subtraction** - delete the block, run the artifact's existing checks plus one real task, keep the deletion only if nothing degrades; a checkless artifact gets a check first (weaker fallback: compare one real task to a pre-deletion run).
+5. **Emit the drift ledger line** - append one entry to `docs/molt-ledger.md` (`## YYYY-MM-DD - <artifact path>`: date, harness snapshot, blocks deleted by bin, blocks kept as policy, constraints re-confirmed); on a first audit of a principles-less artifact, also emit its derived invariants as a starter principles sheet.
 
 ## Workflow: inline vs. brief
 
@@ -83,7 +49,7 @@ artifact, also emit the derived invariants as its starter principles sheet. See 
   with a `docs/molt-ledger.md` line, same session.
 - **Structural findings** (skill merges, gates-to-hooks, re-homing) converge through the shared
   pipeline at `~/.claude/skills/loop-brainstorm/references/brief-pipeline.md` into a brief and ride
-  the normal chain: /loop-plan -> /loop-which -> /loop-drive -> /loop-review. No audit content is
+  the normal chain: /loop-plan -> /loop-drive -> /loop-review. No audit content is
   duplicated - loop-improve reaches this same audit via `--focus harness-drift`.
 
 The artifact is harness-agnostic: this SKILL.md is the only Claude-Code-specific wrapper; the

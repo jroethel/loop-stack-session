@@ -95,3 +95,12 @@ Per-entry shape:
 - Premises: none expired (the "graduation is per-skill" premise was already re-evaluated in Task 4; this task completes the improve side of that single-home move).
 - Constraints re-confirmed: single-home-plus-pointers (graduation narration now single-homed), improve keeps FULL audit capability, /workflows off.
 
+## 2026-08-15 - skills/loop-molt/ (SKILL + protocol slim)
+- Harness snapshot: v2.1.204; /workflows off.
+- Deleted: CHOREOGRAPHY - the SKILL's Step 0-5 per-step narration (which restated the protocol's running order) collapsed to a thin numbered pointer list; the protocol's Step-0 refresh verbosity, the "Where molt sits" workflow paragraph, and the "Wiring it into the stack" entry-point narration compressed to their decision content.
+- Bare-reference cleanup (owned-file, in scope): the stale `/loop-which` node dropped from the downstream chain arrow in both SKILL.md and protocol.md (`/loop-plan -> /loop-which -> /loop-drive -> /loop-review` -> `/loop-plan -> /loop-drive -> /loop-review`); loop-which's run-shape triage is now loop-drive's front door, so the node is redundant rather than substitutable inside an arrow sequence.
+- Kept as policy: the one-line test; the ASK constraint-register-FIRST gate (`[gate:ASK]`, names "constraint register"); the single-home four-bin invariant (bins DEFINED only in `protocol.md` - no UPPERCASE bin token leaks into SKILL.md, `molt.sh` enforces, verified clean); the policy-membership test; the test-by-subtraction rule; the expected-steady-state / "done molting" definition; the `brief-pipeline.md` routing for structural findings; the `docs/molt-ledger.md` ledger-home name; the `--focus harness-drift` delegation; the MIT/vendored-2026-08-15 attribution.
+- Budget note (policy-preserving near-miss): protocol target 98 -> ~78; landed 98 -> 90 (SKILL 91 -> 56, well under). The four-bin table, membership test, subtraction test, constraint-register rule and steady-state definition are the method's single home (POLICY); reaching ~78 would cut method content, so per the plan's Human-checkpoint they are kept and the shortfall recorded.
+- Premises: none expired.
+- Constraints re-confirmed: single-home-plus-pointers (bins single-homed in protocol.md, method single-homed there), portability/harness-agnostic (SKILL is the only Claude-Code wrapper), /workflows off.
+

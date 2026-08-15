@@ -62,3 +62,10 @@ Each entry: decision, rationale, reversal path.
 - Probe: findings-table contract gate-verified by `tests/gates/loop-improve.sh` (eight columns, covered/related, tracker scan); no full audit run spent since the gate covers exactly the probe's checks.
 - Budget: policy-preserving near-miss. audit-playbook 188 -> 178 (target ~120), SKILL 99 -> 95. Reaching ~120 would gut checkable audit criteria (POLICY per "improve keeps full shaping capability"), so kept and recorded per the Human-checkpoint. 37/37 green; single-home grep = 1 (brief-pipeline.md).
 - Reversal: `git revert` the Task 8 commit.
+
+## Task 9 - loop-molt + protocol slim
+
+- Decision: collapsed the SKILL's Step 0-5 narration (a second copy of the protocol's running order) into a thin numbered pointer list; compressed the protocol's refresh/where-molt-sits/wiring narrative; dropped the stale `/loop-which` node from the downstream chain arrow in both files.
+- Rationale: the SKILL explicitly bills itself as "the thin wrapper, the protocol is the method", yet the per-step paragraphs restated the protocol - pure CHOREOGRAPHY. Verified no UPPERCASE bin token leaked into SKILL.md (`molt.sh` fails if they do) - grep clean. The four-bin table, membership test, subtraction, constraint-register gate and steady-state definition all kept as the method's single home.
+- Budget: policy-preserving near-miss. protocol 98 -> 90 (target ~78), SKILL 91 -> 56. Reaching ~78 would cut method POLICY, so kept and recorded per the Human-checkpoint. `bash tests/gates/molt.sh` passes; single-home bins hold; 37/37 green.
+- Reversal: `git revert` the Task 9 commit.

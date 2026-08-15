@@ -23,14 +23,12 @@ Prose describing HOW to do mechanics is suspect; prose describing WHAT MUST BE T
 
 ### 0. Refresh ground truth (never audit against remembered capability)
 
-This step is part of the audit, not a prerequisite the owner compiles beforehand; the auditing session does its own pull.
-Two tiers:
+The auditing session does its own pull, in two tiers:
 
-- **Thin refresh (default, minutes):** changelog/release-notes scan plus one live probe of any load-bearing feature claim (e.g., actually run the command in a scratch repo). Sufficient for a single-artifact audit.
-- **Deep refresh (occasional):** a full research pull (last30days or equivalent, like the pcs corpus). Warranted for a whole-stack recalibration or after a model-generation change, not per artifact.
+- **Thin refresh (default, minutes):** changelog scan plus one live probe of any load-bearing feature claim (run the command in a scratch repo). Sufficient for a single artifact.
+- **Deep refresh (occasional):** a full research pull (last30days or equivalent). Warranted for a whole-stack recalibration or a model-generation change, not per artifact.
 
-Date-stamp the snapshot; it is the audit's evidence base and its expiry date.
-After the first audit, the drift ledger lets the next one diff from the last snapshot instead of re-researching from zero.
+Date-stamp the snapshot; it is the evidence base and its expiry. After the first audit, the drift ledger lets the next one diff from the last snapshot instead of re-researching from zero.
 
 ### 1. Constraint register FIRST (the C1 lesson)
 
@@ -83,16 +81,10 @@ An artifact whose audit deletes nothing two cycles running is done molting; an a
 
 ## Where molt sits in the chain
 
-Molt is the third audit in the family, next to /loop-improve and P10's evolve move, each on a different object: improve audits the product, molt audits the instruction prose, evolve audits the run logs.
-Molt exists because the other two never catch harness drift - nothing fails when the harness absorbs plumbing, so the prose silently becomes dead weight.
+Molt is the third audit in the family, next to /loop-improve and P10's evolve move, each on a different object: improve audits the product, molt audits the instruction prose, evolve audits the run logs. It exists because the other two never catch harness drift - nothing fails when the harness absorbs plumbing, so the prose silently becomes dead weight.
 
-Workflow: small findings (block deletions, single-file rewrites) are applied inline via the subtraction test with a drift ledger line, same session.
-Structural findings (skill merges, gates-to-hooks, re-homing) are emitted as a brief via the shared convergence machinery (brief-pipeline.md) and ride the normal chain: /loop-plan -> /loop-which -> /loop-drive -> /loop-review.
-Self-targeting loop-stack is just the dogfood case; molt runs on any prose-shaped artifact (manuals, CLAUDE.md blocks, other skills).
+Small findings apply inline via the subtraction test with a drift ledger line, same session; structural findings (skill merges, gates-to-hooks, re-homing) emit a brief via the shared convergence machinery (brief-pipeline.md) and ride the normal chain: /loop-plan -> /loop-drive -> /loop-review. Self-targeting loop-stack is the dogfood case; molt runs on any prose-shaped artifact (manuals, CLAUDE.md blocks, other skills).
 
 ## Wiring it into the stack
 
-One implementation, two entry points.
-A thin standalone skill owns the audit (this protocol as its reference doc), invocable directly on any artifact regardless of what else is running; the skill is `/loop-molt`.
-`/loop-improve --focus harness-drift` delegates to it with a one-line pointer, never a second copy of the audit.
-The refresh step (0) maps to a last30days or changelog pull; the subtraction step (4) maps to the artifact's existing test harness where one exists.
+One implementation, two entry points: the standalone `/loop-molt` skill owns the audit (this protocol as its reference), invocable directly on any artifact; `/loop-improve --focus harness-drift` delegates with a one-line pointer, never a second copy. Refresh (step 0) maps to a last30days/changelog pull; subtraction (step 4) maps to the artifact's existing test harness where one exists.

@@ -1,4 +1,4 @@
-<!-- generated: 2026-08-15T20:02:30Z -->
+<!-- generated: 2026-08-15T20:06:17Z -->
 <!-- regenerate: scripts/gen-gate-registry.sh . -->
 <!-- DO NOT EDIT -->
 <!-- This registry reflects tagged gates only and is not a completeness guarantee. -->
@@ -9,7 +9,7 @@
 |---|---|---|
 | loop-brainstorm | ASK | ## Step 3 - Clarifying questions in rounds |
 | loop-improve | ASK | ## Step 4 - Present findings and select |
-| loop-molt | ASK | ### Step 1 - Constraint register FIRST |
+| loop-molt | ASK | 1. **Constraint register FIRST** - before classifying anything, ask the ... |
 | loop-plan | ASK | ## Step 2 - Resolve the open questions |
 | loop-drive | STOP | Effort: cap everything at **high**; exceeding high requires an explicit ... |
 | loop-drive | STOP | - **Dirty working tree**: worktrees branch from committed state only; pr... |
