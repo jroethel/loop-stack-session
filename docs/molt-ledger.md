@@ -17,6 +17,12 @@ Per-entry shape:
 
 <!-- entries below, newest last -->
 
+## 2026-08-15 - molt cycle 1 brief 3 (slim/fold/dedup)
+- Harness snapshot: v2.1.204 (native parallel background fan-out with notifications verified unprompted 2026-08-15; /workflows off)
+- Scope: retire frontier-sandwich + loop-which (fold, not cut); single-home the routing-chain narrative, ringer footguns, and brief-graduation; slim every SKILL.md by test-by-subtraction to a policy sheet.
+- Per-artifact deletion sub-blocks follow this opening block, newest last, one per slimmed or retired artifact.
+- Constraints re-confirmed: portability / ringer-spine (native lane optional, ringer-lane policy never cut); Fable is never a worker (effort capped at high); single-home-plus-pointers mandatory in everything touched; /workflows stays off.
+
 ## 2026-08-15 - skills/handoff/SKILL.md
 - Harness snapshot: 2026-08-15, thin refresh (Claude Code current, Opus 4.8); no live probe - smoke run validating /loop-molt on a lean 21-line artifact.
 - Deleted: none this pass (subtraction test not run; a smoke run does not edit a shared artifact).
