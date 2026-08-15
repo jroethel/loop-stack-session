@@ -121,3 +121,11 @@ Per-entry shape:
 - Premises: none expired.
 - Constraints re-confirmed: attended-only (loop-auto knob ignored), no-`none`-mode, single-home (import-triage is the triage workflow's single home), /workflows off; house style (no em dash) verified clean.
 
+## 2026-08-15 - skills/loop-review/SKILL.md
+- Harness snapshot: v2.1.204; /workflows off.
+- Deleted: CHOREOGRAPHY - the process narration across Pin-the-fixed-point, spec-discovery tail, disclosure, spawn-subagents framing, and aggregate compressed to decision content; dedup - the illustrative second `Mysterious Name` occurrence inside the Standards subagent prompt removed (the smell is named "with its exact baseline label" instead), so the baseline token now appears exactly once (`grep -c 'Mysterious Name'` = 1, the plan's Task 12 acceptance).
+- Kept as policy: the two-axis Spec/Standards separation and the _Why two axes_ rationale; the disclosure-before-findings ("basis-before-findings") contract with the exact "matched by branch name" / "no spec available" phrases; the 5-rung spec-source discovery ladder verbatim; the empty-diff flagship-command trap message verbatim; the two subagent prompts; and the **Fowler 12-smell baseline VERBATIM** (all 12 smells untouched - deleting it would break the Standards axis, which has no other access to it).
+- Budget note (policy-preserving near-miss): target 128 -> ~105; landed 128 -> 112. The 12-smell baseline (12 lines), the two verbatim subagent prompts, the discovery ladder and the disclosure contract are POLICY; reaching ~105 would compress the smell list or a prompt, both KEEP, so kept per the plan's Human-checkpoint.
+- Premises: none expired.
+- Constraints re-confirmed: zero-setup portability (runs in any repo), single-home (smell baseline lives only here), /workflows off.
+

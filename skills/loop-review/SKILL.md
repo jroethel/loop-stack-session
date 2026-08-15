@@ -9,22 +9,15 @@ Two-axis review of the diff between `HEAD` and a fixed point the user supplies.
 - **Standards** - does the code conform to this repo's documented coding standards, plus a baseline set of code smells?
 
 Both axes run as parallel fresh-context subagents so they don't pollute each other's context, then this skill aggregates their findings side by side, never merged.
-
-This skill has no setup dependency.
-It runs in any repo, even one with zero loop-stack or issue-tracker conventions.
+It has no setup dependency - runs in any repo, even one with zero loop-stack or issue-tracker conventions.
 
 ## Process
 
 ### 1. Pin the fixed point
 
-Whatever the user passed is the fixed point - a commit SHA, branch name, tag, `main`, `HEAD~5`, and so on.
-If they didn't specify one, ask for it.
-
-Capture the diff command once: `git diff <fixed-point>...HEAD` (three-dot, so the comparison is against the merge-base).
-Also capture the commit list via `git log <fixed-point>..HEAD --oneline`.
-
-Before going further, confirm the fixed point resolves (`git rev-parse <fixed-point>`) and the diff is non-empty.
-A bad ref or an empty diff fails here, not inside a subagent.
+Whatever the user passed is the fixed point (a commit SHA, branch, tag, `main`, `HEAD~5`); if they didn't specify one, ask.
+Capture the diff once (`git diff <fixed-point>...HEAD`, three-dot for merge-base) and the commit list (`git log <fixed-point>..HEAD --oneline`).
+Confirm the fixed point resolves (`git rev-parse <fixed-point>`) and the diff is non-empty - a bad ref or empty diff fails here, not inside a subagent.
 
 On an empty diff, fail with an actionable message rather than a bare error: "No commits between `<fixed-point>` and HEAD. Run loop-review from the branch you finished, or pass the pre-work ref (for example `HEAD~3` or the commit you branched from)."
 This is the flagship-command trap: `/loop-review main` run while sitting on `main` produces an empty diff, so the message must point the user to the fix.
@@ -44,8 +37,8 @@ Resolve the spec source in this fixed order, stopping at the first hit.
    If plans or briefs exist but none matched the branch, name the most recent by `YYYY-MM-DD` filename date as a labeled suggestion inside that warning, but do not auto-resolve to it.
 
 There is no dependency on `docs/agents/` or any setup file.
-When rung 2 or 3 resolves the spec source, name it using the exact phrase "matched by branch name" in the disclosure (see step 4).
-Discovery is internal bookkeeping: if rung 2 or 3 matches, do not name or describe any other candidate plan or brief file that did not match anywhere in the disclosure or either axis's findings - state only the one resolved source.
+When rung 2 or 3 resolves the source, name it with the exact phrase "matched by branch name" in the disclosure (see step 4).
+Discovery is internal bookkeeping: if rung 2 or 3 matches, state only the one resolved source - never name or describe any other candidate plan or brief file, in the disclosure or either axis's findings.
 
 ### 3. Identify the standards sources
 
@@ -80,24 +73,19 @@ Before the two axis sections, the report opens with a short disclosure block tha
 - The resolved spec source and which discovery rung produced it, using the exact phrase "matched by branch name" when rung 2 or 3 resolved it (for example: "Spec source: `docs/plans/2026-07-21-loop-review-plan.md` (plan, matched by branch name)"), or the no-spec disclosure from step 2 rung 5.
 - The standards sources (each documented file found, plus "Fowler 12-smell baseline").
 
-Name only the resolved source.
-Do not list, name, or otherwise reference any other plan or brief file that discovery considered but did not choose - the disclosure states the outcome, not the search.
-This block is the skill's basis-before-findings contract.
-It always precedes `## Spec` and `## Standards`.
+Name only the resolved source - not any other plan or brief file discovery considered but did not choose; the disclosure states the outcome, not the search.
+This block is the skill's basis-before-findings contract, and always precedes `## Spec` and `## Standards`.
 
 ### 5. Spawn both subagents in parallel
 
-Send a single message with two `Agent` tool calls.
-Use the `general-purpose` subagent for both, at medium reasoning effort.
-
-Choose the reviewer model by its role (a review / validation gate) per the user's routing conventions if present, else the session's default capable model.
-Do not hard-pin a model name.
+Send a single message with two `Agent` tool calls, both `general-purpose` at medium reasoning effort.
+Choose the reviewer model by its role (a review/validation gate) per the user's routing conventions if present, else the session's default capable model; do not hard-pin a model name.
 
 **Standards subagent prompt** - include:
 
 - The diff command and commit list.
 - The standards-source file list found in step 3, plus the full smell baseline from step 3 pasted in - the subagent has no other access to it.
-- The brief: "Report, per file/hunk where relevant: (a) every place the diff violates a documented standard, citing the standard (file plus the rule); and (b) any baseline smell you spot, naming it with its baseline label verbatim (for example 'Mysterious Name') and quoting the offending symbol or hunk. Distinguish hard violations from judgement calls; documented-standard breaches can be hard, baseline smells are always judgement calls, and a documented repo standard overrides the baseline. Skip anything tooling enforces. Under 400 words."
+- The brief: "Report, per file/hunk where relevant: (a) every place the diff violates a documented standard, citing the standard (file plus the rule); and (b) any baseline smell you spot, naming it with its exact baseline label and quoting the offending symbol or hunk. Distinguish hard violations from judgement calls; documented-standard breaches can be hard, baseline smells are always judgement calls, and a documented repo standard overrides the baseline. Skip anything tooling enforces. Under 400 words."
 
 **Spec subagent prompt** - include:
 
@@ -110,12 +98,8 @@ If the spec is missing, skip the Spec subagent and note it in the final report.
 
 ### 6. Aggregate
 
-Present the two reports under `## Spec` and `## Standards` headings, verbatim or lightly cleaned.
-Do not merge or rerank findings - the two axes are deliberately separate (see _Why two axes_).
-
-End with a one-line summary per axis: findings per axis, and the worst issue within each axis (if any).
-Don't pick a single winner across axes - that's the reranking the separation exists to prevent.
-
+Present the two reports under `## Spec` and `## Standards` headings, verbatim or lightly cleaned; do not merge or rerank findings - the two axes are deliberately separate (see _Why two axes_).
+End with a one-line summary per axis (findings count + the worst issue within each, if any); don't pick a single winner across axes - that's the reranking the separation exists to prevent.
 Every finding must cite its spec line or its named standard.
 
 ## Why two axes

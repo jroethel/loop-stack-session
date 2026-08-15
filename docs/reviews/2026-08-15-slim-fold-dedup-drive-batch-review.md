@@ -83,3 +83,10 @@ Each entry: decision, rationale, reversal path.
 - Rationale: the per-mode step-by-step re-describes what setup.sh does - CHOREOGRAPHY. All test-required strings kept (three modes, four remote-report strings, LOOP_IMPORT_REMOTE, LOOP_TRACKER_ANSWER=gitlab, "but the remote is", migrate-tracker, tracker-remote-ack, "declin"; "one actionable item"/"split"/"merge" in the reference). The import-sweep triage judgment is loop-setup's shaping capability (constraint-register-protected) and was preserved.
 - Budget: policy-preserving near-miss. SKILL 100 -> 87 (target ~85, met), import-triage 130 -> 114 (target ~95). The judgment rules + record-doc/footer contracts are POLICY; kept and recorded per the Human-checkpoint. 37/37 green; em-dash check clean.
 - Reversal: `git revert` the Task 11 commit.
+
+## Task 12 - loop-review slim
+
+- Decision: compressed the process narration (fixed-point pinning, discovery tail, disclosure, spawn framing, aggregate) to decision content, and removed the illustrative second `Mysterious Name` inside the Standards subagent prompt so the baseline token appears exactly once.
+- Rationale: the plan's Task 12 acceptance is `grep -c 'Mysterious Name'` = 1, but the file carried two (baseline + a prompt example) - the example was redundant choreography, dropped by rephrasing to "its exact baseline label". The Fowler 12-smell baseline is kept VERBATIM (the Standards axis has no other access to it); the two subagent prompts, discovery ladder, disclosure contract, and empty-diff trap message all kept.
+- Budget: policy-preserving near-miss. 128 -> 112 (target ~105). The 12-smell baseline + two verbatim prompts + discovery ladder are POLICY, so kept per the Human-checkpoint. `grep -c 'Mysterious Name'` = 1; 37/37 green (`tests/loop-review/` suites pass).
+- Reversal: `git revert` the Task 12 commit.
