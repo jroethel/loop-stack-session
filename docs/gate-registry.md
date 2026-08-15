@@ -1,4 +1,4 @@
-<!-- generated: 2026-08-15T19:35:55Z -->
+<!-- generated: 2026-08-15T19:39:07Z -->
 <!-- regenerate: scripts/gen-gate-registry.sh . -->
 <!-- DO NOT EDIT -->
 <!-- This registry reflects tagged gates only and is not a completeness guarantee. -->
@@ -11,7 +11,6 @@
 | loop-improve | ASK | ## Step 4 - Present findings and select |
 | loop-molt | ASK | ### Step 1 - Constraint register FIRST |
 | loop-plan | ASK | ## Step 2 - Resolve the open questions |
-| loop-which | ASK | ### 2. Ask what's actually available |
 | loop-drive | STOP | Effort: cap everything at **high**; exceeding high requires an explicit ... |
 | loop-drive | STOP | - **Dirty working tree**: worktrees branch from committed state only; pr... |
 | loop-drive | STOP | Resolve stopped units: a small spec issue means edit the spec artifact a... |
@@ -33,4 +32,3 @@
 | loop-plan | DEFAULT | ## Step 6 - The Rubix review (optional) |
 | loop-plan | DEFAULT | ## Step 7 - User review gate |
 | loop-plan | DEFAULT | ## Step 8 - Hand off (pinned) |
-| loop-which | DEFAULT | ### 5. Give the verdict |

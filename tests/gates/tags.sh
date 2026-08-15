@@ -6,7 +6,7 @@ set -uo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$HERE/../.." && pwd)"
 fail() { echo "FAIL: $1" >&2; exit 1; }
-SKILLS="loop-brainstorm loop-plan loop-drive loop-which"
+SKILLS="loop-brainstorm loop-plan loop-drive"
 TOK='\[gate:(ASK|STOP|BATCH|DEFAULT)\]'
 
 total=0

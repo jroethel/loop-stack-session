@@ -47,6 +47,15 @@ Per-entry shape:
 - Retired-skill handoff repointed: brainstorm Step 9 terminal state now routes `frontier-sandwich` -> **/loop-drive** (human-paced output mode); pipeline diagram and the stale `/loop-which` reference in brief-pipeline.md converted to the front-door framing.
 - Constraints re-confirmed: brainstorm keeps FULL shaping capability (question generation, checkable criteria, seams, parking lot); single-home-plus-pointers; /workflows off.
 
+## 2026-08-15 - skills/loop-which/ (retired -> brainstorm front door)
+- Harness snapshot: v2.1.204; /workflows off.
+- Deleted: CHOREOGRAPHY (the step-by-step scoring narration wrapping the One-Minute Test); the SKILL body is gone. No policy deleted - the One-Minute Test policy relocated to the brainstorm Step 0 front door and loop-drive Step 0 (Task 4/6), its reference git-moved to `skills/loop-brainstorm/references/one-minute-test.md` in Task 4.
+- Retirement plumbing: `loop-which` added to install.sh's retire list (a dangling-symlink bug depends on it); dropped from `tests/gates/tags.sh` SKILLS list (per-type floors unchanged - post-retire counts ASK 4 / STOP 6 / BATCH 4 / DEFAULT 11 all at/above 3/6/4/8); gate rewritten as `loop-which-retired.sh`.
+- DECISION recorded (Rubix A5, so a future cycle sees a decision not drift): the standalone "is this worth automating / DON'T BOTHER" invocation trigger is retired; its routing question is now caught at the brainstorm front door and, for a plan in hand, by loop-drive's extended frontmatter (Task 6).
+- Stale-reference note (not converted here - files owned by later tasks): bare-word `loop-which` skill-invocation refs remain in loop-drive Step 0 (Task 6 converts), loop-plan (Task 7), loop-improve (Task 8), loop-molt + protocol (Task 9), README (Task 14); descriptive attributions remain in config/routing/model-benchmarks.md and a comment in scripts/gen-gate-registry.sh (not skill-invocations, not in this task's ownership).
+- Premises: none expired.
+- Constraints re-confirmed: single-home-plus-pointers, portability/ringer-spine.
+
 ## 2026-08-15 - skills/handoff/SKILL.md
 - Harness snapshot: 2026-08-15, thin refresh (Claude Code current, Opus 4.8); no live probe - smoke run validating /loop-molt on a lean 21-line artifact.
 - Deleted: none this pass (subtraction test not run; a smoke run does not edit a shared artifact).

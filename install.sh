@@ -79,9 +79,10 @@ for TARGET in "$REPO"/skills/*; do
   fi
 done
 
-# 1b. retire pre-rename skill names (frontier-loop -> loop-drive, one-minute-test -> loop-which)
-# so the old and new skills never load side by side, in either scan location.
-for old in frontier-loop one-minute-test fable-sandwich frontier-sandwich; do
+# 1b. retire superseded skills: pre-rename names (frontier-loop -> loop-drive, one-minute-test ->
+# loop-which) and folded/retired skills (frontier-sandwich -> loop-drive, loop-which -> loop-brainstorm
+# front door), so no stale skill loads side by side with its survivor, in either scan location.
+for old in frontier-loop one-minute-test fable-sandwich frontier-sandwich loop-which; do
   retire_skill "$SKILLS_DIR/$old" "$CLAUDE_DIR/$old.bak"
   if [ "$STYLE" = agents ]; then
     retire_skill "$AGENTS_SKILLS/$old" "$AGENTS_DIR/$old.bak"
