@@ -23,6 +23,14 @@ Per-entry shape:
 - Per-artifact deletion sub-blocks follow this opening block, newest last, one per slimmed or retired artifact.
 - Constraints re-confirmed: portability / ringer-spine (native lane optional, ringer-lane policy never cut); Fable is never a worker (effort capped at high); single-home-plus-pointers mandatory in everything touched; /workflows stays off.
 
+## 2026-08-15 - skills/frontier-sandwich/ (retired -> loop-drive)
+- Harness snapshot: v2.1.204 (native parallel background fan-out with notifications; /workflows off)
+- Deleted: CHOREOGRAPHY (interview cadence, phase-by-phase narration a frontier model runs unprompted; save-the-plan file layout); duplication (fan-out loop-readiness now single-homed in loop-drive Step 3).
+- Kept as policy (relocated to loop-drive): tier vocabulary (Frontier/Strong/Fast) + task routing map, the effort dial defaults, the sandwich invariant (frontier judgment before/after cheap execution), and the prompt pitfalls (never ask for hidden reasoning) - moved to `skills/loop-drive/references/fable-guidelines.md`; loop-drive absorbs the human-paced mode in Task 6.
+- Retirement plumbing: `frontier-sandwich` added to install.sh's retire list; benchmark-prior leaf moved to `skills/loop-drive/references/model-benchmarks.md` (install-generated symlink, gitignored, uncommitted); gate rewritten as `frontier-sandwich-retired.sh`.
+- Premises: none expired (retirement relocates policy, it does not cut it).
+- Constraints re-confirmed: single-home-plus-pointers (benchmark leaf single-homed to loop-drive), portability/ringer-spine.
+
 ## 2026-08-15 - skills/handoff/SKILL.md
 - Harness snapshot: 2026-08-15, thin refresh (Claude Code current, Opus 4.8); no live probe - smoke run validating /loop-molt on a lean 21-line artifact.
 - Deleted: none this pass (subtraction test not run; a smoke run does not edit a shared artifact).

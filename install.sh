@@ -81,7 +81,7 @@ done
 
 # 1b. retire pre-rename skill names (frontier-loop -> loop-drive, one-minute-test -> loop-which)
 # so the old and new skills never load side by side, in either scan location.
-for old in frontier-loop one-minute-test fable-sandwich; do
+for old in frontier-loop one-minute-test fable-sandwich frontier-sandwich; do
   retire_skill "$SKILLS_DIR/$old" "$CLAUDE_DIR/$old.bak"
   if [ "$STYLE" = agents ]; then
     retire_skill "$AGENTS_SKILLS/$old" "$AGENTS_DIR/$old.bak"
@@ -103,14 +103,14 @@ for src in "$REPO"/config/ringer/*; do
 done
 
 # 2b. benchmark prior reference: symlink so repo edits stay live.
-# Repo source lives in config/routing/; the installed leaf is the frontier-sandwich skill's references/.
-FS_REFS="$SKILLS_DIR/frontier-sandwich/references"
-if [ -d "$SKILLS_DIR/frontier-sandwich" ]; then
-  mkdir -p "$FS_REFS"
-  ln -sfn "$REPO/config/routing/model-benchmarks.md" "$FS_REFS/model-benchmarks.md"
-  echo "symlinked $FS_REFS/model-benchmarks.md"
+# Repo source lives in config/routing/; the installed leaf is the loop-drive skill's references/.
+LD_REFS="$SKILLS_DIR/loop-drive/references"
+if [ -d "$SKILLS_DIR/loop-drive" ]; then
+  mkdir -p "$LD_REFS"
+  ln -sfn "$REPO/config/routing/model-benchmarks.md" "$LD_REFS/model-benchmarks.md"
+  echo "symlinked $LD_REFS/model-benchmarks.md"
 else
-  echo "note: frontier-sandwich skill not installed; skipping model-benchmarks.md symlink"
+  echo "note: loop-drive skill not installed; skipping model-benchmarks.md symlink"
 fi
 
 # 3. CLAUDE.md managed block: replace in place, never duplicate.
@@ -153,7 +153,7 @@ fi
 [ -w "$HOME/.ringer" ] \
   && echo "found ~/.ringer (writable)" \
   || echo "note: ~/.ringer missing or unwritable - ringer creates it on first run; scoreboard evidence lands there"
-[ -L "$SKILLS_DIR/frontier-sandwich/references/model-benchmarks.md" ] \
+[ -L "$SKILLS_DIR/loop-drive/references/model-benchmarks.md" ] \
   && echo "found model-benchmarks.md (prior tier wired)" \
   || echo "WARNING: model-benchmarks.md not linked - the routing chain's prior tier is a dangling pointer"
 bash "$REPO/tests/gates/check.sh" >/dev/null 2>&1 && echo "found gate registry (fresh)" || echo "WARNING: gate registry stale or gate untagged - run scripts/gen-gate-registry.sh ."
