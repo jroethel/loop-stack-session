@@ -76,3 +76,10 @@ Each entry: decision, rationale, reversal path.
 - Rationale: the section prose repeatedly re-explained rules a frontier model applies from one statement - CHOREOGRAPHY. The schema blocks and the rule set are POLICY (wayfinder.sh asserts schema, labels, hand-offs, mirror exclusion) and were preserved.
 - Budget: small policy-preserving near-miss. 183 -> 142 (target ~125); the schema code blocks + decision content floor it, so kept per the Human-checkpoint. `bash tests/gates/wayfinder.sh` passes; `scoreboard posterior` = 0; 37/37 green.
 - Reversal: `git revert` the Task 10 commit.
+
+## Task 11 - loop-setup + import-triage slim
+
+- Decision: folded the per-mode setup.sh narration to one tighter block, compressed the import-sweep walkthrough and the import-triage framing/on-approval prose, and dropped the redundant second example table in the D1 record section. `setup.sh` untouched.
+- Rationale: the per-mode step-by-step re-describes what setup.sh does - CHOREOGRAPHY. All test-required strings kept (three modes, four remote-report strings, LOOP_IMPORT_REMOTE, LOOP_TRACKER_ANSWER=gitlab, "but the remote is", migrate-tracker, tracker-remote-ack, "declin"; "one actionable item"/"split"/"merge" in the reference). The import-sweep triage judgment is loop-setup's shaping capability (constraint-register-protected) and was preserved.
+- Budget: policy-preserving near-miss. SKILL 100 -> 87 (target ~85, met), import-triage 130 -> 114 (target ~95). The judgment rules + record-doc/footer contracts are POLICY; kept and recorded per the Human-checkpoint. 37/37 green; em-dash check clean.
+- Reversal: `git revert` the Task 11 commit.

@@ -2,13 +2,9 @@
 
 ## This is the default import workflow
 
-Triage is the import workflow, not an exception to it.
-After the mechanical config and mirror steps finish, the agent scans the repo for pre-existing work files, classifies what it finds, verifies it, and files the outstanding items into the tracker.
-The hard cases - a file that mixes many items, work that is already built, reference prose that is not actionable - are handled here by judgment instead of being mangled by the mechanical sweep.
-
-The bash per-item prompt is unchanged.
-It still offers the two fallbacks verbatim: import this one file as one issue, or skip it.
-Triage is what the agent does instead of accepting either fallback when neither fits.
+Triage is the import workflow, not an exception to it: after the mechanical config and mirror steps, the agent scans for pre-existing work files, classifies, verifies, and files the outstanding items.
+The hard cases - a file mixing many items, work already built, reference prose that is not actionable - are handled by judgment instead of being mangled by the mechanical sweep.
+The bash per-item prompt is unchanged, still offering the two fallbacks verbatim (import this one file as one issue, or skip it); triage is what the agent does when neither fallback fits.
 
 ## The workflow
 
@@ -42,10 +38,9 @@ Dropped evidence, outside the table:
 
 ## On approval
 
-Approval is the human's explicit assent at the batch-disclosure step of this run, and nothing else.
-A pre-supplied classification - a `Label:` line, a `Status:` line, or a human-written "proposed lane entries" section - is never approval to file: it says what an item is, not that its issue may be created.
-Approval covers the issue bodies the agent writes, not just the classification.
-The human has not seen those bodies until the disclosure table, and they are the part no one else authored, so the proposed body (or at minimum its pointer-back footer) is shown for assent before any create.
+Approval is the human's explicit assent at the batch-disclosure step of this run, nothing else.
+A pre-supplied classification (a `Label:` line, a `Status:` line, a human-written "proposed lane entries" section) says what an item is, not that its issue may be created - never approval to file.
+Approval covers the issue bodies the agent writes, not just the classification: the human has not seen those bodies until the disclosure table, so the proposed body (or at minimum its pointer-back footer) is shown for assent before any create.
 
 In this order:
 
@@ -81,19 +76,8 @@ Write one record doc per run that had candidates.
 A run with zero candidates writes none.
 The agent writes it, never bash.
 
-The record holds a triage table with columns source-doc, item, classification, verdict, evidence, and action, followed by the filed issue numbers.
-Classification is `issue` or `idea`; verdict is `outstanding`, `already-built`, or `noise`.
-Every dropped row carries its evidence, so the record contains no drop without evidence.
-
-Example record:
-
-| source-doc        | item           | class | verdict       | evidence          | action  |
-| ----------------- | -------------- | ----- | ------------- | ----------------- | ------- |
-| docs/notes.md     | fix export job | issue | outstanding   | -                 | #12     |
-| .planning/next.md | retry on 504   | idea  | already-built | pull.sh:42 a1b2c3 | dropped |
-| docs/notes.md     | glossary move  | -     | noise         | reference prose   | dropped |
-
-Filed: #12.
+The record holds a triage table with columns source-doc, item, classification (`issue`/`idea`), verdict (`outstanding`/`already-built`/`noise`), evidence, and action, followed by the filed issue numbers.
+Every dropped row carries its evidence, so the record contains no drop without evidence (same shape as the batch disclosure table above, with an evidence column and the filed numbers).
 
 ## Judgment rules
 

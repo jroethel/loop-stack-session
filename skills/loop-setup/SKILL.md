@@ -32,18 +32,10 @@ That line acknowledges the deliberate mode-versus-remote split and silences setu
    The offer is silenced by a `tracker-remote-ack:` line in the config - a hand-written acknowledgment of a deliberate mode-versus-remote disagreement that `setup.sh` never writes itself.
    Otherwise it reports the remote status, asks the mode once (`github`, `gitlab`, or `local`), and writes the key via `tracker.sh mode set`.
 3. Creates the docs homes: root `ROADMAP.md`, `docs/handoffs/`, `docs/reviews/`, `docs/archive/`.
-4. With `tracker: github`:
-   - Fails fast unless `gh` is authenticated (`gh auth status`; install gh and run `gh auth login`).
-   - Offers `gh repo create --private` when no remote exists.
-   - Ensures the `idea` label exists (`gh label create idea`, skipped if already present).
-   - Generates `ISSUES.md` and `BACKLOG.md` via `scripts/gen-mirrors.sh .`.
-5. With `tracker: gitlab`:
-   - Fails fast unless `glab` is authenticated to the remote's host (`glab auth status --hostname <host>`; install glab and run `glab auth login --hostname <host>`).
-   - Ensures the `idea` label exists (`glab label create --name idea`, skipped if already present).
-   - Generates `ISSUES.md` and `BACKLOG.md` via `scripts/gen-mirrors.sh .`.
-6. With `tracker: local`:
-   - Creates `docs/issues/` (one file per issue; zero gh).
-   - Generates `ISSUES.md` and `BACKLOG.md` via `scripts/gen-mirrors.sh .` from those local files.
+4. Per mode, finalizes and regenerates `ISSUES.md`/`BACKLOG.md` via `scripts/gen-mirrors.sh .`:
+   - **github**: fail-fast unless `gh` is authenticated (`gh auth status`); offer `gh repo create --private` when no remote exists; ensure the `idea` label (`gh label create idea`, skipped if present).
+   - **gitlab**: fail-fast unless `glab` is authenticated to the remote's host (`glab auth status --hostname <host>`); ensure the `idea` label (`glab label create --name idea`, skipped if present).
+   - **local**: create `docs/issues/` (one file per issue, zero gh); mirrors generate from those local files.
 
 The remote is advisory only; it never picks the mode.
 Setup prints exactly one of:
@@ -55,13 +47,8 @@ It never assumes local.
 
 ## The import sweep
 
-The sweep runs in all three modes, and its recommended default is the triage workflow documented in `references/import-triage.md`.
-After the mechanical config and mirror steps, the agent works the candidates as follows:
-1. Scan via `setup.sh --list-candidates`.
-2. Classify each discrete item as an issue (no label) or a backlog item (`idea`).
-3. Verify each item as outstanding vs already-built, with disclosed evidence for every drop.
-4. Present one batch disclosure table, then offer a per-candidate walkthrough for any items the user picks.
-5. On approval, file each outstanding item, archive each source doc, write the record doc, and regenerate the mirrors.
+The sweep runs in all three modes; its recommended default is the triage workflow in `references/import-triage.md`.
+After the mechanical config and mirror steps, the agent scans (`setup.sh --list-candidates`), classifies each item as an issue (no label) or backlog (`idea`), verifies outstanding-vs-already-built with disclosed evidence for every drop, presents one batch disclosure table (then a per-candidate walkthrough for items the user picks), and on approval files each outstanding item, archives each source doc, writes the record doc, and regenerates the mirrors.
 The scan covers the repo root (depth 1) and the standard roots (`docs/`, `.planning/`, `.ralph/`, `.scratch/*/issues`, plus any `--scan` roots), skipping governed lanes and root project files.
 loop-setup is attended-only and ignores the `loop-auto` autonomy knob; there is no unattended triage mode.
 Verbatim one-file-one-issue import and skip remain explicitly offered fallbacks, and the bash per-item prompt is unchanged.

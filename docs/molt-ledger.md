@@ -113,3 +113,11 @@ Per-entry shape:
 - Premises: none expired.
 - Constraints re-confirmed: single-home-plus-pointers (routing now a pointer), remote-tracker requirement, /workflows off.
 
+## 2026-08-15 - skills/loop-setup/ (SKILL + import-triage slim)
+- Harness snapshot: v2.1.204; /workflows off.
+- Deleted: CHOREOGRAPHY - the per-mode "What it does" step-by-step narration of setup.sh (github/gitlab/local sub-bullets) folded to one tighter per-mode block; the import-sweep numbered walkthrough compressed to prose; the import-triage default-workflow framing and on-approval prose tightened; the redundant second example table in the D1 record-doc section dropped (the batch-disclosure example already shows the shape).
+- Kept as policy: the no-`none`-mode decision (local supersedes none); the three-mode presentation rule (all three verbatim with viability caveats); `tracker-remote-ack` (the deliberate mode-vs-remote split); the import-sweep triage judgment (split/merge/leave/titling/labelling/disclosure - loop-setup's shaping capability, constraint-register-protected); attended-only (ignores the loop-auto knob); the four remote-report strings verbatim (tests assert they match setup.sh); the non-interactive hooks (`LOOP_TRACKER_ANSWER`, `LOOP_IMPORT_REMOTE`, `--dry-run-remote`, `--list-candidates`); `migrate-tracker.sh --to` suggestion; the `references/import-triage.md` pointer. `setup.sh` (492 lines of code) untouched.
+- Budget note (policy-preserving near-miss): import-triage target 130 -> ~95; landed 130 -> 114 (SKILL 100 -> 87, target met). The judgment rules, batch-disclosure contract, issue-body footer template, and D1 record-doc contract are triage POLICY; reaching ~95 would cut triage judgment, so kept per the plan's Human-checkpoint.
+- Premises: none expired.
+- Constraints re-confirmed: attended-only (loop-auto knob ignored), no-`none`-mode, single-home (import-triage is the triage workflow's single home), /workflows off; house style (no em dash) verified clean.
+
