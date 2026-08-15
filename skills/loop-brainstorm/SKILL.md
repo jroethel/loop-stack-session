@@ -20,8 +20,9 @@ The pipeline position:
 
 ```
 /loop-brainstorm ──> idea brief
+  (One-Minute Test front door)
                      └─ /loop-plan ──> plan (+ optional Rubix review)
-                                       └─ /loop-which ──> /loop-drive
+                                       └─ /loop-drive (routes + drives)
 ```
 
 Loop work downstream lives or dies on qualities that are set here or lost here:
@@ -48,6 +49,7 @@ it and get approval.
 
 Create a task for each item and complete them in order:
 
+0. **Front-door triage (One-Minute Test)** - route the idea before spending; exit on CHAT / DON'T BOTHER
 1. **Explore context** - files, docs, recent commits; never ask what context already answers
 2. **Run the three scope probes, then the domain-modeling probe (E)** - before any detailed questions
 3. **Ask clarifying questions** - in AskUserQuestion frontier rounds
@@ -58,6 +60,16 @@ Create a task for each item and complete them in order:
 8. **User reviews the brief** - and gets offered the commit
 9. **Hand off** - name the next stage exactly as pinned under Terminal state, then stop
 
+## Step 0 - Front-door triage (One-Minute Test)`[gate:DEFAULT]`
+
+Before any shaping spend, run the One-Minute Test on the idea as the chain's first question (`references/one-minute-test.md`, read it before scoring - the worked examples are what keep the verdict honest).
+Route by the shape of the work:
+
+- **CHAT** or **DON'T BOTHER**: stop here. Say so plainly and name the driving reason (answer it in one exchange, or it does not earn the setup). Do not shape a brief; hand over the CHAT prompt or the manual checklist and stop.
+- **ONE AGENT** or **AGENT TEAM**: this idea is worth shaping - proceed to Step 1.
+
+The verdict auto-announces and proceeds under autonomy; a DON'T BOTHER that reverses a user's stated intent is the one case to surface rather than silently exit.
+
 ## Step 1 - Explore context
 
 Files, docs, recent commits, and anything the idea references.
@@ -65,32 +77,15 @@ Existing tools and repos found here feed the asset sweep below (reuse candidates
 even when the user forgot to mention them).
 Never ask a question that context already answers.
 
-## Step 2 - The three scope probes
+## Step 2 - Scope probes, then domain modeling
 
-Run these before refining anything, in this order (most expensive mistake first):
+Run these before clarifying questions, most expensive mistake first. Each catches a failure that would otherwise survive every downstream layer:
 
-- **Trenchcoat check.** Is this several independent ideas wearing one coat?
-  If so, name the seams, agree on which piece to brainstorm first, and park the rest in the
-  brief's Parking lot.
-- **Meta-tooling probe.** If the idea is tooling, infrastructure, or a loop for running loops,
-  ask once: "what end artifact does this unblock, and when would it ship?"
-  The answer goes in the brief's End artifact section.
-  An idea that cannot name its first real deliverable is parked, not built.
-- **Asset sweep.** List every asset the user mentioned - tools, models, plans, subscriptions,
-  devices, data - and map each to the option it implies.
-  Every mapping lands in the brief as chosen or explicitly declined.
-  Missing an implied option is a named failure mode for this user; the sweep is how it is caught.
-
-## Step 2b - Domain modeling probe (E)
-
-Run this after the scope probes and before clarifying questions.
-It sharpens the words the brief will lean on, because a fuzzy domain term baked in here survives every downstream layer.
-Every term this probe sharpens or flags feeds the brief's Known vs guessed section, never a silent assumption.
-
-- **Glossary challenge.** List every domain term the idea turns on and define each in one plain sentence a non-expert could repeat back.
-  Any term that cannot be defined without hand-waving or a circular reference is a fuzzy term; sharpen it to a crisp definition, or flag it under Known vs guessed as believed-unchecked.
-- **Scenario stress-test (optional).** Offer this probe only when domain terms are load-bearing - that is, when a success criterion or a seam depends on what a term means.
-  Walk two or three edge scenarios that stretch the definitions and record where the glossary bends; those bends become Open questions for planning, not silent assumptions.
+- **Trenchcoat check** - is this several independent ideas wearing one coat? Name the seams, agree which piece to brainstorm first, park the rest in the brief's Parking lot.
+- **Meta-tooling probe** - if the idea is tooling, infrastructure, or a loop for running loops, ask once "what end artifact does this unblock, and when would it ship?" (goes in the brief's End artifact section). An idea that cannot name its first real deliverable is parked, not built.
+- **Asset sweep** - list every asset the user mentioned (tools, models, plans, subscriptions, devices, data) and map each to the option it implies; every mapping lands in the brief as chosen or explicitly declined. Missing an implied option is a named failure mode for this user.
+- **Glossary challenge (domain modeling, E)** - define every domain term the idea turns on in one plain sentence a non-expert could repeat back. A term that needs hand-waving or a circular reference is fuzzy: sharpen it, or flag it under Known vs guessed as believed-unchecked, never a silent assumption.
+- **Scenario stress-test (optional)** - only when a domain term is load-bearing (a success criterion or seam depends on what it means): walk two or three edge scenarios that stretch the definitions; where the glossary bends becomes an Open question for planning.
 
 ## Step 3 - Clarifying questions in rounds`[gate:ASK]`
 
@@ -180,21 +175,16 @@ Tell the user where the brief was written, invite review and changes before plan
 The review-gate and commit-offer flow - the invitation, waiting for the response, and re-running self-review on requested changes - is the shared convergence reference's final section.
 Read `references/brief-pipeline.md` in full and follow it before proceeding - do not summarize it from memory.
 
-On an accepted commit, graduate the brief's Parking lot into backlog issues.
-Preview first: announce the parked-item count and each item's derived title, and ask for assent before creating anything.
-On assent, invoke `scripts/graduate-parking.sh <brief-path>`.
-It parses the Parking lot section and opens one `idea`-labeled issue per parked item, body built from the graduated-item template in `config/repo-state.md`.
+On an accepted commit, graduate the brief's Parking lot: preview the parked-item count and each derived title, then on assent invoke `scripts/graduate-parking.sh <brief-path>`.
+The full graduation contract (preview/assent, bullet-shape/title-truncation rule, verbose announce, reverse, autonomy journaling) is the shared convergence reference's Graduation section - `references/brief-pipeline.md`, its single home; do not restate it here.
 This graduation is a DEFAULT step in prose, not a new gate tag.
-An autonomous run auto-takes it once the Step 8 commit is accepted, but journals every created issue number for the end-of-chain review rather than firing silently.
-Reverse a graduated issue with `scripts/tracker.sh close <num>` (backend-agnostic; works in either tracker mode).
-Keep the verbose-announce rule: each created issue is announced with its number and title.
 
 ## Step 9 - Terminal state (pinned)`[gate:DEFAULT]`
 
-Close by naming the approved brief's path and both routes onward: **/loop-plan** for the executor-agnostic implementation plan (the default next stage), or `frontier-sandwich` for a human-paced run-book.
+Close by naming the approved brief's path and both routes onward: **/loop-plan** for the executor-agnostic implementation plan (the default next stage), or **/loop-drive** for a human-paced run-book (its human-paced output mode).
 
-loop-brainstorm never invokes /loop-which or /loop-drive directly; they consume plans, not
-briefs.
+loop-brainstorm names the next stage but never invokes /loop-plan or /loop-drive itself; they
+consume plans, not briefs.
 It never invokes an implementation skill.
 The only file it creates is the brief.
 

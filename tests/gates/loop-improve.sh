@@ -66,8 +66,11 @@ if grep -qi 'investigate.*plan' "$PB"; then fail "playbook still references /imp
 if grep -qi 'those files get committed' "$PB"; then fail "playbook secret rule still names /improve plan files (recast to the brief)"; fi
 if grep -qi 'execute the plans'          "$PB"; then fail "playbook DX line still references executing plans (recast to a briefable finding)"; fi
 
-# scope guards: the shared reference ends at the commit offer, and loop-improve's terminal is /loop-plan only
-if grep -q  'graduate-parking.sh' "$BP"; then fail "graduation leaked into the shared reference (it is a per-skill step)"; fi
+# single-home guards: the SHARED graduation contract now lives in the shared reference as its single
+# home (the brief's single-home mandate corrects the earlier "graduation is per-skill" invariant);
+# the improve-only supersede-close and the per-skill terminal-state routing do NOT leak into it.
+grep -q  'graduate-parking.sh' "$BP" || fail "shared graduation contract missing from the shared reference (its single home)"
+if grep -qi 'Supersedes: #'      "$BP"; then fail "improve-only supersede-close leaked into the shared reference (it stays in loop-improve)"; fi
 if grep -qi 'frontier-sandwich'   "$BP"; then fail "terminal-state routing leaked into the shared reference (it is a per-skill step)"; fi
 if grep -qi 'frontier-sandwich'   "$S";  then fail "loop-improve must not offer frontier-sandwich (its terminal is /loop-plan only)"; fi
 

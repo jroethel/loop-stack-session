@@ -3,8 +3,8 @@
 This reference holds the convergence half shared by loop-brainstorm and loop-improve.
 The calling skill carries its own divergence half - explore, scope probes, and clarifying questions, or audit-and-select - and points here once a single idea or finding is chosen to converge.
 Read it in full and follow it before proceeding - do not summarize it from memory.
-It runs from approaches through the user review gate and the commit offer.
-Graduation and the terminal state are NOT here: those are the calling skill's own final steps.
+It runs from approaches through the user review gate and the commit offer, and holds the shared graduation contract.
+The shared graduation contract lives here (single home); each calling skill keeps only its own terminal step and any skill-specific close (loop-improve's supersede-close is improve-only and stays in loop-improve).
 
 ## Approaches
 
@@ -37,7 +37,7 @@ Scale each to the idea - one sentence is fine for a simple one - and use your ju
 **Checkability tagging rule.**
 Tag a criterion `[executed-check]` only if you can name the command shape that would verify it (exit 0, a rendered file, a fetched citation).
 For a `[judgment]` criterion, attempt one reformulation toward checkable - "feels fast" becomes "the digest renders in under 2 seconds on the sample vault" - and keep the judgment tag only if the reformulation genuinely loses the intent.
-Downstream, /loop-plan routes every `[judgment]` tag to a human checkpoint (never a worker task), and /loop-which question 4 and /loop-drive's step 1 halt condition consume the tags directly (P6: work enters a swarm only when checking is cheaper than producing).
+Downstream, /loop-plan routes every `[judgment]` tag to a human checkpoint (never a worker task), and the One-Minute Test front-door checkability question and /loop-drive's step 1 halt condition consume the tags directly (P6: work enters a swarm only when checking is cheaper than producing).
 
 **What the brief is not.**
 The brief contains no components, no data flow, no schedulers, no file formats, no library names, no phased build roadmap.
@@ -61,4 +61,16 @@ Wait for the response.
 Changes requested means edit and re-run the self-review.
 Offer the commit; never commit without the offer being accepted.
 
-Graduation and the terminal state are the calling skill's own steps - return to the calling SKILL.md after the commit offer resolves.
+## Graduation (shared contract)
+
+On an accepted commit, graduate the brief's Parking lot into backlog issues.
+This contract is shared by loop-brainstorm and loop-improve and lives only here; each caller invokes it from its own terminal step.
+
+- **Preview first.** Announce the parked-item count and each item's derived title, and ask for assent before creating anything.
+- **Invoke on assent.** Run `scripts/graduate-parking.sh <brief-path>`. It parses the `## Parking lot` section and opens one `idea`-labeled issue per parked item, body built from the graduated-item template in `config/repo-state.md`.
+- **Parking-lot bullet shape.** Each parked item is one bullet whose first sentence is the derived issue title and MUST be period-free and filename-free: graduate-parking.sh truncates the title at the first dot, so a leading `tracker.sh` or `config/repo-state.md` self-truncates. A `Restart context:` continuation line carries what a later session needs to pick the item back up.
+- **Verbose announce.** Each created issue is announced with its number and title.
+- **Reverse.** Undo a graduated issue with `scripts/tracker.sh close <num>` (backend-agnostic; works in either tracker mode).
+- **Autonomy.** An autonomous run auto-takes graduation once the review-gate commit is accepted, but journals every created issue number for the end-of-chain review rather than firing silently.
+
+The terminal state (naming the next stage) is the calling skill's own step - return to the calling SKILL.md after graduation resolves.

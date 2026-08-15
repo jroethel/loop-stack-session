@@ -38,6 +38,15 @@ Per-entry shape:
 - Premises: none expired.
 - Constraints re-confirmed: single-home-plus-pointers, portability/ringer-spine (ringer-absent fallback survives the dedup).
 
+## 2026-08-15 - skills/loop-brainstorm/ (One-Minute Test front door + choreography slim)
+- Harness snapshot: v2.1.204; /workflows off.
+- Deleted: CHOREOGRAPHY - the "run these in this order" scope-probe/domain-modeling cadence prose compressed to decision content (probe names + what each catches kept); dedup - the shared brief-graduation narration (graduate-parking invocation contract + parking-lot bullet-shape/title-truncation rule), previously duplicated across brainstorm Step 8 and improve Step 6, single-homed to `references/brief-pipeline.md`.
+- Added (POLICY relocation): Step 0 One-Minute Test front-door triage (P6/C6 checkability-as-routing-gate; exits CHAT/DON'T BOTHER before shaping spend), `[gate:DEFAULT]`; `one-minute-test.md` git-moved from loop-which and slimmed to the four routes, seven questions, worked examples, verdict->artifact.
+- Kept as policy: HARD-GATE, the frontier-rounds clarifying-question machinery, all shaping structure, and the Jeremy-maintained "Reading the user" block (untouched).
+- Premises: PREMISE re-evaluated - the on-disk "graduation is per-skill" comment predated and contradicted the brief's single-home mandate; shared contract single-homed here, improve's `Supersedes: #N` supersede-close kept divergent (improve-only). This also required inverting the now-stale assertion in `tests/gates/loop-improve.sh` line 70 (see batch journal - plan-defect resolution, the plan mandated the move but did not list the guarding test).
+- Retired-skill handoff repointed: brainstorm Step 9 terminal state now routes `frontier-sandwich` -> **/loop-drive** (human-paced output mode); pipeline diagram and the stale `/loop-which` reference in brief-pipeline.md converted to the front-door framing.
+- Constraints re-confirmed: brainstorm keeps FULL shaping capability (question generation, checkable criteria, seams, parking lot); single-home-plus-pointers; /workflows off.
+
 ## 2026-08-15 - skills/handoff/SKILL.md
 - Harness snapshot: 2026-08-15, thin refresh (Claude Code current, Opus 4.8); no live probe - smoke run validating /loop-molt on a lean 21-line artifact.
 - Deleted: none this pass (subtraction test not run; a smoke run does not edit a shared artifact).

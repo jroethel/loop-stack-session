@@ -1,4 +1,4 @@
-<!-- generated: 2026-08-15T17:47:21Z -->
+<!-- generated: 2026-08-15T19:35:55Z -->
 <!-- regenerate: scripts/gen-gate-registry.sh . -->
 <!-- DO NOT EDIT -->
 <!-- This registry reflects tagged gates only and is not a completeness guarantee. -->
@@ -22,6 +22,7 @@
 | loop-drive | BATCH | A spec edit confined to a single unit or criterion, leaving unchanged wh... |
 | loop-drive | BATCH | This review is advisory and non-blocking - the per-unit validators alrea... |
 | loop-plan | BATCH | The user picks which findings get incorporated; revise the plan; re-run ... |
+| loop-brainstorm | DEFAULT | ## Step 0 - Front-door triage (One-Minute Test) |
 | loop-brainstorm | DEFAULT | ## Steps 5-6 - The brief |
 | loop-brainstorm | DEFAULT | ## Step 8 - User review gate |
 | loop-brainstorm | DEFAULT | ## Step 9 - Terminal state (pinned) |
