@@ -4,8 +4,8 @@ description: >
   Use when a brief, spec, or requirements exist for multi-step work and the next artifact is an
   implementation plan - after /loop-brainstorm (or any spec), before any code. Triggers on
   "write the plan", "implementation plan", "break this into tasks", "PRD", or a brief handed off
-  for planning. Emits an executor-agnostic plan consumable by /loop-which, /loop-drive, or any
-  capable agent with no special skills installed.
+  for planning. Emits an executor-agnostic plan consumable by /loop-drive or any capable agent
+  with no special skills installed.
 ---
 
 # loop-plan: brief to loop-ready plan
@@ -15,8 +15,7 @@ That executor may be a human, a lone agent, or a wave of parallel workers under 
 The plan stands alone: no skill invocations, no tool-specific instructions, nothing the executor must have installed beyond the repo itself.
 
 ```
-/loop-brainstorm ──> brief ──> /loop-plan ──> plan (+ optional Rubix review)
-                                              └─ /loop-which ──> /loop-drive
+/loop-brainstorm ──> brief ──> /loop-plan ──> plan (+ optional Rubix review) ──> /loop-drive
 ```
 
 Loop work downstream consumes what is set here: explicit depends-on relations become waves, exclusive file ownership makes parallelism safe, and executed acceptance checks are /loop-drive's hard gate (P6: a unit belongs on a worker only if checking is cheaper than producing).
@@ -53,26 +52,15 @@ Each question gets answered by your codebase exploration, decided in the plan he
 Ask user questions in frontier rounds, not one per message: batch every question whose prerequisites are settled into one numbered round, wait for the answers, then recompute - a question that depends on another still open this round waits for the next round.
 Facts are your job (explore, don't ask); only decisions go to the user.
 
-Present each round through the AskUserQuestion tool, up to 4 questions per call (chunk a larger
-frontier into consecutive calls, dependency-safe order):
-
-- Each question carries 2-4 concrete options, your recommended answer listed first.
-- One decision per question: an option's label and description answer only the question asked;
-  a scope narrowing (or any second decision) never rides inside an option's description - it gets
-  its own question, and under autonomy scope narrowing is ASK-class, never auto-taken.
-- An open-ended question becomes your 2-3 most plausible candidate answers as options; "Other"
-  covers a verbose answer.
-- If an "Other" response contains a question, concern, or counter rather than an answer, address
-  it in prose and re-ask that single question before recomputing the frontier.
-
+Present each round through AskUserQuestion (up to 4 questions per call), 2-4 concrete options each, your recommendation first.
+One decision per question: a scope narrowing (or any second decision) never rides inside an option's description - it gets its own question, and under autonomy scope narrowing is ASK-class, never auto-taken.
 None may be silently carried into the plan; an unanswered question in a task is a placeholder.
 
 ## Step 3 - Decompose
 
 **Dispatch.**
-A fresh-context dispatch at the plan-draft role pin performs decompose plus draft plus self-review (Steps 3 through 5) as one bundle.
-That writer holds only the brief and the codebase, never this conversation.
-The driving session then reviews the dependency graph against the conversation before the Rubix step, looking for missing depends-on edges that a fresh-context writer could not have inferred.
+A fresh-context dispatch at the plan-draft role pin bundles decompose + draft + self-review (Steps 3-5); that writer holds only the brief and the codebase, never this conversation.
+The driving session then reviews the dependency graph against the conversation for depends-on edges a fresh writer could not infer.
 The plan-draft role pin resolves to Opus (this line is the pin's single home); cite it by role name everywhere else.
 
 **File structure first.**
@@ -178,8 +166,7 @@ Look at the written plan with fresh eyes and fix inline:
 
 ## Step 6 - The Rubix review (optional)`[gate:DEFAULT]`
 
-Named for solving a Rubik's cube: the same object, deliberately re-oriented, shows faces the builder stopped seeing.
-
+Named for a Rubik's cube: the same object re-oriented shows faces the builder stopped seeing.
 Offer it once, as its own message, after self-review passes:
 
 > "Plan written. Want the Rubix review? Two fresh-context reviewers - one reads it as a professional downstream of the artifact, one gives it a cold best-practice read. Two fresh dispatches, findings with rationale, you pick what gets in."
@@ -187,35 +174,24 @@ Offer it once, as its own message, after self-review passes:
 Decline means proceed to Step 7; do not offer again.
 
 **Both lenses are read-only subagents with fresh context; the role pins resolve here (their single home): Rubix lens A = Opus; Rubix lens B = Opus, or Fable when the plan is flagged high-stakes; optional third lens = GLM via claude-zai.**
-They receive the plan file and the brief, never this conversation, and no rationale beyond what those documents record; that blindness is the point.
-Dispatch them in parallel.
+They receive the plan file and the brief, never this conversation - that blindness is the point. Dispatch them in parallel.
 
-**Lens A - the turned cube (impacted professional).**
-From the brief's outcome, name the professionals impacted by, working with, or downstream from the artifact: the analyst who reads the report, the operator paged at 3am, the developer consuming the API.
-The subagent takes the single most affected seat (name the runners-up in its report) and reviews what shipping this plan would be like to live with from that seat: what it breaks, what it forces on them, what they would ask for first.
+**Lens A - the turned cube (impacted professional).** Take the seat of the professional most affected by the artifact (name the runners-up), and review what living with this plan from that seat would break, force on them, or make them ask for first.
 
-**Lens B - the scrambled start (cold craft read).**
-No seat and no sympathy: evaluate the plan against best practice for its domain from a deliberately unbiased start.
-Sequencing risk, missing standard practice, over- and under-engineering, testing blind spots, security or data-loss exposure.
+**Lens B - the scrambled start (cold craft read).** No seat, no sympathy: evaluate against best practice - sequencing risk, missing standard practice, over/under-engineering, testing blind spots, security or data-loss exposure.
 
-**Output contract, both lenses:** a list of findings, each `{finding, severity, rationale, concrete suggested change}`.
-Reviewers never rewrite the plan.
+**Output contract, both lenses:** a list of findings, each `{finding, severity, rationale, concrete suggested change}`. Reviewers never rewrite the plan.
 
-**Triage.**
-For every finding, record your own verdict - revise or no - with a one-line reason; a finding is never applied silently and never dismissed without its reason written down.
-Present one table: finding, lens, severity, reviewer rationale (condensed), your verdict.
-The user picks which findings get incorporated; revise the plan; re-run Step 5.`[gate:BATCH]`
+**Triage.** Record your own verdict - revise or no - with a one-line reason for every finding; none applied silently or dismissed without a written reason. Present one table: finding, lens, severity, reviewer rationale (condensed), your verdict. The user picks which get incorporated; revise; re-run Step 5.`[gate:BATCH]`
 
 ## Step 7 - User review gate`[gate:DEFAULT]`
 
-Tell the user where the plan was written, invite review and revisions before hand-off, and offer the commit; the phrasing is yours.
-Wait for the response.
-Changes requested means edit and re-run the self-review.
-Offer the commit; never commit without the offer being accepted.
+Tell the user where the plan was written, invite review and revisions, and offer the commit (phrasing yours); wait for the response.
+Changes requested means edit and re-run the self-review. Never commit without the offer being accepted.
 
 ## Step 8 - Hand off (pinned)`[gate:DEFAULT]`
 
-Close by naming the approved plan's path and the routes onward: **/loop-which** for the run-shape verdict (recommended), **/loop-drive** directly if it is already known to be a loop, execution by hand or with any agent, or stopping here - the plan stands alone either way.
+Close by naming the approved plan's path and the routes onward: **/loop-drive** - its front-door triage answers the run-shape verdict ("is this worth automating / how should I run this plan", the One-Minute Test for a plan in hand) and then drives it - execution by hand or with any agent, or stopping here - the plan stands alone either way.
 
 The user chooses the route; loop-plan never invokes the next skill unprompted and never begins execution.
 The only files it creates are the plan and its revisions.

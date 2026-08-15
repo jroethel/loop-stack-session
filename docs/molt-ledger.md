@@ -75,3 +75,12 @@ Per-entry shape:
 - Constraints re-confirmed: none contested (smoke run).
 - Verdict: handoff is near "done molting" - lean, mostly policy; two cheap choreography candidates remain for the next real pass.
 
+## 2026-08-15 - skills/loop-plan/SKILL.md
+- Harness snapshot: v2.1.204; /workflows off.
+- Deleted: CHOREOGRAPHY - the AskUserQuestion tool mechanics and Other-response handling compressed to the frontier-rounds decision content; the Rubix flavor line + verbose two-paragraph lens A/B descriptions compressed to one line each; Step 7 review-gate narration tightened; the retired-skill routing narration in the pipeline diagram collapsed.
+- Bare-reference cleanup (owned-file, in scope): the three stale `/loop-which` skill references (frontmatter consumer list, pipeline diagram, Step 8 handoff) converted - the run-shape verdict now routes to /loop-drive's front-door triage ("is this worth automating / how should I run this plan", the One-Minute Test for a plan in hand).
+- Kept as policy: HARD-GATE; the header + task templates verbatim (the downstream loop-drive contract's teeth); the loop-drive contract (depends-on / exclusive ownership / executed-check loop-aware bullets); the no-placeholder list; the code policy; the self-review checklist; the plan-draft dispatch + dependency-graph review + Opus pin (single home); the prefactor + expand-contract rule; the Rubix role pins (single home); every gate tag verbatim incl. the `[gate:BATCH]` at the tags.sh floor.
+- Budget note (policy-preserving near-miss): plan target was 222 -> ~150; landed 223 -> 198. The remaining bulk is the ~70-line verbatim header/task template block (explicit KEEP - the teeth) plus KEEP decision content (frontier-rounds, decomposition judgment, self-review). Reaching ~150 would require cutting the template or the loop-drive contract, both POLICY-keep; per the plan's Human-checkpoint, policy is kept and the shortfall recorded here rather than cutting to a number.
+- Premises: none expired.
+- Constraints re-confirmed: single-home-plus-pointers (routing narrative absent - `scoreboard posterior` = 0; role pins single-homed here), /workflows off, executor-agnostic (no skill invocation the executor must have installed).
+

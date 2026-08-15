@@ -1,4 +1,4 @@
-<!-- generated: 2026-08-15T19:47:13Z -->
+<!-- generated: 2026-08-15T19:57:41Z -->
 <!-- regenerate: scripts/gen-gate-registry.sh . -->
 <!-- DO NOT EDIT -->
 <!-- This registry reflects tagged gates only and is not a completeness guarantee. -->
@@ -20,7 +20,7 @@
 | loop-drive | BATCH | If two shapes are close (roughly 60/40 or tighter), diagram both, name y... |
 | loop-drive | BATCH | A spec edit confined to a single unit or criterion, leaving unchanged wh... |
 | loop-drive | BATCH | This review is advisory and non-blocking - the per-unit validators alrea... |
-| loop-plan | BATCH | The user picks which findings get incorporated; revise the plan; re-run ... |
+| loop-plan | BATCH | **Triage.** Record your own verdict - revise or no - with a one-line rea... |
 | loop-brainstorm | DEFAULT | ## Step 0 - Front-door triage (One-Minute Test) |
 | loop-brainstorm | DEFAULT | ## Steps 5-6 - The brief |
 | loop-brainstorm | DEFAULT | ## Step 8 - User review gate |
