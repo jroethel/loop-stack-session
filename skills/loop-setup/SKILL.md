@@ -17,6 +17,8 @@ When an agent fronts the mode question in its own UI instead of letting setup.sh
 - `gitlab` - needs an origin remote to resolve the host, plus `glab` authenticated to that host (`glab auth status --hostname <host>`).
 - `local` - no external dependency; issues live in `docs/issues/`.
 
+There is deliberately no `none` (tracker-off) mode: `local` already runs with zero external dependency, so a repo that wants no remote tracker chooses `local`, which supersedes `none` in every case.
+
 Remote for code, local tracking: to run a repo whose code lives on a github or gitlab remote but whose issues stay local, choose `local` and add a `tracker-remote-ack: <github|gitlab>` line to config/repo-state.md.
 That line acknowledges the deliberate mode-versus-remote split and silences setup's switch offer; it is the supported way to pair a remote codebase with local issue tracking, and no multi-backend "combination" mode exists or is planned.
 

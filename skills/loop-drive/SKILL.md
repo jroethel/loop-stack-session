@@ -103,6 +103,10 @@ Every row needs the rationale; "seems hard" is not one.
 Which hazards you must mitigate depends on the unit's transport.
 On a mixed wave, both hazard sets are active at once.
 
+**Check custody (both transports).**
+Acceptance-check scripts live outside every worker's file ownership: no unit lists a check file among the files it may create or edit, and a worker diff that touches a check file is an automatic scope violation, not something to resolve at the gate.
+The check is the attack surface - a worker that can edit its own success criterion can pass by gaming it (METR found o3 reward-hacked past a loop's criterion in 21 of 21 runs), so the check must live where no worker it judges can reach it.
+
 **Ringer-transport units:** worktree isolation, per-task directories, and log separation are handled for you by run-level `"worktrees": true`; do not re-specify them.
 What you MUST carry into the plan are ringer's own footguns:
 
