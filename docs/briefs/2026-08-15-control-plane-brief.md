@@ -16,6 +16,12 @@ The stack's spine moves from "a session that must stay alive" to "a tracker that
 5. **The P2 guard - the marriage that beats both parents**: `agent:done` requires a receipt containing executed-check evidence (command + exit status or artifact link); a bare "done" self-report cannot close a ticket.
    This is where loop-stack's checks fix Open Engine's known weakness (AGENT DONE is exactly the self-report P2 forbids).
 6. Receipts align with the existing handoff skill format; gen-mirrors continues to reflect lanes.
+7. **Lifecycle reconciliation lint** (repo-state.md's archive rules 1-3 exist but demonstrably decay - six completed plan-sets from 2026-08-04 onward sit unarchived while everything through 2026-08-02 was moved correctly): a deterministic script, run at the same moments mirrors regenerate (handoff time / on demand, no hooks, no daemons), flags (a) plans complete but not in `docs/archive/`, (b) briefs orphaned from archived plans, (c) completed work whose linked issue is still open, (d) closed issues referenced by live plans.
+   Detection is script; the archive/close ACTION is a BATCH-class gate (auto-take + journal under `auto`, offered under `pause`); issue closure requires a receipt per task 5's guard.
+
+## Additional checkable criterion
+
+- Lint's first live run catches the existing backlog: the six unarchived post-Aug-4 plan-sets are flagged, and archiving them via the gate is the acceptance demo (rules 1-2 applied, briefs travel with plans, each move announced per rule 5).
 
 ## Checkable success criteria
 
