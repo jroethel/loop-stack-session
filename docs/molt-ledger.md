@@ -56,6 +56,16 @@ Per-entry shape:
 - Premises: none expired.
 - Constraints re-confirmed: single-home-plus-pointers, portability/ringer-spine.
 
+## 2026-08-15 - skills/loop-drive/ (compile+drive policy sheet)
+- Harness snapshot: v2.1.204 (native parallel background fan-out with completion notifications and per-subagent worktrees verified unprompted); /workflows off.
+- Deleted: PLUMBING - generic single-repo worktree creation ("parallel agents cannot share one checkout, each works in its own git worktree..."), parallel-background-Agent-launch narration, completion-notification narration (harness does these unprompted); CHOREOGRAPHY - wave-derivation mechanics ("a wave = all currently unblocked units"); dedup - routing-chain narrative -> Task 3 pointer, ringer footguns -> single-homed in ringer-substrate.md pointer; references - `example-output-plan.md` deleted wholesale (SKILL Step 6 emit-spec is self-sufficient), `native-orchestration.md` slimmed 36 -> ~14 lines to the two native-lane policies the SKILL does not state (repair-pass bookkeeping, live-session/headless constraint), `ringer-substrate.md` routing line -> pointer + promotion-ladder duplicate dropped (now in config home).
+- Kept as POLICY: checks-or-stall (P6); the three validation layers + `{verdict: pass|fail|spec-problem}` contract; the per-unit routing TABLE (all columns) + task_type vocabulary + effort caps + transport-derivation + roster; gate-class pointer to loop-auto; run-state/resume format; check custody (both-transports invariant, stays in SKILL); AND the three Agent-tool worktree HAZARDS the harness does NOT handle - nested-repo wrong-snapshot (`git -C <inner-repo> worktree add`), per-worktree venv install, shared-append -> one-file-per-unit (Rubix A4, test-by-subtraction can't catch their loss). Every `[gate:STOP]` (6) and `[gate:BATCH]` (3) preserved verbatim (Rubix B6).
+- Added (fold): human-paced output mode (absorbs frontier-sandwich) - the sandwich invariant, tier/effort by pointer to `references/fable-guidelines.md`, one-file-vs-numbered-files output shape; frontmatter description extended to fire on project kickoff / break-into-prompts / model-routing / human-paced run-book / "is this worth automating" (Rubix A3/A5).
+- Ringer-absent degraded-routing fallback preserved (Rubix A6): operative in the SKILL Step 2 and in the Task 3 canonical home. Step 0 loop-which pointer repointed to the One-Minute Test reference; benchmark leaf now loop-drive's own.
+- Probe (Rubix B4): compiled a two-unit toy plan through Steps 0-2, recorded in `docs/reviews/2026-08-15-slim-fold-dedup-probes.md` - emits routing table, validator contract, check custody, ringer-absent fallback, Step 0 verdict + next command; no degradation.
+- Premises: none expired.
+- Constraints re-confirmed: portability/ringer-spine (ringer-lane footguns + check custody never cut; native lane optional), single-home-plus-pointers, Fable-never-a-worker, /workflows off.
+
 ## 2026-08-15 - skills/handoff/SKILL.md
 - Harness snapshot: 2026-08-15, thin refresh (Claude Code current, Opus 4.8); no live probe - smoke run validating /loop-molt on a lean 21-line artifact.
 - Deleted: none this pass (subtraction test not run; a smoke run does not edit a shared artifact).

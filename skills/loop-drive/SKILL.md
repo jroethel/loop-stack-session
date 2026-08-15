@@ -1,6 +1,6 @@
 ---
 name: loop-drive
-description: Use when you have a multi-step plan, PRD, or hand-off run-book (steps or work packages, with or without copy-paste prompts) and want a single frontier-model session to orchestrate its execution instead of a human pasting prompts by hand. Covers ringer-transported and Agent-tool-transported workers, mixed freely within a wave. Not for a one-off single-answer task.
+description: Use when you have a multi-step plan, PRD, or hand-off run-book (steps or work packages, with or without copy-paste prompts) and want a single frontier-model session to orchestrate its execution instead of a human pasting prompts by hand. Also use to kick off a new project, break a big task into per-step prompts, route steps across model tiers ("which model should do this"), produce a human-paced Frontier-Sandwich run-book, or answer "is this worth automating / how should I run this plan" (the One-Minute Test front door for a plan in hand). Covers ringer-transported and Agent-tool-transported workers, mixed freely within a wave. Not for a one-off single-answer task.
 ---
 
 # loop-drive: hand-off plan to orchestration plan
@@ -12,7 +12,6 @@ You emit the orchestration plan and, once approved, drive it.
 Workers reach execution through two transports: ringer (manifest tasks; see `references/ringer-substrate.md`) and the Agent tool (in-session subagents; see `references/native-orchestration.md`).
 Transport is a per-unit attribute derived in Step 2.
 
-A full worked skeleton of the emitted plan is `references/example-output-plan.md`.
 The principle IDs cited below (P2, P6, P7, P10, P12, P14) are defined in the loop-stack `principles.md`; short glosses are inline so this skill stands alone.
 
 ## Step boundary and entry points
@@ -28,7 +27,7 @@ When the orchestration plan already exists, skip compilation entirely and go str
 
 Before compiling anything, decide whether this plan should be a loop at all, and at what size.
 
-Run the loop-which verdict (the One-Minute Test router; or reference it if the user already has one):
+Run the One-Minute Test verdict (`skills/loop-brainstorm/references/one-minute-test.md`; the front-door triage - or reference the user's if they already have one):
 
 - **CHAT** or **DON'T BOTHER**: stop. Say so plainly and name why (answer it in-session, or it is not worth automating). Do not emit a plan.
 - **ONE AGENT** or **single-wave TEAM**: skip the wave machinery entirely. Apply the Step 2 chain to the single unit (no table), and emit one artifact directly, naming the unit's model, transport, and evidence tier alongside it:
@@ -47,12 +46,19 @@ Every Step 0 exit must name the concrete next command or launch, so the user nev
 Ship every run-something exit with a topology diagram: a fast text sketch (ASCII or fenced mermaid, never a rendered export) of orchestrator, waves, workers, and validators.
 If two shapes are close (roughly 60/40 or tighter), diagram both, name your lean and why, and let the user pick.`[gate:BATCH]`
 
+## Human-paced output mode (absorbs frontier-sandwich)
+
+When the user wants a run-book they execute by hand across sessions (paste a prompt, review, repeat) rather than a session that orchestrates the loop, emit that instead of the wave machinery.
+The invariant is the sandwich: frontier judgment before and after cheap execution, never frontier keystrokes in the middle - a Strong/Fast explore feeds a Frontier plan, then Strong/Fast execution, then a Frontier review, then a human ship.
+Tier vocabulary (Frontier/Strong/Fast) and the effort defaults live in `references/fable-guidelines.md`; read it before drafting the run-book. Per-unit model choice still follows the routing chain (`config/routing/model-benchmarks.md`).
+Output shape: a simple plan (roughly five steps or fewer) is one file, each step carrying its model tier, effort, copy-paste prompt, and verification check; a complex plan is a directory with an index Order table plus one numbered prompt file per step, so each file hands whole to a fresh session. Handoffs go through files, never conversation memory, so a quota death resumes by re-running the unfinished step.
+
 ## Step 1 - Extract the plan's skeleton
 
 Read the source plan and everything it points to, and extract:
 
 - **Units of work**: the steps or work packages, each with scope, acceptance criteria, and named tests if present.
-- **Dependency structure**: use explicit waves/ordering if given; otherwise derive the wave graph yourself from the depends-on relations (a wave = all currently unblocked units). You own wave derivation even when the source is a flat PRD with no ordering at all.
+- **Dependency structure**: explicit waves/ordering if given; otherwise you own deriving the wave graph from the depends-on relations, even for a flat PRD with no ordering at all.
 - **Per-unit model hints**: what the human plan assigned (often "Opus for everything"); you re-derive these in Step 2, not copy them.
 - **Prompt templates**: the paste-blocks; these become subagent prompts (native) or manifest specs (ringer).
 - **Human checkpoints**: places the plan says the human reviews or approves; these survive conversion, they do not disappear.
@@ -71,13 +77,9 @@ The loop is a three-tier structure regardless of transport:
 | Validator | a fresh checker per unit (a subagent at the native-validator role pin (resolves to Opus; this line is the pin's home), or an executed check plus optional review task) | Adversarial re-check of the implementer's claim against actual artifacts. Never fixes. |
 | Implementer | a worker per unit (subagent, or manifest task) | The unit's actual work, test-first against its criteria. |
 
-Model choice is one chain for every unit, regardless of transport (P7: route by evidence, not vibes).
-If the Step 0 probe reported ringer absent, skip tier 1 entirely and route every unit by benchmark prior, else orchestrator pin, among the Agent-tool roster.
-1. Integrity-gated scoreboard posterior: from the ringer repo root recorded by the Step 0 probe, run `./ringer.py models --task-type <type>`; before trusting a posterior, read `<ringer-repo>/docs/MODEL-NOTES.md` and `<ringer-repo>/docs/AMENDMENTS-PENDING.md` for the models under consideration; if the ringer repo is missing, treat the posterior as unverified and fall to the prior tier.
-2. Else benchmark prior: a model with no trusted local evidence routes by its row in `model-benchmarks.md` (the frontier-sandwich skill's `references/model-benchmarks.md` leaf; repo source `config/routing/model-benchmarks.md`).
-3. Else orchestrator pin: design, math- or reasoning-heavy, risk concentration, or taste - pin `engine` and `model` and record the reason.
-A pin outranks the chain at any tier when its trigger holds; the reason is never "seems hard".
-Evidence cells carry the short tag only (`posterior`, `prior`, `pin:<reason-word>`); longer rationale goes in a footnote beneath the table.
+Model choice is one chain for every unit, regardless of transport, and it follows the routing chain (`config/routing/model-benchmarks.md`) - that single home carries the three-tier evidence chain, the `./ringer.py models --task-type` posterior with its MODEL-NOTES/AMENDMENTS-PENDING integrity read, the promotion ladder, the `claude-zai` tie-break, and the roster (P7: route by evidence, not vibes). Do not restate the chain here.
+Ringer-absent degraded routing (operative portability policy): if the Step 0 probe reported ringer absent, skip the top evidence tier entirely and route every unit by benchmark prior, else orchestrator pin, among the Agent-tool roster.
+Evidence cells carry the short tag only (`posterior`, `prior`, `pin:<reason-word>`); longer rationale goes in a footnote beneath the table; a pin outranks the chain when its trigger holds and the reason is never "seems hard".
 
 Transport is derived per unit, never chosen per wave: a unit that needs in-session tools or mid-flight continuation takes the Agent tool; if ringer is absent, every unit takes the Agent tool (degraded mode); otherwise the unit takes ringer.
 Within a wave, all ringer-transport units pack into one manifest; Agent-tool units launch as parallel background calls; both meet at the same gate.
@@ -108,15 +110,10 @@ Acceptance-check scripts live outside every worker's file ownership: no unit lis
 The check is the attack surface - a worker that can edit its own success criterion can pass by gaming it (METR found o3 reward-hacked past a loop's criterion in 21 of 21 runs), so the check must live where no worker it judges can reach it.
 
 **Ringer-transport units:** worktree isolation, per-task directories, and log separation are handled for you by run-level `"worktrees": true`; do not re-specify them.
-What you MUST carry into the plan are ringer's own footguns:
+Ringer's own footguns (deliverable loss on a passing worktree, gitignored outputs missing from patch exports, engine-concurrency staggering) are single-homed in `references/ringer-substrate.md`; carry them into the plan from there.
 
-- **Deliverables die with a passing worktree** (it is deleted on pass). Land them outside the task worktree, or have the check export them first (the patch-export pattern: `git add -A && git diff --cached > <path-outside-worktree>.patch`, applied on your branch after review).
-- **Gitignored outputs vanish from patch exports.** `git add -A` cannot stage ignored paths (`dist/`, build dirs), so the check must `cp` those files to a path outside the worktree explicitly, and you verify the patch AND the copies.
-- **Stagger opencode spawns.** Concurrent OpenCode workers contend on its shared sqlite state store (WAL); launch them with a small stagger rather than all at once, or cap parallelism, to avoid lock errors.
+**Agent-tool units:** the harness gives each background subagent its own `git worktree`, merges validated branches at the gate, and never touches mainline; do not re-narrate that. Three hazards it does NOT handle are correctness policy you MUST carry (test-by-subtraction misses them - the toy chain exercises no nested repo or venv):
 
-**Agent-tool units:** keep the full hazard set:
-
-- **Git**: parallel agents cannot share one checkout. Each implementer works in its own `git worktree` on its own branch; the orchestrator merges validated branches into a dedicated integration branch at each gate and reruns the full suite there; mainline is never touched.
 - **Nested repos**: if the code lives in a repo nested inside the session's outer repo, built-in `isolation: worktree` snapshots the WRONG repo; the implementer must create the worktree itself with explicit `git -C <inner-repo> worktree add ...` commands you spell out.
 - **Per-worktree environments**: in-project venvs do not travel; the template includes the install step (e.g. `poetry install`) inside the worktree.
 - **Shared append-only files** (run logs, checklists): convert to one-file-per-unit (`<log>/unit-NN.md`); the orchestrator writes the combined summary at the gate. State this as an explicit, once-noted deviation from the source plan.
@@ -153,9 +150,8 @@ Gate-class semantics (ASK, STOP, BATCH, DEFAULT) and the batch-review journal fo
 
 **1. Launch the wave.**
 
-Launch the wave's packed manifest and its Agent-tool units concurrently.
-Ringer-transport units: emit one manifest for the wave and run it (`./ringer.py lint <manifest> && ./ringer.py run <manifest>`), using the SAME `run_name` across all waves of the build; ringer's built-in single retry IS the repair pass for these units, you do not add one.
-Agent-tool units: launch them as parallel background Agent calls at the same time; on each completion notification, launch that unit's validator; on a failed validation, one repair pass via SendMessage to the same implementer with the itemized verdict, then revalidate; a second failure stops that unit without blocking its siblings.
+Ringer-transport units: emit one manifest for the wave and run it (`./ringer.py lint <manifest> && ./ringer.py run <manifest>`), using the SAME `run_name` across all waves; ringer's built-in single retry IS the repair pass, you do not add one.
+Agent-tool units: the harness runs them as parallel background subagents and notifies you on each completion - on completion, launch that unit's validator; on a failed validation, one repair pass via SendMessage to the same implementer with the itemized verdict, then revalidate; a second failure stops that unit without blocking its siblings.
 
 **2. Gate (orchestrator).**
 Read all results and verdicts from both transports.

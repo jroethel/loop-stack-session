@@ -54,10 +54,9 @@ Use it instead of reading files into your own context when the answer is all you
 
 ## Model routing
 
-Per-unit model choice follows Step 2's unified chain (integrity-gated scoreboard posterior, else benchmark prior, else orchestrator pin); this file does not restate it.
-Two ringer-specific mechanics stay here:
+Per-unit model choice follows the routing chain (`config/routing/model-benchmarks.md`); this file does not restate it (the promotion ladder and prior tier live in that single home).
+One ringer-specific mechanic stays here:
 
-- **Promotion ladder.** The prior tier routes a model with no trusted local scoreboard evidence by its row in `model-benchmarks.md` (the routing prior file named in the managed routing block); a model moves untested, then probation, then proven at 3+ scoreboard rows.
 - **MODEL-NOTES receipts.** After a run, add a dated line to `<ringer-repo>/docs/MODEL-NOTES.md` when it taught you something about a model, supported only by the executed checks and raw logs.
 
 ## W-scaling: fewer, fatter waves (P13)

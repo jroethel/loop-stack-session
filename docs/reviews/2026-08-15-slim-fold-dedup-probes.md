@@ -43,3 +43,36 @@ Seams
 Assumption flagged (conservative, autonomous mode): scope limited to the local subcommands already in
 scripts/tracker.sh; no new subcommands or remote-API dry-run semantics beyond "don't call gh/glab".
 ```
+
+## Task 6 - loop-drive compile of a two-unit toy plan (Steps 0-2)
+
+Confirms the policy-sheet slim kept the compile path: a Step 0 verdict + next command, the Step 2
+routing table (all columns), the validator contract, check custody, and the ringer-absent fallback.
+
+```
+a. STEP 0 VERDICT
+Route: AGENT TEAM - single wave (Wave 1), two independent units, mixed transport (ringer + Agent tool).
+Next: Unit A (ringer)  ./ringer.py lint wave1.yaml && ./ringer.py run wave1.yaml
+      Unit B (Agent tool)  launch parser worker as a parallel background Agent-tool call
+      -> both land at the same Wave 1 gate; Step 7 dashboard/dry-run/watch-points ask fires at launch.
+
+b. STEP 2 ROUTING TABLE
+| Unit          | Wave | task_type    | Model    | Transport | Engine     | Impl. effort | Val. effort | Evidence |
+| changelog-doc | 1    | docs         | glm-5.2  | ringer    | claude-zai | medium       | medium      | prior    |
+| parser        | 1    | code-feature | sonnet-5 | native    | claude     | high         | high        | prior    |
+(changelog-doc: no local row -> benchmark prior + claude-zai tie-break on thin evidence.
+ parser: needs in-session iteration -> Agent-tool forced; sonnet-5 default Agent-tool worker.)
+
+c. VALIDATOR CONTRACT
+{verdict: pass|fail|spec-problem, criteria: [...], notes} - if ANY criterion fails, the overall
+verdict is fail, stated in every validator prompt.
+
+d. CHECK CUSTODY
+Acceptance-check scripts live outside every worker's file ownership; a worker diff that touches a
+check file is an automatic scope violation, not resolved at the gate.
+
+e. RINGER-ABSENT FALLBACK
+If the Step 0 probe reports ringer absent, every unit takes the Agent tool (degraded mode) and routing
+skips the posterior tier, routing every unit by benchmark prior, else orchestrator pin, among the
+Agent-tool roster (sonnet/opus/haiku).
+```

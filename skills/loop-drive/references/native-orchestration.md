@@ -1,36 +1,13 @@
 # The Agent-tool transport
 
-How the orchestrator drives a wave of in-session subagents with the Agent tool.
-Model choice for these units comes from Step 2's unified chain; this file covers transport mechanics only.
-This is the transport for units that need in-session tools or mid-flight continuation: the implementer is a Claude Code subagent the orchestrator can steer with SendMessage, so it keeps shared context and mid-flight steering.
+The harness runs a wave's implementers as parallel background subagents, notifies you on each completion, and gives each its own `git worktree`; the orchestrator steers a running subagent with SendMessage.
+The SKILL's Steps 3-5 carry the policy (check custody, the three worktree hazards, the repair-pass-then-stop gate); this file adds only what the SKILL does not state.
 
-## Tier mapping
+## Bookkeeping for the repair pass
 
-- **Orchestrator**: this session. Owns the wave loop, gates, merges, spec edits, escalation. Never implements.
-- **Implementer**: one subagent per unit, launched with the Agent tool.
-- **Validator**: a fresh Opus subagent per unit, read-only, adversarial.
+Track, per unit, the implementer's agent id (needed to SendMessage the one repair pass), its branch and worktree path (needed to merge at the gate), the validator verdict, and the repair count - in the run-state artifact, so a resumed session can reconcile.
 
-## Wave mechanics
+## Live-session constraint
 
-1. **Parallel background launch.** Launch every implementer in the wave as a background Agent call in one batch. Background launches let the session keep control while workers run; you are notified as each finishes.
-2. **Completion-notification handling.** On each completion notification, launch that unit's validator immediately (do not wait for the whole wave). Units flow implement then validate independently, with no barrier between siblings.
-3. **SendMessage repair pass.** On a failed validation, send the itemized verdict back to the SAME implementer with SendMessage (its context is intact, so it repairs rather than restarts), then revalidate. A second failure stops that unit and leaves its siblings running.
-4. **Task-tool bookkeeping.** Track, per unit, the implementer agent id, its branch and worktree path, validator verdict, and repair count, in the run-state artifact. You need the agent id to SendMessage the repair pass; you need the branch to merge at the gate.
-
-## Isolation
-
-- **Default**: give each implementer its own worktree. When the harness offers native `isolation: worktree`, use it; the worker gets an isolated checkout automatically.
-- **Nested repos**: if the code lives in a repo nested inside the session's outer repo, native `isolation: worktree` snapshots the WRONG repo. The implementer must create the worktree itself with explicit `git -C <inner-repo> worktree add ../<unit>-wt -b <unit-branch>` commands you spell out in the prompt.
-- **Environments do not travel**: an in-project venv is not in the fresh worktree; the prompt must run the install step (`poetry install`, `pip install -r requirements.txt`) inside the worktree.
-
-## The session-alive constraint
-
-The orchestrator is the loop.
-If this session dies (quota, crash), the loop stops; background subagents are not a durable scheduler.
-So: implementers commit their work and unit log before returning, the run-state artifact is updated at every launch and gate, and the plan carries a verbatim resume prompt plus a reconciliation procedure that trusts git over the state file and relaunches (never resumes) half-done units.
-
-## Headless / scheduled loops
-
-When the loop must run without a live session (overnight, on a schedule, unattended), Agent-tool orchestration is the wrong tool; it needs a live session.
-Point to the Managed Agents API (headless equivalent) for that case rather than trying to keep an interactive session alive.
-This skill's native mode assumes a live orchestrator session.
+The orchestrator IS the loop: if this session dies (quota, crash), the loop stops - background subagents are not a durable scheduler.
+When the loop must run unattended (overnight, scheduled), Agent-tool orchestration is the wrong tool; point to the Managed Agents API (the headless equivalent) rather than trying to keep an interactive session alive.
