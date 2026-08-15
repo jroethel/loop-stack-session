@@ -73,21 +73,17 @@ Covered findings (Tracker shows `covered by #N`) stay selectable - converging on
 
 Read `~/.claude/skills/loop-brainstorm/references/brief-pipeline.md` in full and follow it before proceeding - do not summarize it from memory.
 Follow the shared reference from approaches through the user review gate and the commit offer, then return to Step 6 here.
-The shared reference contains NO graduation and NO terminal state; loop-improve's own Steps 6 and 7 are the sole graduation and terminal.
+The shared reference now holds the graduation contract (its single home); loop-improve's Step 6 invokes it and adds only its own supersede-close, and Step 7 is loop-improve's terminal.
 
 The selected findings are the brief's seams, in blast-radius order, and each carries its file:line evidence into the brief's success criteria.
-While authoring the brief, write each unselected finding that is NOT covered by an existing open issue into the brief's `## Parking lot` section, one bullet per finding (bullet shape in Step 6).
+While authoring the brief, write each unselected finding that is NOT covered by an existing open issue into the brief's `## Parking lot` section, one bullet per finding (bullet shape per the shared graduation contract in `brief-pipeline.md`).
 Record `Supersedes: #N` in the brief for each selected finding that was covered by issue #N.
 
 ## Step 6 - Leftover graduation and supersede-close`[gate:DEFAULT]`
 
-After the Step 5 commit is accepted, ride `scripts/graduate-parking.sh <brief-path>` unchanged.
-It previews the parked-item count and each derived title, takes your assent, then opens one `idea`-labeled issue per parked item and announces each with its number and title.
+After the Step 5 commit is accepted, graduate the brief's `## Parking lot` per the shared graduation contract in `brief-pipeline.md` (its single home): preview the parked-item count and derived titles, take assent, then `scripts/graduate-parking.sh <brief-path>` opens one `idea`-labeled issue per parked item. The parking-lot bullet shape is specified there.
 
-Parking-lot bullet shape is stated here because graduate-parking.sh derives the title from it.
-The bullet's first sentence is the derived issue title and MUST be period-free and filename-free: graduate-parking.sh truncates the title at the first dot, so a leading `tracker.sh` or `config/repo-state.md` self-truncates.
-Keep the title a plain noun phrase; every dotted `file:line` token and the impact one-liner ride the indented `Restart context:` continuation, which reaches the issue body untouched.
-
+The supersede-close is loop-improve's own (not part of the shared contract):
 Unselected findings that ARE covered by an existing open issue are never graduated; they appear only as a Tracker-column annotation in the findings table.
 For each selected finding that was covered, offer `scripts/tracker.sh close <num>` for its issue (assented, announced); declining leaves the issue open with the `Supersedes: #N` link still recorded in the brief.
 Closing at brief time rather than merge time is the deliberate, brief-mandated choice: the brief already declares the supersedes, so leaving the issue open would only mislead later readers.
@@ -95,5 +91,5 @@ Closing at brief time rather than merge time is the deliberate, brief-mandated c
 ## Step 7 - Terminal state`[gate:DEFAULT]`
 
 Name the approved brief's path and hand it to /loop-plan.
-loop-improve never invokes /loop-which or /loop-drive, and never invokes an implementation skill.
+loop-improve's terminal is /loop-plan only; it never invokes /loop-drive or an implementation skill.
 The only file it creates is the brief.
