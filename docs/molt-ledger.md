@@ -140,3 +140,17 @@ Per-entry shape:
 - Premises: none expired.
 - Constraints re-confirmed: never-spawn-Fable (continuation never delegates to Fable), single-home (autonomy protocol homed in loop-auto; gate classes defined only here), /workflows off.
 
+
+## 2026-08-15 - cycle 1 brief 3 closing summary
+
+Harness snapshot: v2.1.204. Skills: 12 -> 10 (retired frontier-sandwich -> loop-drive human-paced mode; loop-which -> loop-brainstorm One-Minute Test front door). Both retirements relocate policy, none deleted.
+
+Prose reduction (skills/ .md, fixed shell scripts excluded per the resolved criterion): 2429 (v1-pre-molt) -> 1833 = 24% cut. The resolved target was prose-only 40%+ (<=1457); the achieved policy-preserving floor is 24%. SHORTFALL of 376 lines - OWNER ACCEPTANCE PENDING at the merge gate. Cause: every surviving prose file bottomed out on KEEP-listed policy (loop-plan verbatim templates, audit-playbook per-category criteria, loop-molt four-bin table, loop-review Fowler baseline, loop-auto gate-class defs, wayfinder schema blocks). No policy was cut to chase the number; each per-file near-miss is recorded in its artifact entry above and the drive batch journal.
+
+Single-home verified (each greps to exactly one file): routing-chain narrative -> config/routing/model-benchmarks.md; ringer footguns -> ringer-substrate.md; shared brief-graduation contract -> brief-pipeline.md (improve-only supersede-close kept divergent).
+
+Constraints re-confirmed: /workflows off; portability standing (ringer spine, ringer-absent degraded-routing fallback preserved); Fable never a worker; single-home-plus-pointers; the three Agent-tool worktree hazards kept as policy.
+
+Done-molting verdicts: handoff is done molting (down to its four policy blocks). frontier-sandwich, loop-which retired. All other skills slimmed this cycle to policy sheets; a next cycle diffing this ledger confirms convergence (an artifact deleting nothing two cycles running is done).
+
+Gate state: tests/run.sh 37/37; gate registry fresh. Behavioral judgment-equivalence of the toy happy-path chain is the human checkpoint (merge gate).

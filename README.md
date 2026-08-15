@@ -14,17 +14,16 @@ The same Claude Code session that brainstorms and drafts the PRD also compiles i
 Ringer is muscle, not brain: it fans tasks out to cheap engine lanes and verifies each with an executed check command, but makes zero LLM judgment calls of its own.
 
 ```
-/loop-brainstorm ──> idea brief
-                     └─ /loop-plan ──> executor-agnostic plan (+ optional rubix review)
-                         └─ /loop-which (One-Minute Test triage)
-                             ├─ CHAT ........... paste one prompt into a session
-                             ├─ DON'T BOTHER ... manual checklist
-                             ├─ ONE AGENT ┐
-                             └─ AGENT TEAM ┴──> /loop-drive
-                                                 compiles: deps -> waves, steps -> specs + checks,
-                                                 assigns models per unit, then DRIVES execution
-                                                 ├─ native substrate: parallel Claude Code subagents
-                                                 └─ ringer substrate: manifests on GLM / OpenRouter engines
+/loop-brainstorm ──> One-Minute Test front door (the chain's first question)
+                     ├─ CHAT ........... paste one prompt into a session
+                     ├─ DON'T BOTHER ... manual checklist
+                     └─ proceed ──> idea brief
+                         └─ /loop-plan ──> executor-agnostic plan (+ optional rubix review)
+                             └─ /loop-drive  (derives ONE AGENT vs AGENT TEAM, then compiles + drives)
+                                 compiles: deps -> waves, steps -> specs + checks,
+                                 assigns models per unit, then DRIVES execution
+                                 ├─ native substrate: parallel Claude Code subagents
+                                 └─ ringer substrate: manifests on GLM / OpenRouter engines
 ```
 
 | Layer       | Skill / tool      | Job                                                                            |
@@ -37,7 +36,6 @@ Ringer is muscle, not brain: it fans tasks out to cheap engine lanes and verifie
 |             |                   | plumbing, keep policy; emit a drift ledger line, brief structural findings.    |
 | Plan        | `loop-plan`       | Turn a brief into an executor-agnostic task plan: depends-on graph, exclusive  |
 |             |                   | file ownership, executed acceptance checks; optional rubix fresh-eyes review    |
-| Router      | `loop-which`      | One-Minute Test verdict: CHAT, ONE AGENT, AGENT TEAM, or DON'T BOTHER          |
 | Compiler    | `loop-drive`      | Turn a plan or flat PRD into waves, specs, checks, and model routing; drive it |
 | Executor    | Ringer            | Zero-LLM swarm runner: isolation, executed checks, one retry, scoreboard       |
 
@@ -48,13 +46,11 @@ Key design points, argued in full in the learning guide:
 - **Evidence over vibes.** Ringer-mode model routing comes from the local scoreboard posterior, falling back to benchmark priors, never from "seems hard".
 - **Executed checks beat LLM reviewers.** Exit 0 is the only PASS. A check script costs zero model tokens; a per-task LLM reviewer does not.
 
-## Where fable-sandwich fits
+## The human-paced mode
 
-`fable-sandwich` (a separate skill, predating this repo) is the alternative branch, not a prerequisite.
-Use it when you want a human-paced run-book: you opening sessions and pasting model-routed prompts step by step.
-For an autonomous loop, hand the plan or PRD straight to `/loop-which` and then `/loop-drive`.
-`loop-drive` derives the wave structure itself, even from a flat PRD, and re-derives model assignments rather than copying hints.
-The session's own conclusion: fable-sandwich and loop-drive are two halves of one compile step, so feeding a sandwich plan into loop-drive works but duplicates effort.
+The human-paced run-book (you opening sessions and pasting model-routed prompts step by step) is now `loop-drive`'s human-paced output mode, not a separate skill.
+This molt cycle folded the former `frontier-sandwich` skill into loop-drive, realizing the repo's own conclusion that the sandwich and loop-drive were "two halves of one compile step".
+For an autonomous loop, hand the plan or PRD straight to `/loop-drive`; it derives the wave structure itself, even from a flat PRD, and re-derives model assignments rather than copying hints.
 
 ## Why not superpowers subagent-driven-development
 
@@ -77,8 +73,7 @@ skills/loop-brainstorm/  Brainstorm skill: idea to loop-ready brief (checkable c
 skills/loop-improve/     Audit skill: read-only repo survey, converge selected findings into a brief for /loop-plan
 skills/loop-molt/        Molt skill: audit instruction prose against the live harness (protocol reference + drift ledger)
 skills/loop-plan/        Plan skill: brief to executor-agnostic task plan, with the optional rubix review
-skills/loop-which/       Router skill: the One-Minute Test, verdict formats, worked examples
-skills/loop-drive/       Compiler/driver skill: wave derivation, routing, hazards, gates, launch UX
+skills/loop-drive/       Compiler/driver skill: wave derivation, routing, hazards, gates, launch UX, human-paced mode
 config/ringer/           Engine config: claude-zai wrapper (GLM flat-rate) and config.toml
 claude-md/fable.md       The managed CLAUDE.md block: Fable-specific footguns (effort cap, rerouting)
 install.sh               The only thing that touches ~/.claude and ~/.config; idempotent, no secrets
