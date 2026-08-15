@@ -90,3 +90,11 @@ Each entry: decision, rationale, reversal path.
 - Rationale: the plan's Task 12 acceptance is `grep -c 'Mysterious Name'` = 1, but the file carried two (baseline + a prompt example) - the example was redundant choreography, dropped by rephrasing to "its exact baseline label". The Fowler 12-smell baseline is kept VERBATIM (the Standards axis has no other access to it); the two subagent prompts, discovery ladder, disclosure contract, and empty-diff trap message all kept.
 - Budget: policy-preserving near-miss. 128 -> 112 (target ~105). The 12-smell baseline + two verbatim prompts + discovery ladder are POLICY, so kept per the Human-checkpoint. `grep -c 'Mysterious Name'` = 1; 37/37 green (`tests/loop-review/` suites pass).
 - Reversal: `git revert` the Task 12 commit.
+
+## Task 13 - loop-auto + handoff slim
+
+- Decision: compressed loop-auto's invoke-narration, knob-state prose, and reversal-by-gate-type prose to decision content, dropping one duplicated source-of-truth sentence; removed handoff's two ledger-flagged choreography lines (don't-duplicate/reference-by-path, and arguments-as-focus).
+- Rationale: loop-auto's gate-class defs, the verbatim live-consumption sentence, and the journal format are POLICY (three gates assert them) and were preserved intact. handoff's two lines are judgment a frontier model applies to a handoff unprompted - the arguments-as-focus line is redundant with the frontmatter `argument-hint`; both sit outside handoff's four policy blocks.
+- FLAG FOR OWNER: the handoff ledger entry said its two choreography candidates "need the subtraction test + owner review before removal." The subtraction test is done (37/37 green). The owner review is the merge gate: both removals are `git revert`-reversible; if the reference-by-path discipline should stay explicit, restore that one line.
+- Budget: loop-auto 106 -> 98 (target ~92, policy-preserving near-miss), handoff 22 -> 16. All three loop-auto gates + knob-consumption + keyless pass; verbatim sentence grep = 1; 37/37 green.
+- Reversal: `git revert` the Task 13 commit.

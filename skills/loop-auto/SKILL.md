@@ -21,11 +21,8 @@ Run the knob through the script, or via the `/loop-auto` command:
 - `/loop-auto default clear` - remove the committed per-repo default.
 
 The runnable core is `loop-auto.sh` next to this file; this skill narrates and invokes it: `loop-auto.sh {set <pause|auto>|get|status|default <get|set <pause|auto>|clear>|preflight <mode>}`.
-Invoke it from the target repo's root - it operates on the caller's cwd (writing `docs/chain-state.md`, reading `config/repo-state.md` there), never on the repo the script itself lives in.
-It writes and reads `docs/chain-state.md`, which is the runtime source of truth for the mode (not `_loop.md`, not session memory).
-
-Setting the mode always ends with a one-line confirmation of the new mode.
-It is never silent.
+Invoke it from the target repo's root - it operates on the caller's cwd (writing `docs/chain-state.md`, reading `config/repo-state.md` there), never on the repo the script lives in.
+Setting the mode always ends with a one-line confirmation of the new mode; it is never silent.
 
 ## Consumption is live
 
@@ -35,14 +32,11 @@ This skill is the single home of the autonomy protocol; the managed CLAUDE.md bl
 
 ### Knob off or unset
 
-Knob off or unset equals fully human-gated behavior: every gate fires live.
-Nothing is auto-taken; every ASK, STOP, BATCH, and DEFAULT gate surfaces to the human.
+Fully human-gated: every gate fires live, nothing auto-taken - every ASK, STOP, BATCH, and DEFAULT surfaces to the human.
 
 ### When autonomy takes effect
 
-Autonomy takes effect only after the last ASK gate passes.
-Up to and including that gate, the human is in the loop.
-After it, the active session orchestrates the rest of the chain under the rules below.
+Only after the last ASK gate passes. Up to and including that gate the human is in the loop; after it, the active session orchestrates the rest of the chain under the rules below.
 
 ### The four gate classes under autonomy
 
@@ -66,10 +60,8 @@ All four gate classes are logged, but they carry two different obligations.
 ASK and STOP entries are record-only: the human was present for them, so they preserve the chronology and the context around neighboring decisions but need no review.
 BATCH and DEFAULT entries are the review obligation: each is a decision auto-taken for the human, to accept or reverse at the end-of-chain checkpoint.
 Each entry has three fields: the decision (for record-only entries, what was asked or halted and how the human resolved it), the rationale, and a reversal path (record-only entries mark it `n/a - resolved live`).
-The reversal is named honestly by gate type.
-A DEFAULT or commit reversal is cheap: `git revert`, or undoing the default on the next pass.
-A BATCH taste reversal (topology choice, triage) is a scoped re-run with the alternate lean, because the lean was a judgment, not a fact.
-An entry with no honest reversal path is a signal it should have been a STOP, not auto-taken.
+The reversal is named honestly by gate type: a DEFAULT or commit reversal is cheap (`git revert`, or undoing the default next pass); a BATCH taste reversal (topology, triage) is a scoped re-run with the alternate lean, since the lean was a judgment, not a fact.
+An entry with no honest reversal path should have been a STOP, not auto-taken.
 
 ### Continuation rule
 

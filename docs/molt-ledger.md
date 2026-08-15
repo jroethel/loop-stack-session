@@ -129,3 +129,14 @@ Per-entry shape:
 - Premises: none expired.
 - Constraints re-confirmed: zero-setup portability (runs in any repo), single-home (smell baseline lives only here), /workflows off.
 
+## 2026-08-15 - skills/loop-auto/ + skills/handoff/ (SKILL slim)
+- Harness snapshot: v2.1.204; /workflows off.
+- Deleted (loop-auto): CHOREOGRAPHY - the "What it does" invoke-narration, the knob-off / when-autonomy-takes-effect prose, and the reversal-by-gate-type prose compressed to decision content; one duplicated source-of-truth sentence dropped (the "Where it lives" section is its canonical home).
+- Deleted (handoff): CHOREOGRAPHY x2 - the two candidates the handoff ledger entry flagged for a real pass: the "don't duplicate other artifacts, reference by path/URL" line and the "if the user passed arguments, treat as focus" line (the latter redundant with the frontmatter `argument-hint`). Both are judgment a current frontier model applies to a handoff unprompted; subtraction test = `tests/run.sh` green (handoff/location.sh asserts none of the required strings were in those lines). FLAG FOR OWNER (per the ledger entry's "needs owner review before removal"): both removals are reversible via `git revert`; if the owner wants the reference-by-path discipline explicit, restore that one line.
+- Kept as policy (loop-auto): the four gate-class definitions (single home; `knob-consumption.sh` + `loop-auto.sh` assert); the VERBATIM live-consumption sentence `Consumption is live: the knob now governs gate behavior per the four gate classes below.`; the batch-review journal format (created when autonomy takes effect, appended at every gate, three fields incl. the reversal path); the scope-narrowing-is-ASK rule; the never-spawn-Fable continuation; the per-repo-default ask + `autonomy-default:` key; the recognized-phrases list; `docs/chain-state.md` as runtime source of truth; the `/loop-auto` subcommand reference.
+- Kept as policy (handoff): the four policy blocks - purpose/outcome contract; repo-placement convention (conforming vs non-conforming, in-project only, mirror refresh); required suggested-skills section; redaction/safety invariant.
+- Budget note: loop-auto target 106 -> ~92; landed 106 -> 98 (policy-preserving near-miss - gate-class defs + journal format + command reference are POLICY). handoff 22 -> 16.
+- Verdict: handoff is now "done molting" - the two flagged choreography candidates removed, only its four policy blocks remain.
+- Premises: none expired.
+- Constraints re-confirmed: never-spawn-Fable (continuation never delegates to Fable), single-home (autonomy protocol homed in loop-auto; gate classes defined only here), /workflows off.
+

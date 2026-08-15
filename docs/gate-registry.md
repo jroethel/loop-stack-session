@@ -1,4 +1,4 @@
-<!-- generated: 2026-08-15T20:16:51Z -->
+<!-- generated: 2026-08-15T20:19:52Z -->
 <!-- regenerate: scripts/gen-gate-registry.sh . -->
 <!-- DO NOT EDIT -->
 <!-- This registry reflects tagged gates only and is not a completeness guarantee. -->
