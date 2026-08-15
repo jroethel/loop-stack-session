@@ -104,3 +104,12 @@ Per-entry shape:
 - Premises: none expired.
 - Constraints re-confirmed: single-home-plus-pointers (bins single-homed in protocol.md, method single-homed there), portability/harness-agnostic (SKILL is the only Claude-Code wrapper), /workflows off.
 
+## 2026-08-15 - skills/wayfinder/SKILL.md
+- Harness snapshot: v2.1.204; /workflows off.
+- Deleted: CHOREOGRAPHY - the multi-sentence procedural narration across the intro, Plan-don't-do, Refer-by-name, Tickets, Ticket Types, Fog of war, Out of scope, and both Invocation mode step-lists compressed to their decision content (each rule kept, the surrounding explanatory prose tightened); dedup - the routing narrative converted to the Task 3 pointer.
+- Routing single-homed: the per-ticket routing line "follows the loop-drive evidence chain: scoreboard posterior, else benchmark prior, else orchestrator pin" -> "follows the routing chain (`config/routing/model-benchmarks.md`)" (`scoreboard posterior` now 0 in this file).
+- Kept as policy: the plan-don't-do rule (produce decisions, not deliverables; hand to /loop-plan when the way is clear); the map/ticket schema code blocks verbatim; the `wayfinder:map` + ticket-type labels; the four ticket types (HITL/AFK); fog-vs-ticket and out-of-scope discipline; one-ticket-per-session (research excepted); the /loop-plan hand-off and /loop-brainstorm grilling remap; mirror-exclusion behavior (`wayfinder.sh` asserts the schema, labels, hand-offs, and mirror exclusion).
+- Budget note (policy-preserving near-miss, small): target 183 -> ~125; landed 183 -> 142. The map/ticket schema code blocks and the full rule set are POLICY; the residual gap is schema + decision content, not cuttable narration, so kept per the plan's Human-checkpoint.
+- Premises: none expired.
+- Constraints re-confirmed: single-home-plus-pointers (routing now a pointer), remote-tracker requirement, /workflows off.
+

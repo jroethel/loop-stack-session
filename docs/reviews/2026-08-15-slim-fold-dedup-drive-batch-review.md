@@ -69,3 +69,10 @@ Each entry: decision, rationale, reversal path.
 - Rationale: the SKILL explicitly bills itself as "the thin wrapper, the protocol is the method", yet the per-step paragraphs restated the protocol - pure CHOREOGRAPHY. Verified no UPPERCASE bin token leaked into SKILL.md (`molt.sh` fails if they do) - grep clean. The four-bin table, membership test, subtraction, constraint-register gate and steady-state definition all kept as the method's single home.
 - Budget: policy-preserving near-miss. protocol 98 -> 90 (target ~78), SKILL 91 -> 56. Reaching ~78 would cut method POLICY, so kept and recorded per the Human-checkpoint. `bash tests/gates/molt.sh` passes; single-home bins hold; 37/37 green.
 - Reversal: `git revert` the Task 9 commit.
+
+## Task 10 - wayfinder slim + routing pointer
+
+- Decision: converted the per-ticket routing line to the Task 3 pointer (`scoreboard posterior` now 0), then compressed the procedural narration across every prose section to its decision content, keeping the map/ticket schema code blocks, all labels, the four ticket types, fog/out-of-scope rules, one-ticket-per-session, and the /loop-plan + /loop-brainstorm hand-offs verbatim-in-spirit.
+- Rationale: the section prose repeatedly re-explained rules a frontier model applies from one statement - CHOREOGRAPHY. The schema blocks and the rule set are POLICY (wayfinder.sh asserts schema, labels, hand-offs, mirror exclusion) and were preserved.
+- Budget: small policy-preserving near-miss. 183 -> 142 (target ~125); the schema code blocks + decision content floor it, so kept per the Human-checkpoint. `bash tests/gates/wayfinder.sh` passes; `scoreboard posterior` = 0; 37/37 green.
+- Reversal: `git revert` the Task 10 commit.
