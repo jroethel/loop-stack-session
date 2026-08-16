@@ -29,3 +29,8 @@ Created at autonomy start; appended at every gate in chronological order.
    Decision: fixed the placed test + source plan (one added commit line): the fixture committed uncommitted tracker state onto the unit-1 branch, so checking out main deleted the issue file and claim failed rc=1 (no issue) instead of rc=4 (race). Caught at RED verification, before any worker launch.
    Rationale: spec/check edit confined to one unit's test, under 15 lines, contract unchanged - BATCH per the slip rule; attribution ran the failing step by hand first.
    Reversal: git revert the test commit; cheap.
+
+6. BATCH - T7 Step 1 install isolation.
+   Decision: ran ./install.sh against a scratch HOME (LOOP_STACK_SKILL_STYLE=claude) instead of the live one; a bare run would symlink live ~/.claude skills at this un-merged worktree, violating the cycle's nothing-goes-live rule. The executed check (install mechanics pick up the new files) is unchanged; the live install remains the owner's merge-gate step from the main checkout.
+   Rationale: blast-radius containment; the source plan's intent is "install works", not "go live pre-merge".
+   Reversal: n/a - the scratch HOME is deleted; the live install happens at the merge gate regardless.
