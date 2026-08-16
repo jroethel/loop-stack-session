@@ -44,3 +44,8 @@ Created at autonomy start; appended at every gate in chronological order.
    Decision: identified by direct admission (reviewer followed the spec's Task 7 How-to-run line; non-interactive default re-linked ~/.agents/skills/* at this worktree at 01:37:39Z). Containment: leave links (they point at the validated cycle-1 tree); the owner's merge-gate install restores canonical targets; lesson graduated to an idea issue (install.sh non-interactive guard + reviewer-prompt blacklist).
    Rationale: re-pointing live symlinks twice in one evening is churn; the merge gate already contains the restoring command. The deviation is surfaced, not hidden.
    Reversal: run ./install.sh from the canonical checkout at any moment.
+
+9. ASK (record-only) - kill-demo verdict: owner rejected.
+   Decision: owner ruled the sonnet-based demo not a pass and directed a re-run with the runner on glm-5.2 (ringer/claude-zai lane). Fixture strengthened for the re-run: a second fresh agent:todo ticket seeded that must remain untouched, proving the one-per-run stop.
+   Rationale: owner checkpoint; steady-state queue-running belongs on the flat-rate lane, so the demo should prove that lane.
+   Reversal: n/a - resolved live.

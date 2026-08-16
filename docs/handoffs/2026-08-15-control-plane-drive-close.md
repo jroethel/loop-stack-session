@@ -16,7 +16,7 @@ All four molt-cycle-1 briefs are now executed; brief 4 ran as a 5-wave ringer dr
 
 ## Owner checkpoints open (STOP)
 
-1. Kill-demo verdict: blind sonnet session, queue-runner prompt only - selected stale ticket, reclaimed, relaunched, evidenced done (--ran exit 0), stopped after one. Evidence in the session log; verdict is the owner's.
+1. Kill-demo verdict: owner rejected the sonnet run and directed glm-5.2; re-run PASSED attempt 1 (ringer probe, prompt-only, strengthened fixture with an untouched decoy todo). Evidence exported to /tmp/control-plane-loop/killdemo2-evidence/. Verdict pending on the glm run.
 2. Staged issue-closes: NONE - zero class-c/d findings on live github.
 3. Merge gate (owner fires, from the main checkout - see below).
 
