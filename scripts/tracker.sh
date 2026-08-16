@@ -127,6 +127,46 @@ local_set_state() {           # args: number newstate ; rewrites state: and upda
   ' "$f" > "$tmp" && mv "$tmp" "$f"
   echo "note: ISSUES.md/BACKLOG.md now stale - run scripts/gen-mirrors.sh ." >&2  # reminder only; no auto-regen
 }
+local_label() {               # args: number name add|remove ; rewrites labels: (deduped comma list)
+  local f num="$1" name="$2" op="$3" cur l out="" _arr lb now tmp   # + updated:, first block only
+  f="$(find_issue_file "$num")" || fail "no local issue #$num"
+  cur="$(fm "$f" labels)"
+  if [ -n "$cur" ]; then      # guard: iterating an empty array under set -u aborts on bash 3.2 (macOS)
+    IFS=',' read -ra _arr <<< "$cur"
+    for l in "${_arr[@]}"; do
+      l="$(printf '%s' "$l" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+      [ -n "$l" ] || continue
+      [ "$op" = remove ] && [ "$l" = "$name" ] && continue
+      case ",$out," in *",$l,"*) continue ;; esac   # de-dup: add is idempotent
+      out="${out:+$out,}$l"
+    done
+  fi
+  if [ "$op" = add ]; then
+    case ",$out," in *",$name,"*) ;; *) out="${out:+$out,}$name" ;; esac
+  fi
+  lb="$out"; [ -n "$lb" ] && lb=" $lb"
+  now="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  tmp="$(mktemp)"
+  awk -v lb="$lb" -v up="$now" '
+    /^---$/ { d++; print; next }
+    d==1 && /^labels:/  { print "labels:" lb; next }
+    d==1 && /^updated:/ { print "updated: " up; next }
+    { print }
+  ' "$f" > "$tmp" && mv "$tmp" "$f"
+  echo "note: ISSUES.md/BACKLOG.md now stale - run scripts/gen-mirrors.sh ." >&2  # reminder only; no auto-regen
+}
+local_comment() {             # args: number text ; appends a receipt line after the body, refreshes updated:
+  local f num="$1" text="$2" now tmp
+  f="$(find_issue_file "$num")" || fail "no local issue #$num"
+  now="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  tmp="$(mktemp)"
+  awk -v up="$now" -v line="> comment $now: $text" '
+    /^---$/ { d++; print; next }
+    d==1 && /^updated:/ { print "updated: " up; next }
+    { print }
+    END { print line }
+  ' "$f" > "$tmp" && mv "$tmp" "$f"
+}
 local_list() {                # emit gh-shaped JSON for open issues
   local first=1 out="[" f state num title upd labels_raw labels_json l
   shopt -s nullglob
@@ -161,6 +201,10 @@ Usage: tracker.sh <command> [args]
   create --label L --title T --body B   create an issue, print its number
   close <num>                    close an issue by number
   reopen <num>                   reopen an issue by number
+  label ensure <name>            idempotently make the label exist (no-op in local mode)
+  label add <num> <name>         attach a label (agent:done is evidence-gated: use 'done')
+  label remove <num> <name>      detach a label
+  comment <num> <text>           append a durable comment/receipt
 EOF
 }
 
@@ -236,6 +280,54 @@ case "$sub" in
         if [ "$sub" = close ]; then local_set_state "$num" closed
         else                           local_set_state "$num" open; fi
         ;;
+      *)      fail "unknown tracker mode '$mode' in $RS (expected github, gitlab, or local)" ;;
+    esac
+    ;;
+  label)
+    [ $# -ge 1 ] || fail "label: requires a subcommand (ensure|add|remove)"
+    lsub="$1"; shift
+    case "$lsub" in
+      ensure)
+        [ $# -ge 1 ] || fail "label ensure: requires a label name"
+        mode="$(tracker_mode_get)" || fail "no tracker mode declared in $RS (run loop-setup)"
+        case "$mode" in
+          github) gh_guard; gh label create "$1" 2>/dev/null || true ;;
+          gitlab) glab_guard; glab label create --name "$1" 2>/dev/null || true ;;
+          local)  echo "note: local labels are frontmatter, nothing to ensure" >&2 ;;
+          *)      fail "unknown tracker mode '$mode' in $RS (expected github, gitlab, or local)" ;;
+        esac
+        ;;
+      add)
+        [ $# -ge 2 ] || fail "label add: requires an issue number and a label name"
+        [ "$2" = "agent:done" ] && { echo "tracker: agent:done is reachable only through 'tracker.sh done' (evidence-gated)" >&2; exit 6; }
+        mode="$(tracker_mode_get)" || fail "no tracker mode declared in $RS (run loop-setup)"
+        case "$mode" in
+          github) gh_guard; gh issue edit "$1" --add-label "$2" ;;
+          gitlab) glab_guard; glab issue update "$1" --label "$2" ;;
+          local)  local_label "$1" "$2" add ;;
+          *)      fail "unknown tracker mode '$mode' in $RS (expected github, gitlab, or local)" ;;
+        esac
+        ;;
+      remove)
+        [ $# -ge 2 ] || fail "label remove: requires an issue number and a label name"
+        mode="$(tracker_mode_get)" || fail "no tracker mode declared in $RS (run loop-setup)"
+        case "$mode" in
+          github) gh_guard; gh issue edit "$1" --remove-label "$2" ;;
+          gitlab) glab_guard; glab issue update "$1" --unlabel "$2" ;;
+          local)  local_label "$1" "$2" remove ;;
+          *)      fail "unknown tracker mode '$mode' in $RS (expected github, gitlab, or local)" ;;
+        esac
+        ;;
+      *) usage; exit 1 ;;
+    esac
+    ;;
+  comment)
+    [ $# -ge 2 ] || fail "comment: requires an issue number and a text"
+    mode="$(tracker_mode_get)" || fail "no tracker mode declared in $RS (run loop-setup)"
+    case "$mode" in
+      github) gh_guard; gh issue comment "$1" --body "$2" ;;
+      gitlab) glab_guard; glab issue note "$1" --message "$2" ;;
+      local)  local_comment "$1" "$2" ;;
       *)      fail "unknown tracker mode '$mode' in $RS (expected github, gitlab, or local)" ;;
     esac
     ;;
