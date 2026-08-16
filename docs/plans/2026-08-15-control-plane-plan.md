@@ -473,6 +473,9 @@ mkdir -p config && "$T" mode set local >/dev/null
 "$T" create --label agent:todo --title "Half done unit" --body "work" >/dev/null
 "$T" claim 1 sess-DEAD >/dev/null
 "$T" comment 1 "AGENT STATUS branch=unit-1 worktree=/tmp/wt verdict=pending repairs=0" >/dev/null
+# commit tracker state on main FIRST: branching with it uncommitted would carry it onto unit-1
+# and the later checkout of main would delete the issue file from the working tree
+git -c user.email=t@t -c user.name=t add -A >/dev/null && git -c user.email=t@t -c user.name=t commit -qm "tracker state"
 git checkout -q -b unit-1 && echo x > partial.txt
 git -c user.email=t@t -c user.name=t add -A && git -c user.email=t@t -c user.name=t commit -q -m "partial unit-1"
 git checkout -q main
