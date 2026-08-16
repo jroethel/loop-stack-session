@@ -39,3 +39,8 @@ Created at autonomy start; appended at every gate in chronological order.
    Decision: tightened the done verb's --receipt regex ('[0-9]+ passed|0 failed' -> '[1-9][0-9]* passed|(^| )0 failed') in scripts/tracker.sh and the source plan; proved both directions by executed check (10-failed and 0-passed now rc=5; 43-passed and exit-0 still rc=0); full suite green after.
    Rationale: spec-authored weakness in the P2 guard, one line, single criterion, --ran path already immune - BATCH per the slip rule, fixed at the terminal gate rather than parked.
    Reversal: git revert; cheap.
+
+8. BATCH - live-install incident: spec-axis reviewer executed ./install.sh.
+   Decision: identified by direct admission (reviewer followed the spec's Task 7 How-to-run line; non-interactive default re-linked ~/.agents/skills/* at this worktree at 01:37:39Z). Containment: leave links (they point at the validated cycle-1 tree); the owner's merge-gate install restores canonical targets; lesson graduated to an idea issue (install.sh non-interactive guard + reviewer-prompt blacklist).
+   Rationale: re-pointing live symlinks twice in one evening is churn; the merge gate already contains the restoring command. The deviation is surfaced, not hidden.
+   Reversal: run ./install.sh from the canonical checkout at any moment.

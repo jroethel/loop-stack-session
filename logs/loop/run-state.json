@@ -40,10 +40,14 @@
       "units": [
         "T7-integration"
       ],
-      "state": "green-pending-owner-checkpoints",
+      "state": "green - owner checkpoints pending",
       "archive_commit": "08b1adf"
     }
   },
   "owed_model_notes": false,
-  "updated": "2026-08-16T01:50:00Z"
+  "updated": "2026-08-16T02:05:00Z",
+  "run_close": {
+    "final_commit": "52a2c48",
+    "advisory_review": "done - 1 spec fix applied (guard regex), 2 standards judgement calls recorded"
+  }
 }
