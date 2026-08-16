@@ -28,3 +28,8 @@ Each BATCH entry is a decision auto-taken for the human, to accept or reverse at
    Surfaced, not decided, per instruction: `~/create/research/` did not exist; the corpus lived at `~/create/pcs/research/`, so the rename in question was of `~/create/pcs/` itself. Owner chose rename (2026-08-16, same session): `mv ~/create/pcs ~/create/research` executed; forward-looking pointers (context map, memo archive path, ledger axis path) updated; historical records left verbatim.
    Consequence flagged, not auto-taken: the corpus now nests at `~/create/research/research/`; flattening or renaming the inner directory is a separate owner decision.
    Reversal: `mv ~/create/research ~/create/pcs` and revert the pointer edits.
+
+6. **BATCH - packaging-brief parking-lot graduation (auto-taken per the shared contract once the commit was accepted).**
+   Decision: `scripts/graduate-parking.sh` on the accepted brief created ideas #31 (reviewer-prompt blacklist), #32 (public-phase genericization), #33 (RIT-team turnkey phase), #34 (context-map full index).
+   Rationale: owner accepted the brief commit; the graduation contract auto-takes with journaling under autonomy.
+   Reversal: `scripts/tracker.sh close <num>` per issue.
