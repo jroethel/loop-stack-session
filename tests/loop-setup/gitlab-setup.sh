@@ -154,7 +154,7 @@ D="$(mktemp -d)"; trap 'rm -rf "$BIN" "$A" "$B" "$C" "$C2" "$D"' EXIT
   && fail "setup accepted an unknown tracker mode"
 
 # ---------- scenario E: THE FORGE CASE - a declared mode that disagrees with the remote ----------
-# This is the shape of /home/jjrdar/claude/forge: tracker: local declared, GitLab remote present.
+# This is the shape of ~/claude/forge: tracker: local declared, GitLab remote present.
 # Before this fix, setup.sh short-circuited at line 203 and none of the above was reachable there.
 E="$(mktemp -d)"; trap 'rm -rf "$BIN" "$A" "$B" "$C" "$C2" "$D" "$E"' EXIT
 ( cd "$E" && git init -q \

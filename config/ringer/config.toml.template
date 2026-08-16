@@ -1,5 +1,7 @@
 # Sample config for ringer.py.
 # Copy to ~/.config/ringer/config.toml or pass with --config /path/to/config.toml.
+# This file is a TEMPLATE rendered by install.sh, which substitutes the placeholders
+# __RINGER_CONFIG_DIR__ and __RINGER_ROOT__ before writing the live config.
 
 # Default identity stamped into state JSON and eval rows. Resolution order:
 # --identity flag > FLEET_IDENTITY / RINGER_IDENTITY env > a .fleet-agent file
@@ -163,7 +165,7 @@ token_regex = '"total_tokens"\s*:\s*([0-9]+)'
 # separate 0600 file) then execs claude. Installed to ~/.config/ringer by
 # install.sh; engines need it now, so it is copied there ahead of the installer.
 [engines.claude-zai]
-bin = "/Users/jjrdar/.config/ringer/claude-zai.sh"
+bin = "__RINGER_CONFIG_DIR__/claude-zai.sh"
 model_default = "glm-5.2"
 args_template = ["-p", "{spec}", "--model", "{model}", "{access_args}", "{engine_args}"]
 sandbox_args = ["--permission-mode", "bypassPermissions"]
@@ -175,7 +177,7 @@ token_regex = '"total_tokens"\s*:\s*([0-9]+)'
 # "model": "openrouter/<slug>". {taskdir} first, then {access_args} (empty =
 # sandboxed, "--no-sandbox" = full access) per the wrapper's arg contract.
 [engines.opencode]
-bin = "/Users/jjrdar/repos/ringer/engines/opencode-sandboxed.sh"
+bin = "__RINGER_ROOT__/engines/opencode-sandboxed.sh"
 model_default = "openrouter/z-ai/glm-5.2"
 args_template = ["{taskdir}", "{access_args}", "run", "-m", "{model}", "--dangerously-skip-permissions", "--format", "json", "{engine_args}", "--dir", "{taskdir}", "{spec}"]
 sandbox_args = []

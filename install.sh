@@ -93,6 +93,7 @@ done
 mkdir -p "$RINGER_DIR"
 for src in "$REPO"/config/ringer/*; do
   [ -e "$src" ] || continue
+  [ "$(basename "$src")" = config.toml.template ] && continue
   dest="$RINGER_DIR/$(basename "$src")"
   if [ -e "$dest" ]; then
     echo "keeping existing $dest"
