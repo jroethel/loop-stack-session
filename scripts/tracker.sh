@@ -263,6 +263,109 @@ compute_owner() {            # stdin: canonical receipt lines -> owner sid (earl
       print bs
     }'
 }
+do_list() {                   # the list verb's backend dispatch; next-eligible reads it once per run
+  local mode
+  # ponytail: mode bound in the PARENT scope - NOT a require_mode subshell. tracker_mode_get
+  # return-3s on a keyless repo; the parent-scope `|| fail` then aborts non-zero. A subshell
+  # `fail` would exit only the subshell and the parent would fall into the local branch.
+  mode="$(tracker_mode_get)" || fail "no tracker mode declared in $RS (run loop-setup)"
+  case "$mode" in
+    github) gh_guard; gh issue list --state open --limit 1000 --json number,title,labels,updatedAt ;;
+    gitlab) glab_guard; gitlab_list ;;
+    local)  local_list ;;
+    *)      fail "unknown tracker mode '$mode' in $RS (expected github, gitlab, or local)" ;;
+  esac
+}
+fetch_body() {                # arg: num -> only that candidate's body (the blocker scan is candidate-scoped)
+  local num="$1" mode f
+  mode="$(tracker_mode_get)" || fail "no tracker mode declared in $RS (run loop-setup)"
+  case "$mode" in
+    github) gh_guard; gh issue view "$num" --json body -q .body ;;
+    gitlab) glab_guard; glab issue view "$num" ;;
+    local)  f="$(find_issue_file "$num")" || fail "no local issue #$num"
+            awk '/^---$/ { d++; next } d >= 2 { print }' "$f" ;;  # body only: frontmatter cannot fake a Blocked by
+    *)      fail "unknown tracker mode '$mode' in $RS (expected github, gitlab, or local)" ;;
+  esac
+}
+next_eligible() {             # arg: optional session-id; prints one SELECTED/NONE ELIGIBLE line, always rc 0
+  local sid="${1:-}" num labels m rts newest owner blines blocked cutoff rows
+  local open_ids="," work_nums="" todo_nums="" total=0 nw=0 nt=0 nblk=0
+  # ponytail: STALE_CLAIM_SECS is a wall-clock heuristic for auto-resurfacing. Explicit
+  # 'claim --reclaim' is the operator's zero-wait override; tune the env if 1h is wrong
+  # for a given cadence. Receipts share the claim verb's fixed %Y-%m-%dT%H:%M:%SZ shape,
+  # so a lexical compare against a pre-rendered cutoff string equals the epoch compare.
+  cutoff="$(date -u -r "$(( $(date +%s) - ${STALE_CLAIM_SECS:-3600} ))" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null)" \
+    || cutoff="$(date -u -d "@$(( $(date +%s) - ${STALE_CLAIM_SECS:-3600} ))" +%Y-%m-%dT%H:%M:%SZ)"
+  # one list read per run: the open-set + labels. No-jq brace scan (cf. gen-mirrors.sh), so
+  # multi-field label objects degrade to just their name.
+  rows="$(do_list | awk '
+    { all = all $0 "\n" }
+    END {
+      n = length(all); depth = 0; obj = ""
+      for (i = 1; i <= n; i++) {
+        c = substr(all, i, 1)
+        if (c == "{") { if (depth == 0) obj = "{"; else obj = obj c; depth++ }
+        else if (c == "}") { depth--; if (depth == 0) { obj = obj c; emit(obj); obj = "" } else obj = obj c }
+        else if (depth > 0) obj = obj c
+      }
+    }
+    function emit(s,  seg, m, num, labels) {
+      if (!match(s, /"number"[ \t]*:[ \t]*[0-9]+/)) return
+      m = substr(s, RSTART, RLENGTH); gsub(/[^0-9]/, "", m); num = m
+      labels = ""
+      if (match(s, /"labels"[ \t]*:[ \t]*\[/)) {
+        seg = substr(s, RSTART)
+        while (match(seg, /"name"[ \t]*:[ \t]*"[^"]*"/)) {
+          m = substr(seg, RSTART, RLENGTH); gsub(/^"[^"]*"[ \t]*:[ \t]*"|"$/, "", m)
+          labels = (labels == "" ? m : labels "," m)
+          seg = substr(seg, RSTART + RLENGTH)
+        }
+      }
+      print num "\t" labels
+    }
+  ' | sort -t$'\t' -k1,1n)"
+  while IFS=$'\t' read -r num labels; do
+    [ -n "$num" ] || continue
+    total=$((total + 1)); open_ids="$open_ids$num,"
+    case ",$labels," in *",agent:working,"*) work_nums="$work_nums$num "; nw=$((nw + 1)) ;; esac
+    case ",$labels," in *",agent:todo,"*)    todo_nums="$todo_nums$num " ;; esac
+  done <<< "$rows"
+  # lane 1 - stale working: newest claim/reclaim receipt past the cutoff, owned by another session
+  for num in $work_nums; do
+    rts="$(gather_receipts "$num" 2>/dev/null || true)"
+    [ -n "$rts" ] || continue     # receiptless working ticket: age unknowable, not judgeable as stale
+    newest="$(printf '%s\n' "$rts" | awk '{print $4}' | sort | tail -1)"
+    if [ -n "$cutoff" ] && [ "$newest" \< "$cutoff" ]; then
+      owner="$(printf '%s\n' "$rts" | compute_owner)"
+      if [ -z "$sid" ] || [ "$owner" != "$sid" ]; then
+        printf 'SELECTED #%s: stale working, relaunch\n' "$num"
+        return 0
+      fi
+    fi
+  done
+  # lane 2 - lowest open agent:todo, not working, blocked by no OPEN issue
+  for num in $todo_nums; do
+    case " $work_nums " in *" $num "*) continue ;; esac
+    nt=$((nt + 1))
+    blines="$(fetch_body "$num" 2>/dev/null | grep -E '^Blocked by:' || true)"   # anchored: quoted mentions cannot block
+    blocked=0
+    if [ -n "$blines" ]; then
+      for m in $(printf '%s\n' "$blines" | grep -oE '#[0-9]+' | sed 's/#//'); do
+        case "$open_ids" in *",$m,"*) blocked=1; break ;; esac    # unresolved iff still in the open set
+      done
+    fi
+    [ "$blocked" -eq 1 ] && { nblk=$((nblk + 1)); continue; }
+    printf 'SELECTED #%s: agent:todo, unblocked\n' "$num"
+    return 0
+  done
+  if [ "$nt" -eq 0 ]; then
+    printf 'NONE ELIGIBLE: no open agent:todo tickets (%d open, %d agent:working)\n' "$total" "$nw"
+  else
+    printf 'NONE ELIGIBLE: %d of %d agent:todo ticket(s) blocked by open issues (%d open, %d agent:working)\n' \
+      "$nblk" "$nt" "$total" "$nw"
+  fi
+  return 0
+}
 
 usage() {
   cat >&2 <<EOF
@@ -282,6 +385,7 @@ Usage: tracker.sh <command> [args]
   status <num> <state>           set exactly one active agent: status (todo|working|needs-input|review)
   claim <num> <session-id> [--reclaim]  receipt-before-flip claim; prints owner id, exit 4 on race
   done <num> --receipt <text> [--ran <cmd>]  evidence-gated completion: agent:done + close
+  next-eligible [<session-id>]    select at most one actionable ticket (stale working, else unblocked todo)
 EOF
 }
 
@@ -298,16 +402,7 @@ case "$sub" in
     esac
     ;;
   list)
-    # ponytail: mode bound in the PARENT scope - NOT a require_mode subshell. tracker_mode_get
-    # return-3s on a keyless repo; the parent-scope `|| fail` then aborts non-zero. A subshell
-    # `fail` would exit only the subshell and the parent would fall into the local branch.
-    mode="$(tracker_mode_get)" || fail "no tracker mode declared in $RS (run loop-setup)"
-    case "$mode" in
-      github) gh_guard; gh issue list --state open --limit 1000 --json number,title,labels,updatedAt ;;
-      gitlab) glab_guard; gitlab_list ;;
-      local)  local_list ;;
-      *)      fail "unknown tracker mode '$mode' in $RS (expected github, gitlab, or local)" ;;
-    esac
+    do_list
     ;;
   create)
     label=""; title=""; body=""
@@ -452,6 +547,9 @@ case "$sub" in
     clear_status "$num"       # 'done' is not a status verb; clear all four siblings, then add agent:done
     do_label "$num" agent:done add   # internal path: the guard blocks the public verb, not this completion
     do_state "$num" close
+    ;;
+  next-eligible)
+    next_eligible "${1:-}"
     ;;
   host)   gitlab_host || fail "no origin remote" ;;
   group)  gitlab_group || fail "no origin remote" ;;
