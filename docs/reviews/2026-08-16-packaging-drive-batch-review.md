@@ -20,3 +20,9 @@ Entries are chronological; BATCH and DEFAULT entries are the review obligation, 
 - Decision: the "See execution details before I launch?" question was not asked; the default (nothing selected, launch immediately) was taken.
 - Rationale: autonomy is `auto` and this gate is DEFAULT-class; the dry-run substance still happens because section 5's pre-flight executes for real before wave 1, and the dashboard substance (condensed routing + topology) was shown in the driving session before compile.
 - Reversal path: cheap - stop the run and present the dashboard/dry-run menu live at any point on request.
+
+## 4. [BATCH] Wave-1 distill: mirror-regen line added to wave 2+ specs
+
+- Decision: wave 2+ implementer specs gain one line - if `ISSUES.md`/`BACKLOG.md` are absent in the worktree, run `scripts/gen-mirrors.sh .` before `tests/run.sh`.
+- Rationale: T1 attempt 1 failed only because the gitignored generated mirrors do not exist in a fresh worktree; this is the P10 distill of that failure, confined to spec scaffolding, well under the 15-line threshold, and it changes no unit's produced contract.
+- Reversal path: cheap - drop the line from the next spec (git revert of nothing; the spec templates are launch-time artifacts).

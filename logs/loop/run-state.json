@@ -1,53 +1,10 @@
 {
-  "run_name": "control-plane-loop",
-  "pre_run_base": "6fc858d28e265c1f139b5fe3942c6b4669908654",
-  "integration_branch": "integration/control-plane-loop",
-  "waves": {
-    "W1": {
-      "units": [
-        "T1-labels"
-      ],
-      "test_placed": "d55f4d6",
-      "state": "green",
-      "patch_commit": "443d7eb",
-      "run_id": "control-plane-loop-20260816T004240Z-p43602"
-    },
-    "W2": {
-      "units": [
-        "T2-claim-done"
-      ],
-      "state": "green",
-      "patch_commit": "e96e9c8",
-      "run_id": "control-plane-loop-20260816T004712Z-p56593"
-    },
-    "W3": {
-      "units": [
-        "T3-eligible"
-      ],
-      "state": "green",
-      "run_id": "control-plane-loop-20260816T010301Z-p77993"
-    },
-    "W4": {
-      "units": [
-        "T4-queue-runner",
-        "T5-run-state",
-        "T6-lint"
-      ],
-      "state": "green",
-      "run_id": "control-plane-loop-20260816T011443Z-p98459"
-    },
-    "W5": {
-      "units": [
-        "T7-integration"
-      ],
-      "state": "green - owner checkpoints pending",
-      "archive_commit": "08b1adf"
-    }
-  },
-  "owed_model_notes": false,
-  "updated": "2026-08-16T02:05:00Z",
-  "run_close": {
-    "final_commit": "52a2c48",
-    "advisory_review": "done - 1 spec fix applied (guard regex), 2 standards judgement calls recorded"
-  }
+ "run_ticket": 35,
+ "branch": "integration/packaging-loop",
+ "pre_run_base": "ef94ded",
+ "wave": 2,
+ "state": "launching",
+ "waves_done": {
+  "1": "5f063dc"
+ }
 }
