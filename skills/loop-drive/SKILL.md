@@ -12,7 +12,7 @@ You emit the orchestration plan and, once approved, drive it.
 Workers reach execution through two transports: ringer (manifest tasks; see `references/ringer-substrate.md`) and the Agent tool (in-session subagents; see `references/native-orchestration.md`).
 Transport is a per-unit attribute derived in Step 2.
 
-The principle IDs cited below (P2, P6, P7, P10, P12, P14) are defined in the loop-stack `principles.md`; short glosses are inline so this skill stands alone.
+The principle IDs cited below (P2, P6, P7, P10, P11, P12, P14) are defined in the loop-stack `principles.md`; short glosses are inline so this skill stands alone.
 
 ## Step boundary and entry points
 
@@ -180,7 +180,10 @@ The boundary is blast radius, not raw size; 15 lines is the agreed threshold.
 Any outward-facing unit (touches live consumers, publishes, or deletes things the human owns) stops and asks the human`[gate:STOP]`.
 
 Design for interruption: the orchestrator cannot see the user's remaining quota, so the loop must die safely at any moment.
-Implementers commit their results and log before returning; the orchestrator maintains a run-state artifact updated at every launch and gate; the plan contains a verbatim resume prompt plus a reconciliation procedure that trusts git over the state file and relaunches (never resumes) half-done units.
+Implementers commit their results and log before returning; the plan contains a verbatim resume prompt plus a reconciliation procedure that relaunches (never resumes) half-done units.
+Run-state lives on the claimed ticket, not only in a session-local file (P11: git is reconciliation truth): on claiming a unit and again at every wave gate, the orchestrator writes an `AGENT STATUS` receipt via `scripts/tracker.sh comment <num> "AGENT STATUS branch=<b> worktree=<path> verdict=<v> repairs=<n>"`, carrying the unit's branch, worktree path, validator verdict, and repair count - the same fields `references/native-orchestration.md` lists.
+A session-local run-state artifact may still be kept for the live session's own convenience, but it is a cache; the ticket receipt is the durable copy a fresh session reads.
+The reconciliation procedure trusts git over any receipt and relaunches (never resumes) a half-done unit: a fresh session finds the killed unit via `scripts/tracker.sh next-eligible` (its stale-working sweep surfaces a dead session's ticket) or `claim <num> <session-id> --reclaim`, reads the ticket's `AGENT STATUS` receipt plus git for the unit's actual state, and relaunches the unit from scratch.
 The reconciliation procedure also checks the ringer repo for an uncommitted MODEL-NOTES receipt owed by the last gate (the run drives two repos; both are checkpointed).
 
 On the final wave only, after the integration branch is green and the run advances, run the advisory terminal artifact review: `/loop-review <pre-run-base>` from the integration branch, so the two-axis Spec and Standards report judges the whole-run diff.
@@ -210,7 +213,7 @@ When the user approves execution (including the single-artifact exits from Step 
 
 - **Dashboard**: what will run - the routing table condensed (unit, wave, model, transport, effort) plus the topology diagram.
 - **Dry run**: prove the "go" before firing it - execute the pre-flight checklist for real (ringer: `./ringer.py lint <manifest>`, engines present; native: clean tree, worktree-able state) and print the exact wave-1 launches (commands and Agent briefs) without starting any worker.
-- **Watch points**: where to follow the run live - native: per-unit logs (`<log>/unit-NN.md`), the run-state artifact, background-task notifications; ringer: `tail -f <workdir>/logs/` during a wave, run JSON in `~/.ringer/runs/` at gates.
+- **Watch points**: where to follow the run live - native: per-unit logs (`<log>/unit-NN.md`), the tickets' `AGENT STATUS` receipts, background-task notifications; ringer: `tail -f <workdir>/logs/` during a wave, run JSON in `~/.ringer/runs/` at gates.
 
 Show what they picked, fix anything the dry run flags, then launch; nothing selected means launch immediately.
 Once per run, never per wave.
