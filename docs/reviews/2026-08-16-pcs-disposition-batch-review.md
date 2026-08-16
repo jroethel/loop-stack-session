@@ -24,5 +24,7 @@ Each BATCH entry is a decision auto-taken for the human, to accept or reverse at
    Rationale: the named task was "add the pcs pointer to the context map"; the full 6.2 index is queued future work (execution-order item 4) and building it here would be silent scope expansion.
    Reversal: `git revert`, or grow the section into the full index when 6.2 lands.
 
-5. **ASK (pending) - the `~/create/pcs/` rename.**
-   Surfaced, not decided, per instruction: `~/create/research/` does not exist; the corpus lives at `~/create/pcs/research/`, so the rename in question is of `~/create/pcs/` itself. Owner decides; the context-map line notes the pending decision and must be updated to match the outcome.
+5. **ASK (resolved live) - the `~/create/pcs/` rename.**
+   Surfaced, not decided, per instruction: `~/create/research/` did not exist; the corpus lived at `~/create/pcs/research/`, so the rename in question was of `~/create/pcs/` itself. Owner chose rename (2026-08-16, same session): `mv ~/create/pcs ~/create/research` executed; forward-looking pointers (context map, memo archive path, ledger axis path) updated; historical records left verbatim.
+   Consequence flagged, not auto-taken: the corpus now nests at `~/create/research/research/`; flattening or renaming the inner directory is a separate owner decision.
+   Reversal: `mv ~/create/research ~/create/pcs` and revert the pointer edits.

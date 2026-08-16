@@ -74,7 +74,7 @@ Restart context: <one line>
 ## Context map
 
 - Molt evaluation source: `docs/memos/2026-08-15-pcs-consolidated-recommendations.md` - the pcs verdict and the second axis for molt constraint re-derivation; its protocol is vendored at `skills/loop-molt/references/protocol.md`, its drift ledger at `docs/molt-ledger.md`.
-- pcs research corpus: `~/create/pcs/research/` (outside the repo) - the 13 digests behind the 2026-08 evaluation; working docs archived in `~/create/pcs/archive/`; a rename of `~/create/pcs/` is pending owner decision.
+- Research corpus: `~/create/research/research/` (outside the repo; `~/create/pcs/` renamed 2026-08-16) - the 13 digests behind the 2026-08 evaluation; working docs archived in `~/create/research/archive/`.
 
 ## Scope rule
 

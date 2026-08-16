@@ -3,7 +3,7 @@
 Date: 2026-08-15.
 Memo-ized 2026-08-16 from `~/create/pcs/2026-08-15-consolidated-recommendations.md` (moved, not copied; this copy is canonical).
 It is the second measurement axis for molt constraint re-derivation (owner ruling 2026-08-16; see `docs/molt-ledger.md`).
-This document supersedes the recommendation trail in `2026-08-14-loop-stack-vs-research-evaluation.md` (verdict, addenda, and iterations; now archived with the cycle-1 kickoff prompt in `~/create/pcs/archive/`); that file remains the evidence record, this one states current positions only.
+This document supersedes the recommendation trail in `2026-08-14-loop-stack-vs-research-evaluation.md` (verdict, addenda, and iterations; now archived with the cycle-1 kickoff prompt in `~/create/research/archive/`); that file remains the evidence record, this one states current positions only.
 Companion artifact: the molt protocol, vendored canonically at `skills/loop-molt/references/protocol.md` (the pcs `harness-drift-audit-protocol.md` is the historical draft).
 
 Citation keys: P1-P14 / C1-C8 = loop-stack `principles.md`; research files by name from `research/`; [session] = verified first-hand in the 2026-08-14/15 evaluation session; [unverified] = labeled dependency.
