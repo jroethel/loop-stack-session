@@ -37,3 +37,24 @@ Then the post-merge queue from the cycle kickoff: shakedown /loop-molt against t
 ## Resume
 
 If this session dies: docs/plans/2026-08-15-control-plane-plan_loop.md section 7 resume prompt; logs/loop/run-state.json; git is truth.
+
+## Post-merge close-out (2026-08-16, appended after the merge gate fired)
+
+Merge gate: fired by owner delegation. main fast-forwarded to eb8e2d8; ./install.sh restored live ~/.agents links to this checkout; suite 43/43 after removing a one-time untracked leftover (skills/frontier-sandwich/references/model-benchmarks.md, generated pre-brief-3, not regenerated - verified).
+Kill-demo: glm-5.2 re-run passed attempt 1 (owner-directed after rejecting the sonnet run); evidence in /tmp/control-plane-loop/killdemo2-evidence/.
+Pushed to origin (main + molt-cycle-1).
+
+### Worktree cleanup (owner fires AFTER the molt session closes)
+
+```
+git -C ~/create/loops/loop-stack-session worktree remove ~/create/loops/loop-stack-molt
+git -C ~/create/loops/loop-stack-session branch -d molt-cycle-1 integration/control-plane-loop
+```
+
+### Ready-to-paste kickoff for the next session (shakedown, fresh context)
+
+> Molt cycle 1 is merged (main at eb8e2d8, 43/43, control plane live).
+> Run the first real /loop-molt against the post-change stack as its shakedown - pick one artifact (suggest skills/loop-drive/SKILL.md, the biggest policy sheet) and let the skill run its full protocol: constraint register ASK first, four bins, drift ledger line, subtraction-tested deletions.
+> Read docs/handoffs/2026-08-15-control-plane-drive-close.md for state; the constraint register of docs/archive/2026-08-15-defects-check-custody-brief.md still governs (note: brief docs now in docs/briefs/ for cycle briefs 1-2, check both).
+> After the shakedown: the BATCH-gated pcs disposition pass (memo-ize ~/create/pcs/2026-08-15-consolidated-recommendations.md into docs/memos/, archive the evaluation doc and kickoff prompt, confirm the protocol vendored in skills/loop-molt/references/, add the pcs pointer to the context map, surface - do not decide - the ~/create/research/ rename); then open the packaging /loop-brainstorm against the clean stack.
+> Known follow-ups on the backlog: idea #30 (install.sh non-interactive guard + reviewer-prompt blacklist); loop-review standards notes (brace-scan duplication tracker.sh/lifecycle-lint.sh; lint class-d inert on github - test coverage gap).
