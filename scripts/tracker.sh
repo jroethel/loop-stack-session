@@ -190,6 +190,80 @@ local_list() {                # emit gh-shaped JSON for open issues
   printf '%s]\n' "$out"
 }
 
+# --- cross-backend dispatch helpers (shared by the public verbs and status/claim/done) ---
+do_label() {                 # args: num name add|remove - raw op; the agent:done guard lives in the public verb only
+  local num="$1" name="$2" op="$3" mode
+  mode="$(tracker_mode_get)" || fail "no tracker mode declared in $RS (run loop-setup)"
+  case "$mode" in
+    github) gh_guard
+            if [ "$op" = add ]; then gh issue edit "$num" --add-label "$name"
+            else                      gh issue edit "$num" --remove-label "$name"; fi ;;
+    gitlab) glab_guard
+            if [ "$op" = add ]; then glab issue update "$num" --label "$name"
+            else                      glab issue update "$num" --unlabel "$name"; fi ;;
+    local)  local_label "$num" "$name" "$op" ;;
+    *)      fail "unknown tracker mode '$mode' in $RS (expected github, gitlab, or local)" ;;
+  esac
+}
+do_comment() {               # args: num text
+  local num="$1" text="$2" mode
+  mode="$(tracker_mode_get)" || fail "no tracker mode declared in $RS (run loop-setup)"
+  case "$mode" in
+    github) gh_guard; gh issue comment "$num" --body "$text" ;;
+    gitlab) glab_guard; glab issue note "$num" --message "$text" ;;
+    local)  local_comment "$num" "$text" ;;
+    *)      fail "unknown tracker mode '$mode' in $RS (expected github, gitlab, or local)" ;;
+  esac
+}
+do_state() {                 # args: num close|reopen
+  local num="$1" op="$2" mode
+  mode="$(tracker_mode_get)" || fail "no tracker mode declared in $RS (run loop-setup)"
+  case "$mode" in
+    github) gh_guard; gh issue "$op" "$num" ;;
+    gitlab) glab_guard; glab issue "$op" "$num" ;;
+    local)  if [ "$op" = close ]; then local_set_state "$num" closed
+            else                          local_set_state "$num" open; fi ;;
+    *)      fail "unknown tracker mode '$mode' in $RS (expected github, gitlab, or local)" ;;
+  esac
+}
+set_status() {               # args: num state - exactly one active agent:* status label
+  local num="$1" st="$2"
+  clear_status "$num" "$st"
+  do_label "$num" "agent:$st" add
+}
+clear_status() {             # args: num [keep] - remove every agent: status label except `keep`
+  local num="$1" keep="${2:-}" s
+  for s in todo working needs-input review; do
+    [ "$s" = "$keep" ] && continue
+    # blind remove: safe without a current-labels fetch (an absent label is the common case)
+    do_label "$num" "agent:$s" remove || true
+  done
+}
+gather_receipts() {          # arg: num - prints canonical "AGENT CLAIMED|RECLAIMED <sid> <ts>" lines,
+  local num="$1" mode f      # anchored to line shape so a receipt merely quoting the phrase is not counted
+  mode="$(tracker_mode_get)" || fail "no tracker mode declared in $RS (run loop-setup)"
+  case "$mode" in
+    github) gh_guard; gh issue view "$num" --json comments -q '.comments[].body' \
+              | grep -E '^AGENT (CLAIMED|RECLAIMED) [^ ]+ [^ ]+$' ;;
+    gitlab) glab_guard; glab issue view "$num" --comments 2>/dev/null \
+              | grep -E '^AGENT (CLAIMED|RECLAIMED) [^ ]+ [^ ]+$' ;;
+    local)  f="$(find_issue_file "$num")" || fail "no local issue #$num"
+            grep -E '^> comment [0-9][0-9:TZ-]*: AGENT (CLAIMED|RECLAIMED) [^ ]+ [^ ]+' "$f" \
+              | sed -E 's/^> comment [0-9][0-9:TZ-]*: //' ;;
+    *)      fail "unknown tracker mode '$mode' in $RS (expected github, gitlab, or local)" ;;
+  esac
+}
+compute_owner() {            # stdin: canonical receipt lines -> owner sid (earliest ts; ties lex-least sid);
+  awk '                        # active window: at-or-after the most recent RECLAIMED, else all receipts
+    { sid[NR]=$3; ts[NR]=$4; if ($2 == "RECLAIMED") last = NR }
+    END {
+      if (NR == 0) exit 0
+      for (i = (last ? last : 1); i <= NR; i++)
+        if (bs == "" || ts[i] < bt || (ts[i] == bt && sid[i] < bs)) { bt = ts[i]; bs = sid[i] }
+      print bs
+    }'
+}
+
 usage() {
   cat >&2 <<EOF
 Usage: tracker.sh <command> [args]
@@ -199,12 +273,15 @@ Usage: tracker.sh <command> [args]
   group                          print the first path segment of origin (the backlog group)
   list                           print a gh-shaped issue-JSON array for open issues
   create --label L --title T --body B   create an issue, print its number
-  close <num>                    close an issue by number
+  close <num>                    close an issue by number (human-only; agents complete via 'done')
   reopen <num>                   reopen an issue by number
   label ensure <name>            idempotently make the label exist (no-op in local mode)
   label add <num> <name>         attach a label (agent:done is evidence-gated: use 'done')
   label remove <num> <name>      detach a label
   comment <num> <text>           append a durable comment/receipt
+  status <num> <state>           set exactly one active agent: status (todo|working|needs-input|review)
+  claim <num> <session-id> [--reclaim]  receipt-before-flip claim; prints owner id, exit 4 on race
+  done <num> --receipt <text> [--ran <cmd>]  evidence-gated completion: agent:done + close
 EOF
 }
 
@@ -271,17 +348,7 @@ case "$sub" in
     ;;
   close|reopen)
     [ $# -ge 1 ] || fail "$sub: requires an issue number"
-    num="$1"
-    mode="$(tracker_mode_get)" || fail "no tracker mode declared in $RS (run loop-setup)"
-    case "$mode" in
-      github) gh_guard; gh issue "$sub" "$num" ;;
-      gitlab) glab_guard; glab issue "$sub" "$num" ;;
-      local)
-        if [ "$sub" = close ]; then local_set_state "$num" closed
-        else                           local_set_state "$num" open; fi
-        ;;
-      *)      fail "unknown tracker mode '$mode' in $RS (expected github, gitlab, or local)" ;;
-    esac
+    do_state "$1" "$sub"
     ;;
   label)
     [ $# -ge 1 ] || fail "label: requires a subcommand (ensure|add|remove)"
@@ -300,36 +367,91 @@ case "$sub" in
       add)
         [ $# -ge 2 ] || fail "label add: requires an issue number and a label name"
         [ "$2" = "agent:done" ] && { echo "tracker: agent:done is reachable only through 'tracker.sh done' (evidence-gated)" >&2; exit 6; }
-        mode="$(tracker_mode_get)" || fail "no tracker mode declared in $RS (run loop-setup)"
-        case "$mode" in
-          github) gh_guard; gh issue edit "$1" --add-label "$2" ;;
-          gitlab) glab_guard; glab issue update "$1" --label "$2" ;;
-          local)  local_label "$1" "$2" add ;;
-          *)      fail "unknown tracker mode '$mode' in $RS (expected github, gitlab, or local)" ;;
-        esac
+        do_label "$1" "$2" add
         ;;
       remove)
         [ $# -ge 2 ] || fail "label remove: requires an issue number and a label name"
-        mode="$(tracker_mode_get)" || fail "no tracker mode declared in $RS (run loop-setup)"
-        case "$mode" in
-          github) gh_guard; gh issue edit "$1" --remove-label "$2" ;;
-          gitlab) glab_guard; glab issue update "$1" --unlabel "$2" ;;
-          local)  local_label "$1" "$2" remove ;;
-          *)      fail "unknown tracker mode '$mode' in $RS (expected github, gitlab, or local)" ;;
-        esac
+        do_label "$1" "$2" remove
         ;;
       *) usage; exit 1 ;;
     esac
     ;;
   comment)
     [ $# -ge 2 ] || fail "comment: requires an issue number and a text"
-    mode="$(tracker_mode_get)" || fail "no tracker mode declared in $RS (run loop-setup)"
-    case "$mode" in
-      github) gh_guard; gh issue comment "$1" --body "$2" ;;
-      gitlab) glab_guard; glab issue note "$1" --message "$2" ;;
-      local)  local_comment "$1" "$2" ;;
-      *)      fail "unknown tracker mode '$mode' in $RS (expected github, gitlab, or local)" ;;
+    do_comment "$1" "$2"
+    ;;
+  status)
+    [ $# -ge 2 ] || fail "status: requires an issue number and a state (todo|working|needs-input|review)"
+    num="$1"; st="$2"
+    case "$st" in
+      todo|working|needs-input|review) ;;
+      *) fail "status: state must be todo|working|needs-input|review (got '$st'; 'done' routes through 'tracker.sh done')" ;;
     esac
+    set_status "$num" "$st"
+    ;;
+  claim)
+    [ $# -ge 2 ] || fail "claim: requires an issue number and a session id"
+    num="$1"; sid="$2"; shift 2
+    reclaim=0
+    while [ $# -ge 1 ]; do
+      case "$1" in
+        --reclaim) reclaim=1; shift ;;
+        *) fail "claim: unknown argument '$1'" ;;
+      esac
+    done
+    now="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    verb=CLAIMED; [ "$reclaim" -eq 1 ] && verb=RECLAIMED
+    # receipt BEFORE flip: a mid-claim death never leaves a receiptless working ticket
+    do_comment "$num" "AGENT $verb $sid $now"
+    set_status "$num" working
+    owner="$(gather_receipts "$num" | compute_owner)"
+    if [ -z "$owner" ]; then
+      printf '%s\n' "$sid"      # no parseable receipt on the backend: trust our own just-written one
+    elif [ "$owner" = "$sid" ]; then
+      printf '%s\n' "$sid"
+    elif [ "$reclaim" -eq 1 ]; then
+      printf '%s\n' "$sid"      # explicit takeover supersedes prior claims
+    else
+      echo "RACE: #$num owned by $owner" >&2; exit 4
+    fi
+    ;;
+  done)
+    [ $# -ge 2 ] || fail "done: requires an issue number and --receipt <text>"
+    num="$1"; shift
+    receipt=""; rancmd=""
+    while [ $# -ge 2 ]; do
+      case "$1" in
+        --receipt) receipt="$2"; shift 2 ;;
+        --ran)     rancmd="$2";  shift 2 ;;
+        *) fail "done: unknown argument '$1'" ;;
+      esac
+    done
+    [ $# -eq 0 ] || fail "done: unpaired arguments"
+    [ -n "$receipt" ] || fail "done: --receipt is required"
+    if [ -n "$rancmd" ]; then
+      # strong path: re-execute the cited command and capture the REAL exit, not a pasted claim
+      sh -c "$rancmd" >/dev/null 2>&1
+      rc=$?
+      receipt="$receipt --ran $rancmd exit $rc"
+      if [ "$rc" -ne 0 ]; then
+        do_comment "$num" "$receipt"
+        set_status "$num" review
+        echo "tracker: --ran command exited $rc; #$num routed to review, not done" >&2
+        exit 7
+      fi
+    else
+      # ponytail: without --ran, evidence is a regex proving a receipt CITES a passing run, not that
+      # it happened. --ran is the strong path (re-execute + capture). Upgrade: make --ran mandatory
+      # in autonomous queue-runner mode if forgery ever matters.
+      if ! printf '%s\n' "$receipt" | grep -qE '(exit( status)? 0( |$)|[0-9]+ passed|0 failed|https?://[^ ]+)'; then
+        echo "agent:done requires executed-check evidence of a PASSING run (exit 0 / N passed / 0 failed / artifact link)" >&2
+        exit 5
+      fi
+    fi
+    do_comment "$num" "$receipt"
+    clear_status "$num"       # 'done' is not a status verb; clear all four siblings, then add agent:done
+    do_label "$num" agent:done add   # internal path: the guard blocks the public verb, not this completion
+    do_state "$num" close
     ;;
   host)   gitlab_host || fail "no origin remote" ;;
   group)  gitlab_group || fail "no origin remote" ;;
