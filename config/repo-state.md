@@ -46,9 +46,16 @@ GitHub is the single source of truth.
 Mirrors are read-only snapshots whose headers disclose staleness.
 They regenerate at handoff time or on demand - no hooks, no daemons.
 
+## Agent status vocabulary
+
+The `agent:` label family is the single status schema for tracker issues; this file is its only home.
+Semantics are fixed: `agent:todo` (queued, no active claim), `agent:working` (claimed by a session holding a claim receipt), `agent:needs-input` (blocked on a human answer), `agent:review` (work offered for review), `agent:done` (evidence-gated completion, reachable only through `scripts/tracker.sh done`, never `label add`).
+Exactly one status is active at a time; `tracker.sh status` swaps them, and the `agent:` family is orthogonal to the `idea` lane label.
+
 ## Archive and graduation rules
 
 1. A plan is done when all items are complete (archive automatically), or when the remaining items are cleanly rewritten into a surviving plan (archive offered).
+1a. A plan-set is archivable when it is superseded (a strictly newer live plan-set exists by date) and no OPEN issue links its topic stem; `scripts/lifecycle-lint.sh .` flags these (class a) plus orphaned briefs (b), open issues over archived plans (c), and closed issues under live plans (d).
 2. A brief archives when its plan archives; they travel together.
 3. Abandoned work archives only when offered and accepted.
 4. Parking-lot graduation is automatic at brief-commit time.
