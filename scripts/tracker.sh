@@ -538,7 +538,7 @@ case "$sub" in
       # ponytail: without --ran, evidence is a regex proving a receipt CITES a passing run, not that
       # it happened. --ran is the strong path (re-execute + capture). Upgrade: make --ran mandatory
       # in autonomous queue-runner mode if forgery ever matters.
-      if ! printf '%s\n' "$receipt" | grep -qE '(exit( status)? 0( |$)|[0-9]+ passed|0 failed|https?://[^ ]+)'; then
+      if ! printf '%s\n' "$receipt" | grep -qE '(exit( status)? 0( |$)|[1-9][0-9]* passed|(^| )0 failed|https?://[^ ]+)'; then
         echo "agent:done requires executed-check evidence of a PASSING run (exit 0 / N passed / 0 failed / artifact link)" >&2
         exit 5
       fi

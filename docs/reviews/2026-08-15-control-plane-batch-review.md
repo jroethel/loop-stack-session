@@ -34,3 +34,8 @@ Created at autonomy start; appended at every gate in chronological order.
    Decision: ran ./install.sh against a scratch HOME (LOOP_STACK_SKILL_STYLE=claude) instead of the live one; a bare run would symlink live ~/.claude skills at this un-merged worktree, violating the cycle's nothing-goes-live rule. The executed check (install mechanics pick up the new files) is unchanged; the live install remains the owner's merge-gate step from the main checkout.
    Rationale: blast-radius containment; the source plan's intent is "install works", not "go live pre-merge".
    Reversal: n/a - the scratch HOME is deleted; the live install happens at the merge gate regardless.
+
+7. BATCH - terminal loop-review Spec finding: evidence-regex substring hole.
+   Decision: tightened the done verb's --receipt regex ('[0-9]+ passed|0 failed' -> '[1-9][0-9]* passed|(^| )0 failed') in scripts/tracker.sh and the source plan; proved both directions by executed check (10-failed and 0-passed now rc=5; 43-passed and exit-0 still rc=0); full suite green after.
+   Rationale: spec-authored weakness in the P2 guard, one line, single criterion, --ran path already immune - BATCH per the slip rule, fixed at the terminal gate rather than parked.
+   Reversal: git revert; cheap.
