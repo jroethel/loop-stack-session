@@ -6,6 +6,15 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$HERE/../.." && pwd)"
 fail() { echo "FAIL: $1" >&2; exit 1; }
 
+# Sandbox guard: this test asserts the PRIMARY checkout's live state (mirrors + queryable tracker).
+# A clean-room or sandbox clone's origin is a local path with no live tracker, so there is nothing
+# to assert there; the guard never fires on the primary checkout, whose origin is a GitHub remote.
+origin="$(git -C "$REPO" remote get-url origin 2>/dev/null || true)"
+case "$origin" in
+  *github.com*) : ;;
+  *) echo "SKIP: live-state test applies only to a checkout with a GitHub origin (origin: ${origin:-none})"; exit 0 ;;
+esac
+
 [ -f "$REPO/ISSUES.md" ]      || fail "ISSUES.md not stood up"
 [ -f "$REPO/BACKLOG.md" ]     || fail "BACKLOG.md not stood up"
 [ -f "$REPO/ROADMAP.md" ] || fail "ROADMAP.md not seeded"

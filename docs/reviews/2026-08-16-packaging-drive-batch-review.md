@@ -26,3 +26,9 @@ Entries are chronological; BATCH and DEFAULT entries are the review obligation, 
 - Decision: wave 2+ implementer specs gain one line - if `ISSUES.md`/`BACKLOG.md` are absent in the worktree, run `scripts/gen-mirrors.sh .` before `tests/run.sh`.
 - Rationale: T1 attempt 1 failed only because the gitignored generated mirrors do not exist in a fresh worktree; this is the P10 distill of that failure, confined to spec scaffolding, well under the 15-line threshold, and it changes no unit's produced contract.
 - Reversal path: cheap - drop the line from the next spec (git revert of nothing; the spec templates are launch-time artifacts).
+
+## 5. [BATCH] Spec-problem fix: sandbox guard in tests/repo-state/live.sh
+
+- Decision: `live.sh` gains an 8-line guard - SKIP (exit 0) when the checkout's origin is not a GitHub remote; the source plan's Task 3 section records the amendment.
+- Rationale: Task 3's clean-room harness was unsatisfiable as specified - `live.sh` hard-gates on mirrors plus a live `gh issue list`, but a clean-room clone's origin is a local path with no gh auth, and proof 3 is offline by design; the wave-1 worker independently flagged the same defect. The edit is confined to one criterion's satisfiability, leaves T3's produced contract (verbatim `clean-room.sh`) unchanged, is under 15 lines, and has zero blast radius on the primary checkout, where the origin is a GitHub remote and the guard never fires.
+- Reversal path: `git revert` of the guard commit on `integration/packaging-loop`.

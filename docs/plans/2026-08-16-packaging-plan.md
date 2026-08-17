@@ -437,6 +437,10 @@ Depends on: Task 2
 
 Recorded note: this harness is a standalone script under `scripts/`, not under `tests/`, on purpose - it clones and runs the whole suite, so auto-discovery by `tests/run.sh` would nest a suite inside itself.
 
+Run amendment (2026-08-16, orchestrator, BATCH-journaled): `tests/repo-state/live.sh` gained a sandbox guard (SKIP with exit 0 when the checkout's origin is not a GitHub remote).
+Without it this harness is unsatisfiable: the clean-room clone's origin is a local path with no gh auth and proof 3 is offline, while `live.sh` hard-gates on mirrors plus a live `gh issue list`.
+The guard never fires on the primary checkout, so the live-state gate there is unchanged.
+
 **Interfaces:**
 - Consumes: the committed tree after Task 2 (it clones `HEAD`, so run it only after Tasks 1-2 are committed).
 - Produces: a single pass/fail proof covering criteria 1, 2, 3, and 4.
