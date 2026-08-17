@@ -11,6 +11,35 @@ CLAUDE_MD="$CLAUDE_DIR/CLAUDE.md"
 BEGIN_MARK="# --- loop-stack (managed) ---"
 END_MARK="# --- end loop-stack (managed) ---"
 
+# 0. parameter home: the one file holding this host's specific values. Env OVERRIDES file.
+HOST_ENV="$REPO/config/host.env"
+HOST_ENV_TEMPLATE="$REPO/config/host.env.template"
+if [ ! -f "$HOST_ENV" ]; then
+  cp "$HOST_ENV_TEMPLATE" "$HOST_ENV"
+  echo "created $HOST_ENV from template - edit it for this host"
+fi
+# Capture any env-provided values first so they win over the file's.
+_env_style="${LOOP_STACK_SKILL_STYLE:-}"
+_env_root="${LOOP_STACK_RINGER_ROOT:-}"
+_env_ver="${LOOP_STACK_RINGER_VERSION:-}"
+# Source the hand-edited file with nounset OFF, so an operator typo yields a clear message rather
+# than a cryptic "unbound variable" abort of the whole installer (host.env is the one file the
+# operator hand-edits per host, so it is the likeliest place a human error lands).
+set +u
+# shellcheck source=/dev/null
+. "$HOST_ENV" || { echo "ERROR: could not read $HOST_ENV - check its syntax" >&2; exit 1; }
+set -u
+[ -n "$_env_style" ] && LOOP_STACK_SKILL_STYLE="$_env_style"
+[ -n "$_env_root" ]  && LOOP_STACK_RINGER_ROOT="$_env_root"
+[ -n "$_env_ver" ]   && LOOP_STACK_RINGER_VERSION="$_env_ver"
+RINGER_ROOT="${LOOP_STACK_RINGER_ROOT:-$HOME/repos/ringer}"
+RINGER_VERSION="${LOOP_STACK_RINGER_VERSION:-}"
+# Drift note: a write-once host.env can lag a template that a git pull later updated. For each key
+# the template declares (active or commented), note when host.env lacks it entirely (non-fatal).
+for _k in LOOP_STACK_RINGER_ROOT LOOP_STACK_RINGER_VERSION LOOP_STACK_SKILL_STYLE; do
+  grep -qE "^#? *$_k=" "$HOST_ENV" || echo "note: config/host.env lacks '$_k' from the template (using built-in default)"
+done
+
 # 1. skills: back up a real dir once, then symlink each repo skill (repo edits stay live).
 # Two styles:
 #   agents (default): repo -> ~/.agents/skills/<name>, and ~/.claude/skills/<name> -> ~/.agents/skills/<name>
@@ -21,14 +50,22 @@ END_MARK="# --- end loop-stack (managed) ---"
 # so a *.bak left in there would load as a stale duplicate skill.
 AGENTS_DIR="$HOME/.agents"
 AGENTS_SKILLS="$AGENTS_DIR/skills"
+# skill style resolution: env > host.env > (TTY) prompt > REFUSE. Never a silent default.
 STYLE="${LOOP_STACK_SKILL_STYLE:-}"
-if [ -z "$STYLE" ] && [ -t 0 ]; then
-  read -r -p "Skill install style - [a]gents (~/.agents/skills + harness symlinks) or [c]laude (direct into ~/.claude/skills)? [a] " STYLE
+if [ -z "$STYLE" ]; then
+  if [ -t 0 ]; then
+    read -r -p "Skill install style - [a]gents (~/.agents/skills + harness symlinks) or [c]laude (direct into ~/.claude/skills)? [a] " STYLE
+    STYLE="${STYLE:-a}"   # a human saw the prompt: empty enter may default
+  else
+    echo "ERROR: skill install style undeclared and no TTY to ask." >&2
+    echo "Set LOOP_STACK_SKILL_STYLE=agents|claude (env or config/host.env) and re-run." >&2
+    exit 1
+  fi
 fi
-case "${STYLE:-a}" in
+case "$STYLE" in
   a|agents) STYLE=agents ;;
   c|claude) STYLE=claude ;;
-  *) echo "unknown style '$STYLE' (use agents or claude)"; exit 1 ;;
+  *) echo "unknown style '$STYLE' (use agents or claude)" >&2; exit 1 ;;
 esac
 echo "skill style: $STYLE"
 
@@ -89,12 +126,14 @@ for old in frontier-loop one-minute-test fable-sandwich frontier-sandwich loop-w
   fi
 done
 
-# 2. ringer config: copy each file only if absent (never clobber the live config.toml). chmod +x wrappers.
+# 2. ringer config: copy each file only if absent (never clobber a live config). chmod +x wrappers.
+#    config.toml is RENDERED from its template with host paths substituted, not copied.
 mkdir -p "$RINGER_DIR"
 for src in "$REPO"/config/ringer/*; do
   [ -e "$src" ] || continue
-  [ "$(basename "$src")" = config.toml.template ] && continue
-  dest="$RINGER_DIR/$(basename "$src")"
+  base="$(basename "$src")"
+  [ "$base" = config.toml.template ] && continue   # rendered separately, below
+  dest="$RINGER_DIR/$base"
   if [ -e "$dest" ]; then
     echo "keeping existing $dest"
   else
@@ -103,6 +142,27 @@ for src in "$REPO"/config/ringer/*; do
   fi
   case "$dest" in *.sh) chmod +x "$dest" ;; esac
 done
+# render config.toml from template ONLY if absent (preserve the never-clobber-live-config behavior).
+if [ -e "$RINGER_DIR/config.toml" ]; then
+  echo "keeping existing $RINGER_DIR/config.toml"
+  # A config.toml kept from a prior install or another host may not reflect this host's RINGER_ROOT;
+  # editing config/host.env does NOT re-render an existing file. Warn, never clobber.
+  if grep -q '^bin = ' "$RINGER_DIR/config.toml" \
+     && ! grep -qF "$RINGER_ROOT/engines/opencode-sandboxed.sh" "$RINGER_DIR/config.toml"; then
+    echo "WARNING: existing $RINGER_DIR/config.toml does not reference RINGER_ROOT=$RINGER_ROOT -"
+    echo "         delete it and re-run ./install.sh to re-render for this host."
+  fi
+else
+  # The renderer substitutes with sed; reject paths carrying sed metacharacters (| the delimiter,
+  # & the match-reference, \ the escape) rather than silently emitting a corrupt config.
+  case "$RINGER_ROOT$RINGER_DIR" in
+    *'|'*|*'&'*|*'\'*) echo "ERROR: ringer paths contain a character unsupported by the renderer (| & \\)" >&2; exit 1 ;;
+  esac
+  sed -e "s|__RINGER_ROOT__|$RINGER_ROOT|g" \
+      -e "s|__RINGER_CONFIG_DIR__|$RINGER_DIR|g" \
+      "$REPO/config/ringer/config.toml.template" > "$RINGER_DIR/config.toml"
+  echo "rendered $RINGER_DIR/config.toml from template (RINGER_ROOT=$RINGER_ROOT)"
+fi
 
 # 2b. benchmark prior reference: symlink so repo edits stay live.
 # Repo source lives in config/routing/; the installed leaf is the loop-drive skill's references/.
@@ -141,9 +201,29 @@ command -v opencode >/dev/null 2>&1 \
 command -v codex >/dev/null 2>&1 \
   && echo "found codex: $(command -v codex)" \
   || echo "note: codex not found (only needed if you use the sample codex engine) - install: npm i -g @openai/codex"
-[ -d "$HOME/repos/ringer" ] \
-  && echo "found ringer: $HOME/repos/ringer" \
-  || echo "WARNING: ~/repos/ringer not found - config.toml points its engine paths there"
+# ringer presence + floating-version reference check (both non-fatal, never abort).
+if [ -d "$RINGER_ROOT" ]; then
+  echo "found ringer: $RINGER_ROOT"
+  if [ -n "$RINGER_VERSION" ] && git -C "$RINGER_ROOT" rev-parse --git-dir >/dev/null 2>&1; then
+    have="$(git -C "$RINGER_ROOT" rev-parse --short HEAD 2>/dev/null || echo unknown)"
+    want="$(git -C "$RINGER_ROOT" rev-parse --short "$RINGER_VERSION" 2>/dev/null || echo "$RINGER_VERSION")"
+    [ "$have" = "$want" ] || echo "WARNING: ringer HEAD $have != reference $RINGER_VERSION (floating reference; not fatal)"
+  fi
+else
+  echo "WARNING: $RINGER_ROOT not found - config.toml engine paths point there"
+fi
+
+# Stale-config guard: a config.toml kept from a prior install or another host may point its engine
+# bins at absolute paths that do not exist here (the exact defect on a second host that still holds
+# the old installer's /Users/... bins). Verify only absolute-path bins; bare command names resolve
+# via PATH and are skipped. WARN, never abort. No host literals, so the hardcode sweep stays clean.
+if [ -f "$RINGER_DIR/config.toml" ]; then
+  while IFS= read -r binpath; do
+    case "$binpath" in
+      /*) [ -e "$binpath" ] || echo "WARNING: config.toml engine bin '$binpath' not found here - delete $RINGER_DIR/config.toml and re-run to re-render" ;;
+    esac
+  done < <(sed -nE 's/^bin = "([^"]*)".*/\1/p' "$RINGER_DIR/config.toml")
+fi
 if [ -f "$RINGER_DIR/config.toml" ] && grep -q '^\[engines\.' "$RINGER_DIR/config.toml"; then
   echo "found engines: $(grep -c '^\[engines\.' "$RINGER_DIR/config.toml") block(s) in config.toml"
 else
