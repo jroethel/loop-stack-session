@@ -74,7 +74,9 @@ skills/loop-improve/     Audit skill: read-only repo survey, converge selected f
 skills/loop-molt/        Molt skill: audit instruction prose against the live harness (protocol reference + drift ledger)
 skills/loop-plan/        Plan skill: brief to executor-agnostic task plan, with the optional rubix review
 skills/loop-drive/       Compiler/driver skill: wave derivation, routing, hazards, gates, launch UX, human-paced mode
-config/ringer/           Engine config: claude-zai wrapper (GLM flat-rate) and config.toml
+config/ringer/           Engine config: claude-zai wrapper (GLM flat-rate) and the config templates
+config/ringer/config.toml.template  Ringer engine config; rendered per host into ~/.config/ringer/config.toml
+config/host.env.template            Per-host parameters; first install copies it to gitignored config/host.env
 claude-md/fable.md       The managed CLAUDE.md block: Fable-specific footguns (effort cap, rerouting)
 install.sh               The only thing that touches ~/.claude and ~/.config; idempotent, no secrets
 principles.md            P1-P14 and C1-C8: every principle and critical-path choice, with provenance
@@ -93,7 +95,7 @@ diagrams/                PlantUML sources and renders (conversation evolution, r
 ```
 
 Idempotent.
-Symlinks every skill under `skills/` (default style: repo -> `~/.agents/skills/<name>`, with `~/.claude/skills/<name>` linking there), copies ringer config into `~/.config/ringer/` if absent, and maintains exactly one managed block in `~/.claude/CLAUDE.md`.
+Symlinks every skill under `skills/` (default style: repo -> `~/.agents/skills/<name>`, with `~/.claude/skills/<name>` linking there), renders ringer config from `config/ringer/config.toml.template` into `~/.config/ringer/config.toml` only when absent (a live config is never clobbered), and maintains exactly one managed block in `~/.claude/CLAUDE.md`.
 
 **Gotcha: the symlinks embed this repo's absolute path.**
 If you move this repo, every harness symlink breaks silently and the skills stop loading, with no error.
@@ -128,9 +130,19 @@ mkdir -p ~/.config/ringer && cp config.sample.toml ~/.config/ringer/config.toml
 
 Notes for using it with loop-stack:
 
-- This repo's `config/ringer/` ships a `claude-zai.sh` engine wrapper (GLM flat-rate via z.ai) and a `config.toml`; `./install.sh` copies them into `~/.config/ringer/` if absent, so run loop-stack's installer after (or instead of) step 2.
-- `loop-drive` shells out to `./ringer.py` in the ringer checkout, so keep the clone somewhere stable (here: `~/repos/ringer`).
+- This repo's `config/ringer/` ships a `claude-zai.sh` engine wrapper (GLM flat-rate via z.ai) and the `config.toml.template` the installer renders; `./install.sh` installs the wrapper and renders `~/.config/ringer/config.toml` only when absent, so run loop-stack's installer after (or instead of) step 2.
+- `loop-drive` shells out to `./ringer.py` in the ringer checkout, whose location is the parameter home's `LOOP_STACK_RINGER_ROOT` (default `~/repos/ringer`); set it in `config/host.env` if the clone lives elsewhere.
 - `./ringer.py install-agent` is what registers the ringer skill and its once-per-session nudge hooks; uninstall with `./ringer.py uninstall-agent`.
+
+## Multi-host
+
+Git push/pull is the supported reconciliation mechanism between the owner's hosts: each host installs via `git pull && ./install.sh && tests/run.sh`.
+Each host's specific values (ringer checkout path, version pin, skill style) live only in `config/host.env`, which is gitignored and created from `config/host.env.template` on first install; environment variables override the file.
+On a first run on a new host, `./install.sh` creates `config/host.env`; set `LOOP_STACK_SKILL_STYLE` there (or pass it on the command line) and re-run.
+A non-interactive first run with the style undeclared refuses by design rather than silently defaulting.
+Stale-config recovery: editing `config/host.env` does not re-render an existing `~/.config/ringer/config.toml`, so if the installer's doctor WARNS that config.toml engine bins do not exist, delete that file and re-run to re-render it for this host.
+Scoreboard posteriors stay host-local by design: routing numbers are not portable between hosts, git syncs the repo but never the evidence ledger, and each host re-earns its posteriors.
+This section supersedes backlog #16 ("multi-host support"); that item closes when this work ships.
 
 ## Naming and provenance
 
