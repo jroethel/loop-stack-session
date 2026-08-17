@@ -3,7 +3,7 @@
  "branch": "integration/packaging-loop",
  "pre_run_base": "ef94ded",
  "wave": "done",
- "state": "advisory-review",
+ "state": "done-awaiting-human-checkpoints",
  "waves_done": {
   "1": "5f063dc",
   "2": "cbb0f76",

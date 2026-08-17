@@ -12,7 +12,8 @@ Entries are chronological; BATCH and DEFAULT entries are the review obligation, 
 ## 2. [BATCH] Pin review: T3 collapsed into an orchestrator gate action
 
 - Decision: T3 (clean-room harness) is not dispatched to a worker; the orchestrator writes `scripts/clean-room.sh` verbatim from the source plan at the W3 gate, runs it for real, and commits on green.
-- Rationale: T3's sole deliverable is its own fully verbatim check file; a worker could only transcribe bytes that must match a golden copy, adding no information while adding a custody surface. All four criteria proofs (install, suite, #30 refusal, degraded probe) still execute unchanged, so no scope narrows.
+- Rationale: T3's sole deliverable is its own fully verbatim check file; a worker could only transcribe bytes that must match a golden copy, adding no information while adding a custody surface.
+  All four criteria proofs (install, suite, #30 refusal, degraded probe) still execute unchanged, so no scope narrows.
 - Reversal path: scoped W3 re-run as a dispatched ringer unit with golden-diff custody (taste reversal).
 
 ## 3. [DEFAULT] Step 7 execution-details question auto-taken
@@ -30,7 +31,8 @@ Entries are chronological; BATCH and DEFAULT entries are the review obligation, 
 ## 5. [BATCH] Spec-problem fix: sandbox guard in tests/repo-state/live.sh
 
 - Decision: `live.sh` gains an 8-line guard - SKIP (exit 0) when the checkout's origin is not a GitHub remote; the source plan's Task 3 section records the amendment.
-- Rationale: Task 3's clean-room harness was unsatisfiable as specified - `live.sh` hard-gates on mirrors plus a live `gh issue list`, but a clean-room clone's origin is a local path with no gh auth, and proof 3 is offline by design; the wave-1 worker independently flagged the same defect. The edit is confined to one criterion's satisfiability, leaves T3's produced contract (verbatim `clean-room.sh`) unchanged, is under 15 lines, and has zero blast radius on the primary checkout, where the origin is a GitHub remote and the guard never fires.
+- Rationale: Task 3's clean-room harness was unsatisfiable as specified - `live.sh` hard-gates on mirrors plus a live `gh issue list`, but a clean-room clone's origin is a local path with no gh auth, and proof 3 is offline by design; the wave-1 worker independently flagged the same defect.
+  The edit is confined to one criterion's satisfiability, leaves T3's produced contract (verbatim `clean-room.sh`) unchanged, is under 15 lines, and has zero blast radius on the primary checkout, where the origin is a GitHub remote and the guard never fires.
 - Reversal path: `git revert` of the guard commit on `integration/packaging-loop`.
 
 ## 6. [BATCH] Entry 5 reversed: the spec-problem attribution was wrong
@@ -38,3 +40,9 @@ Entries are chronological; BATCH and DEFAULT entries are the review obligation, 
 - Decision: the live.sh sandbox guard is reverted; the source plan's Task 3 amendment is rewritten to record the finding instead.
 - Rationale: the clean-room run's own output disproved entry 5 - `tests/run.sh` already skips `live.sh` when no authenticated gh CLI is present (its line 17), which is exactly the sandbox HOMEs' state, so both proofs passed via the pre-existing runner-level skip and the new guard never executed; keeping it would be dead code duplicating an existing mechanism on a wrong premise.
 - Reversal path: n/a - this IS the reversal of entry 5, exercised via its named path.
+
+## 7. Advisory terminal review recorded (loop-review ef94ded, non-blocking)
+
+- Spec axis: zero findings; both test teeth independently re-run by the reviewer (sweep PASS, install acceptance PASS).
+- Standards axis: one hard house-style breach (two multi-sentence lines in this journal, fixed in this commit) plus four judgement-call smells in code the plan mandates verbatim (Data Clumps on the three `LOOP_STACK_*` keys; Duplicated Code on the env-capture shape, the `~/repos/ringer` default literal in its three allowlisted homes, and the two stale-config heuristics sharing one intent).
+- Disposition: the smells are recorded here for the final human checkpoint, not patched - the source plan's "test code is verbatim" constraint overrides the baseline, and any refactor is post-ship backlog material.
