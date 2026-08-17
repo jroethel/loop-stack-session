@@ -73,3 +73,31 @@ Clean confirmations from Lens B (independent second route agreeing with the driv
 Decision: commit both `docs/plans/2026-08-16-reviewer-blacklist-plan.md` and this journal on `main` with the plain message `plan: reviewer-prompt blacklist (#31)`; do not push (push is outward-facing, the owner's to fire).
 Rationale: owner instruction #6 pre-authorizes the commit on main; local commit is reversible (`git reset`), push is held for the owner.
 Reversal: `git reset --soft HEAD~1` (uncommitted) or `git revert` (cheap).
+
+---
+
+# Drive phase (loop-drive under auto, 2026-08-16)
+
+Run: `/loop-drive docs/plans/2026-08-16-reviewer-blacklist-plan.md`, chain autonomy `auto`.
+Owner pre-delegations for this run: T5b live probe (run it) and T6 issue closes (fire after full suite green); both remain STOP-class and are journaled as owner-delegated when fired.
+
+## J8 - Drive compile dispatched and pin-reviewed `[gate:DEFAULT]`
+
+Decision: compiled the orchestration plan via a fresh-context drive-compile dispatch (Opus); pin review accepted it with two launch-time transport fixes - expand the T2/T3 comment sketch into full manifest tasks, and convert the sketched TOML/env-var manifest to ringer's real JSON schema (checks run with cwd = the task worktree, no substitution variables, `expect_files` empty in worktrees mode, patches exported to absolute paths).
+Check hardening folded in at the same time: every home check byte-diffs the extracted block against the orchestrator-held golden (closing the compile's Section 4 overstatement), and scope checks use `git status --porcelain` so untracked files cannot slip past `git diff --name-only`.
+The compile's four spec observations are recorded: the suite count is gh-auth-dependent (pass condition is 0 failed, not a fixed 46); the T5b transcript read is load-bearing under a sandboxed reviewer, not merely corroborating; the inode leg degrades to a no-op if no skill links exist on the host; the T4/T5a custody self-reference is closed by the orchestrator golden byte-diff.
+Rationale: the skill mandates the fresh-context compile; the fixes are transport mechanics and check strengthening, not changes to what any unit produces.
+Reversal: recompile (cheap).
+
+## J9 - Step 7 execution-details question auto-taken `[gate:DEFAULT]`
+
+Decision: nothing selected - launch immediately; the dashboard, dry run, and watch points are not surfaced live.
+Lint still runs as pre-flight, and the watch points remain documented in the _loop plan Section 9.
+Rationale: DEFAULT gate under auto with the owner not present; the declared default is launch immediately.
+Reversal: n/a - informational.
+
+## J10 - Engine ask and exploration lane skipped `[gate:BATCH]`
+
+Decision: every worker unit runs glm-5.2 on the claude-zai engine per the routing table's posterior; no exploration task is assigned this run.
+Rationale: the owner delegated routing to the plan's evidence chain, and auditioning an untested model on a guard-rail stream deviates from the reviewed routing table for no run-level benefit.
+Reversal: audition an exploration candidate on a future docs wave (a lean, not a fact).
