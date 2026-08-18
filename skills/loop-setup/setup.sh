@@ -175,9 +175,16 @@ if [ ! -f scripts/migrate-tracker.sh ]; then
   echo "installed scripts/migrate-tracker.sh"
 fi
 
+LINT="$REPO/scripts/lifecycle-lint.sh"
+[ -x "$LINT" ] || fail "lifecycle-lint.sh not found or not executable: $LINT"
+if [ ! -f scripts/lifecycle-lint.sh ]; then
+  mkdir -p scripts; cp "$LINT" scripts/lifecycle-lint.sh && chmod +x scripts/lifecycle-lint.sh
+  echo "installed scripts/lifecycle-lint.sh"
+fi
+
 # Refresh vendored scripts that have drifted from loop-stack's current copies (content compare via
 # cmp -s, no version stamps). Each drifted file is offered on its own; declining leaves it untouched.
-for pair in "gen-mirrors.sh:$GEN" "tracker.sh:$TRK" "graduate-parking.sh:$GRAD" "migrate-tracker.sh:$MIG"; do
+for pair in "gen-mirrors.sh:$GEN" "tracker.sh:$TRK" "graduate-parking.sh:$GRAD" "migrate-tracker.sh:$MIG" "lifecycle-lint.sh:$LINT"; do
   name="${pair%%:*}"; src="${pair#*:}"
   [ -f "scripts/$name" ] || continue
   cmp -s "scripts/$name" "$src" && continue

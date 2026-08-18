@@ -13,6 +13,9 @@ L="$(mktemp -d)"; trap 'rm -rf "$L"' EXIT
 ( cd "$L" && git init -q )
 ( cd "$L" && LOOP_TRACKER_ANSWER=local "$SETUP" </dev/null ) || fail "local setup exited non-zero"
 [ -x "$L/scripts/graduate-parking.sh" ] || fail "setup did not install an executable scripts/graduate-parking.sh"
+[ -x "$L/scripts/lifecycle-lint.sh" ] || fail "setup did not install an executable scripts/lifecycle-lint.sh"
+cmp -s "$L/scripts/lifecycle-lint.sh" "$REPO/scripts/lifecycle-lint.sh" \
+  || fail "installed lifecycle-lint.sh does not match loop-stack's copy"
 
 cat > "$L/brief.md" <<'EOS'
 # Brief
@@ -32,9 +35,12 @@ printf '%s\n' "$grad_out" | grep -q "Add a widget cache" \
 printf '\n# LOCAL DRIFT MARKER\n' >> "$L/scripts/tracker.sh"
 cmp -s "$L/scripts/tracker.sh" "$REPO/scripts/tracker.sh" \
   && fail "test setup error: drift marker did not change tracker.sh"
+printf '\n# LOCAL DRIFT MARKER\n' >> "$L/scripts/lifecycle-lint.sh"
 ( cd "$L" && LOOP_ASSUME_YES=1 "$SETUP" </dev/null ) || fail "re-run (assent) setup exited non-zero"
 cmp -s "$L/scripts/tracker.sh" "$REPO/scripts/tracker.sh" \
   || fail "assented refresh did not restore scripts/tracker.sh to loop-stack's copy"
+cmp -s "$L/scripts/lifecycle-lint.sh" "$REPO/scripts/lifecycle-lint.sh" \
+  || fail "assented refresh did not restore scripts/lifecycle-lint.sh to loop-stack's copy"
 
 # Drift again, re-run with decline -> the drift stays (file NOT restored).
 printf '\n# LOCAL DRIFT MARKER 2\n' >> "$L/scripts/tracker.sh"

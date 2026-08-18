@@ -46,8 +46,9 @@ grep -q '^Remote: ssh://git@gitlab.code.rit.edu:2222/university-advancement/crm/
   || fail "config did not record the real remote URL"
 grep -q '^backlog-group: university-advancement$' "$A/config/repo-state.md" \
   || fail "config did not derive backlog-group from the remote path (criterion 6)"
-grep -q '^template-version: 2$' "$A/config/repo-state.md" \
-  || fail "gitlab render carries no template-version 2 stamp"
+TV="$(grep -E '^template-version:' "$REPO/config/repo-state.template.md" | head -1 | sed -E 's/^template-version:[[:space:]]*//; s/[[:space:]]*$//')"
+grep -q "^template-version: $TV\$" "$A/config/repo-state.md" \
+  || fail "gitlab render carries no current template-version stamp ($TV)"
 grep -q '## Local tracker' "$A/config/repo-state.md" \
   && fail "gitlab render kept the Local tracker section"
 grep -qi 'local tracker section governs local mode' "$A/config/repo-state.md" \

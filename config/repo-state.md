@@ -3,7 +3,7 @@
 This file is the single schema source for where each repo-state lane lives and how to read or mirror it.
 The tracker backend (github, gitlab, or local) is declared in the `tracker:` key below.
 
-template-version: 2
+template-version: 3
 
 Remote: https://github.com/jroethel/loop-stack-session.git
 tracker: github
@@ -55,7 +55,7 @@ Exactly one status is active at a time; `tracker.sh status` swaps them, and the 
 ## Archive and graduation rules
 
 1. A plan is done when all items are complete (archive automatically), or when the remaining items are cleanly rewritten into a surviving plan (archive offered).
-1a. A plan-set is archivable when it is superseded (a strictly newer live plan-set exists by date) and no OPEN issue links its topic stem; `scripts/lifecycle-lint.sh .` flags these (class a) plus orphaned briefs (b), open issues over archived plans (c), and closed issues under live plans (d).
+1a. A plan-set is archivable when it is superseded (a strictly newer live plan-set exists by date) and no OPEN issue links its topic stem; `scripts/lifecycle-lint.sh .` flags these (class a) plus orphaned briefs (b), open issues over archived plans (c), closed issues under live plans (d), and unresolved context-map pointers (e).
 2. A brief archives when its plan archives; they travel together.
 3. Abandoned work archives only when offered and accepted.
 4. Parking-lot graduation is automatic at brief-commit time.

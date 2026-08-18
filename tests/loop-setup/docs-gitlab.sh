@@ -78,8 +78,9 @@ done
 grep -qi 'glab issue view' "$IMP" || fail "loop-improve does not name the gitlab issue-read command"
 grep -qi 'glab issue view' "$REV" || fail "loop-review does not name the gitlab issue-read command"
 
-# this repo's own config is current
-grep -q '^template-version: 2$' "$CFG" || fail "config/repo-state.md is not at template-version 2"
+# this repo's own config is current (expected version derived from the template, never pinned)
+TV="$(grep -E '^template-version:' "$TPL" | head -1 | sed -E 's/^template-version:[[:space:]]*//; s/[[:space:]]*$//')"
+grep -q "^template-version: $TV\$" "$CFG" || fail "config/repo-state.md is not at the template's current version ($TV)"
 grep -q '^tracker: github$' "$CFG"     || fail "this repo's tracker mode changed"
 
 # house style: no em dash anywhere this task touched
