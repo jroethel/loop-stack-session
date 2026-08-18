@@ -89,6 +89,8 @@ The ratified lifecycle policy (the handoff policy plus user amendments plus Rubi
   Restart context: `fixing-agent-errors.md` and `model-routing-ringer-notes.{local,remote}.md` are raw pasted transcripts at repo root; indexed as transient lines by #34; decide archive vs keep at the next molt or archive gate.
 - Cross-repo knowledge layer above per-repo context maps
   Restart context: named in the 2026-08-17 handoff as explicitly not-#34; no backlog issue exists yet; would federate per-repo maps or a shared QMD layer.
+- Usage floor via harness hook (not a getter script)
+  Restart context: 2026-08-18 brainstorm; a PostToolUse hook on Read appends map-pointee accesses to a gitignored log; combined with the prune-time git grep it forms a stronger keep-signal (the two miss differently) but never a retire-signal (double absence is still absence); requires amending the map's "no live counter" sentence; per-host, misses Bash reads and non-CC engines; a repo getter script was considered and rejected (breaks "any agent, no tooling", measures compliance not usage).
 
 ## Out of scope
 
