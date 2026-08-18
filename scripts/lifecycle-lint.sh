@@ -7,6 +7,7 @@
 #   c  an OPEN issue still referencing an ARCHIVED plan stem (completed work, open ticket)
 #   d  a CLOSED issue referenced by a LIVE plan (local backend only: tracker.sh list exposes
 #      open issues only, so closed issues are enumerable just by scanning docs/issues/*.md)
+#   e  every backticked in-repo pointer in config/context-map.md's index resolves (test -e)
 # Classes a (supersession half) and b are pure filesystem and always run. The issue-link
 # checks query the tracker seam and run only when `tracker.sh mode get` succeeds; absent a
 # declared mode they are skipped silently, so the lint works in a bare repo with no backend.
@@ -155,6 +156,25 @@ if [ "$mode" = local ]; then
       lint d "#$num" "closed issue referenced by live plan stem '$stem'"
     done
   done
+fi
+
+# (e) in-repo context-map pointer resolves - pure filesystem, runs only when a map exists, so the
+# lint stays portable across loop-stack repos. Scans only the "## The index" section, so backticked
+# prose in the policy header (e.g. `MEMORY.md`, a grep example) is never mistaken for a pointer.
+MAP=config/context-map.md
+if [ -f "$MAP" ]; then
+  # Resolve only filesystem-style in-repo pointers; skip verbs, externals, URI schemes, prose words.
+  while IFS= read -r tok; do
+    case "$tok" in
+      *' '*)         continue ;;  # a retrieval verb, not a path
+      *'://'*)       continue ;;  # a URI scheme (e.g. qmd://...), not a filesystem path
+      '~'*|/*|http*) continue ;;  # external or absolute - not an in-repo pointer
+      *.*|*/*)       ;;           # has an extension or a slash: treat as a path
+      *)             continue ;;  # bare backticked prose word
+    esac
+    p="${tok%%:*}"               # drop any :line-range suffix
+    [ -e "$p" ] || lint e "$MAP" "in-repo pointer '$tok' does not resolve"
+  done < <(sed -n '/^## The index/,$p' "$MAP" | grep -oE '`[^`]+`' | sed 's/`//g')
 fi
 
 exit "$found"

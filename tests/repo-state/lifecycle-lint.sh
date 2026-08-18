@@ -34,5 +34,27 @@ rm "$SB/docs/plans/2026-08-04-old-thing-plan.md" "$SB/docs/briefs/2026-08-01-orp
 "$L" "$SB" >/dev/null; rc=$?
 [ "$rc" -eq 0 ] || fail "lint flagged a clean tree (rc=$rc)"
 
+# (e) context-map pointer resolution: a broken in-repo pointer trips class-e; header prose is spared
+mkdir -p "$SB/config"
+cat > "$SB/config/context-map.md" <<'MAP'
+# Context map
+Header prose naming `MEMORY.md` must be ignored - it is not a repo file.
+## The index
+- Real pointer - `docs/plans/` - resolves.
+- Broken pointer - `docs/nope/ghost.md` - does not resolve.
+MAP
+out="$("$L" "$SB")"; rc=$?
+[ "$rc" -eq 1 ] || fail "class-e: lint did not exit 1 with a broken map pointer (rc=$rc)"
+printf '%s\n' "$out" | grep -q '^LINT e .*ghost.md' || fail "class-e: did not flag the broken pointer"
+printf '%s\n' "$out" | grep -q 'MEMORY.md' && fail "class-e: false-positived on header prose MEMORY.md"
+# all pointers resolve -> class-e clean
+cat > "$SB/config/context-map.md" <<'MAP'
+# Context map
+## The index
+- Real pointer - `docs/plans/` - resolves.
+MAP
+"$L" "$SB" >/dev/null; rc=$?
+[ "$rc" -eq 0 ] || fail "class-e: lint flagged a map whose pointers all resolve (rc=$rc)"
+
 [ ! -s "$GHLOG" ] || { cat "$GHLOG"; fail "lint leaked to a live tracker with no mode declared"; }
 echo "PASS: lifecycle-lint flags a+b, spares newest cycle, exit-codes right, no live-tracker leak"
