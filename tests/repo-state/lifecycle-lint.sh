@@ -56,5 +56,31 @@ MAP
 "$L" "$SB" >/dev/null; rc=$?
 [ "$rc" -eq 0 ] || fail "class-e: lint flagged a map whose pointers all resolve (rc=$rc)"
 
+# (c) idea-lane exemption: an open `idea` issue citing an archived stem is NOT a class-c finding;
+# a non-idea open issue citing it still is (local backend, real tracker.sh against the sandbox).
+# The GHLOG no-leak assertion below stays valid: everything before this point ran with no mode
+# declared, and the local backend added here never shells out to gh.
+printf 'tracker: local\n' > "$SB/config/repo-state.md"
+mkdir -p "$SB/docs/issues"
+echo "# Old thing plan" > "$SB/docs/archive/2026-08-04-old-thing-plan.md"
+cat > "$SB/docs/issues/0007-parked-idea.md" <<'ISS'
+number: 7
+title: parked idea citing old-thing
+state: open
+labels: idea
+updated: 2026-08-18T00:00:00Z
+ISS
+cat > "$SB/docs/issues/0008-live-ticket.md" <<'ISS'
+number: 8
+title: live ticket citing old-thing
+state: open
+labels:
+updated: 2026-08-18T00:00:00Z
+ISS
+out="$("$L" "$SB")"; rc=$?
+[ "$rc" -eq 1 ] || fail "class-c: lint did not exit 1 with a non-idea citing issue (rc=$rc)"
+printf '%s\n' "$out" | grep -q '^LINT c #8' || fail "class-c: did not flag the non-idea issue"
+printf '%s\n' "$out" | grep -q '^LINT c #7' && fail "class-c: flagged the idea-lane issue (should be exempt)"
+
 [ ! -s "$GHLOG" ] || { cat "$GHLOG"; fail "lint leaked to a live tracker with no mode declared"; }
 echo "PASS: lifecycle-lint flags a+b, spares newest cycle, exit-codes right, no live-tracker leak"

@@ -4,7 +4,8 @@
 #   a  superseded+unlinked plan-set: a live docs/plans/*-plan{,_loop}.md whose date is older
 #      than the newest live plan-set, not archived, and referenced by no OPEN issue
 #   b  orphaned brief: a live docs/briefs/*-brief.md whose plan already sits in docs/archive/
-#   c  an OPEN issue still referencing an ARCHIVED plan stem (completed work, open ticket)
+#   c  an OPEN issue still referencing an ARCHIVED plan stem (completed work, open ticket);
+#      backlog `idea` issues are exempt - parked ideas cite archived stems by design
 #   d  a CLOSED issue referenced by a LIVE plan (local backend only: tracker.sh list exposes
 #      open issues only, so closed issues are enumerable just by scanning docs/issues/*.md)
 #   e  every backticked in-repo pointer in config/context-map.md's index resolves (test -e)
@@ -87,14 +88,17 @@ if [ -n "$mode" ] && [ "$mode" != local ]; then
         else if (depth > 0) obj = obj c
       }
     }
-    function emit(s,  m, num, title) {
+    function emit(s,  m, num, title, lab) {
       if (!match(s, /"number"[ \t]*:[ \t]*[0-9]+/)) return
       m = substr(s, RSTART, RLENGTH); gsub(/[^0-9]/, "", m); num = m
       title = ""
       if (match(s, /"title"[ \t]*:[ \t]*"[^"]*"/)) {
         m = substr(s, RSTART, RLENGTH); gsub(/^"[^"]*"[ \t]*:[ \t]*"|"$/, "", m); title = m
       }
-      print num "\t" title
+      # third column: backlog-lane flag from the nested label objects; a backend whose list
+      # omits labels reads as "-", failing open to pre-exemption behavior
+      lab = (s ~ /"name"[ \t]*:[ \t]*"idea"/) ? "idea" : "-"
+      print num "\t" title "\t" lab
     }
   ')"; then
     echo "lifecycle-lint: tracker.sh list failed - issue-link checks skipped" >&2
@@ -102,18 +106,22 @@ if [ -n "$mode" ] && [ "$mode" != local ]; then
   fi
 fi
 
-# open_issue_refs <stem>: prints each OPEN issue number whose title (remote) or title/body
-# (local, straight from the files) references the stem
+# open_issue_refs <stem> [nonidea]: prints each OPEN issue number whose title (remote) or title/body
+# (local, straight from the files) references the stem; "nonidea" excludes backlog `idea` issues
 open_issue_refs() {
-  local stem="$1" f num state
+  local stem="$1" filter="${2:-}" f num state
   if [ "$mode" = local ]; then
     for f in "$ISSUES"/*.md; do
       state="$(fm "$f" state)"; [ "$state" = open ] || continue
       grep -qF "$stem" "$f" || continue
+      if [ "$filter" = nonidea ]; then
+        case ",$(fm "$f" labels | tr -d ' ')," in *,idea,*) continue ;; esac
+      fi
       num="$(fm "$f" number)"; [ -n "$num" ] && printf '%s\n' "$num"
     done
   else
-    printf '%s\n' "$open_titles" | awk -F'\t' -v s="$stem" 'index($2, s) { print $1 }'
+    printf '%s\n' "$open_titles" | awk -F'\t' -v s="$stem" -v flt="$filter" \
+      'index($2, s) && !(flt == "nonidea" && $3 == "idea") { print $1 }'
   fi
 }
 
@@ -136,10 +144,12 @@ for f in "$BRIEFS"/*-brief.md; do
   lint b "$BRIEFS/$b" "matching plan '$stem' is already in $ARCHIVE"
 done
 
-# (c) archived plan still referenced by an open issue
+# (c) archived plan still referenced by an open issue. Backlog `idea` issues are exempt: parked
+# follow-on ideas and the graduation template's Source-brief pointer cite archived stems by
+# design, so only an Issues-lane (non-idea) reference signals completed work with an open ticket.
 if [ -n "$mode" ]; then
   for stem in $archived_stems; do
-    for num in $(open_issue_refs "$stem"); do
+    for num in $(open_issue_refs "$stem" nonidea); do
       lint c "#$num" "open issue still references archived plan stem '$stem' (close via tracker.sh done with evidence)"
     done
   done
