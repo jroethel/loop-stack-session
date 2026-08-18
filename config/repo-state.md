@@ -73,8 +73,10 @@ Restart context: <one line>
 
 ## Context map
 
-- Molt evaluation source: `docs/memos/2026-08-15-pcs-consolidated-recommendations.md` - the pcs verdict and the second axis for molt constraint re-derivation; its protocol is vendored at `skills/loop-molt/references/protocol.md`, its drift ledger at `docs/molt-ledger.md`.
-- Research corpus: `~/create/research/research/` (outside the repo; `~/create/pcs/` renamed 2026-08-16) - the 13 digests behind the 2026-08 evaluation; working docs archived in `~/create/research/archive/`.
+The repo's orientation index lives in `config/context-map.md`: every piece of durable,
+non-derivable memory a fresh agent needs, one pointer each, under a full lifecycle policy.
+This file remains the definitive list of convention and schema files; the context map is the
+definitive index of memory pointers.
 
 ## Scope rule
 
