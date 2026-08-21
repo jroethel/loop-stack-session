@@ -13,6 +13,8 @@ IMP="$REPO/skills/loop-improve/SKILL.md"
 REV="$REPO/skills/loop-review/SKILL.md"
 CFG="$REPO/config/repo-state.md"
 TPL="$REPO/config/repo-state.template.md"
+CONV="$REPO/config/conventions.md"
+CONVTPL="$REPO/config/conventions.template.md"
 
 # criterion 11: wayfinder no longer states a github-only requirement
 grep -q 'Wayfinder requires `tracker: github`' "$WF" \
@@ -30,7 +32,7 @@ grep -q 'wayfinder requires `tracker: github`' "$CFG" \
   && fail "config/repo-state.md still states wayfinder is github-only"
 grep -q 'Migration to GitHub' "$CFG" \
   && fail "config/repo-state.md still describes migration as GitHub-only"
-grep -qi 'gitlab' "$CFG" || fail "config/repo-state.md never mentions gitlab"
+grep -qi 'gitlab' "$CONV" || fail "conventions.md never mentions gitlab"
 
 # the second github-only assertion (the numbering limitation) is widened in both files
 grep -q 'shared or branched work should use `tracker: github`' "$CFG" \
@@ -39,13 +41,13 @@ grep -q 'shared or branched work should use `tracker: github`' "$TPL" \
   && fail "the template still tells shared work to use github only"
 
 # the config round-trips the v2 template: the autonomy-default prose survives a render
-grep -q 'autonomy-default' "$TPL" \
-  || fail "the template lacks the autonomy-default paragraph (a v2 re-render would silently drop it from the config)"
-grep -q 'autonomy-default' "$CFG" || fail "config/repo-state.md lost its autonomy-default paragraph"
+grep -q 'autonomy-default' "$CONVTPL" \
+  || fail "the conventions template lacks the autonomy-default paragraph (a re-render would silently drop it)"
+grep -q 'autonomy-default' "$CONV" || fail "conventions.md lost its autonomy-default paragraph"
 
-# the sweep's root exclusions are declared where the config claims to be the definitive list
-grep -q 'CONTRIBUTING.md' "$TPL" || fail "the template does not declare the sweep's root exclusions"
-grep -q 'CONTRIBUTING.md' "$CFG" || fail "config/repo-state.md does not declare the sweep's root exclusions"
+# the sweep's root exclusions are declared where the conventions doc claims to be the definitive list
+grep -q 'CONTRIBUTING.md' "$CONVTPL" || fail "the conventions template does not declare the sweep's root exclusions"
+grep -q 'CONTRIBUTING.md' "$CONV" || fail "conventions.md does not declare the sweep's root exclusions"
 
 # loop-setup SKILL.md documents all three modes and points at the triage reference
 for w in github gitlab local; do
@@ -84,7 +86,7 @@ grep -q "^template-version: $TV\$" "$CFG" || fail "config/repo-state.md is not a
 grep -q '^tracker: github$' "$CFG"     || fail "this repo's tracker mode changed"
 
 # house style: no em dash anywhere this task touched
-for f in "$SK" "$REF" "$WF" "$CFG" "$TPL"; do
+for f in "$SK" "$REF" "$WF" "$CFG" "$TPL" "$CONV" "$CONVTPL"; do
   grep -q $'—' "$f" && fail "em dash found in $f (house style forbids it)"
 done
 

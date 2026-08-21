@@ -5,6 +5,8 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$HERE/../.." && pwd)"
 CFG="$REPO/config/repo-state.md"
 TPL="$REPO/config/repo-state.template.md"
+CONV="$REPO/config/conventions.md"
+CONVTPL="$REPO/config/conventions.template.md"
 CLAUDEMD="$REPO/CLAUDE.md"
 GI="$REPO/.gitignore"
 fail() { echo "FAIL: $1" >&2; exit 1; }
@@ -18,11 +20,8 @@ for lane in Roadmap Issues Backlog Handoffs "Chain state" "Batch reviews" Archiv
 done
 # chain-state is gitignored runtime state
 grep -q 'docs/chain-state.md' "$GI" || fail ".gitignore does not exclude docs/chain-state.md"
-# scope rule: the active stream and elevation limits are declared, in template and config alike
-grep -Eqi '## *Scope rule' "$TPL" || fail "template missing the Scope rule section"
-grep -Eqi '## *Scope rule' "$CFG" || fail "config missing the Scope rule section (active stream / elevation limits)"
-# "where I left off" degrades to git, not to nothing
-grep -Eqi 'git (log|status)' "$CFG" || fail "Handoffs lane missing the git fallback for 'where I left off'"
+# scope rule: the active stream and elevation limits are declared, in the doctrine doc
+grep -Eqi '## *Scope rule' "$CONV" || fail "conventions.md missing the Scope rule section"
 grep -q 'ROADMAP.md'           "$CFG" || fail "roadmap home not declared"
 grep -q 'ISSUES.md'            "$CFG" || fail "ISSUES.md mirror not declared"
 grep -q 'BACKLOG.md'           "$CFG" || fail "BACKLOG.md mirror not declared"
@@ -37,9 +36,11 @@ grep -Eqi '## *Local tracker' "$TPL" || fail "template missing the Local tracker
 grep -qi 'cross-repo idea search' "$TPL" || fail "template missing the cross-repo-search disclosure"
 grep -qi 'wayfinder requires' "$TPL"     || fail "template missing the wayfinder-requires-github disclosure"
 grep -qi 'single linear writer' "$TPL"   || fail "template missing the single-linear-writer numbering disclosure"
-grep -qi 'idea'                "$CFG" || fail "the 'idea' backlog label not documented"
-grep -Eqi '## *Archive and graduation' "$CFG" || fail "archive/graduation rules section missing"
-grep -qi 'Source brief:'       "$CFG" || fail "graduated-item issue template (Source brief/Restart) missing"
+# "where I left off" degrades to git, not to nothing
+grep -Eqi 'git (log|status)' "$CONV" || fail "Handoffs lane missing the git fallback for 'where I left off'"
+grep -qi 'idea'                "$CONV" || fail "the 'idea' backlog label not documented"
+grep -Eqi '## *Archive and graduation' "$CONV" || fail "archive/graduation rules section missing"
+grep -qi 'Source brief:'       "$CONV" || fail "graduated-item issue template (Source brief/Restart) missing"
 [ -f "$CLAUDEMD" ] || fail "repo CLAUDE.md missing"
 grep -q 'config/repo-state.md' "$CLAUDEMD" || fail "CLAUDE.md pointer to config/repo-state.md missing"
 echo "PASS: config/repo-state.md and CLAUDE.md pointer complete"
