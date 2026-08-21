@@ -2,7 +2,8 @@
 
 This file is the machine surface: the line-anchored keys and the Lanes table that parsers read.
 Render it into `config/repo-state.md` by replacing the placeholder below with the repo's remote URL.
-Mode-invariant doctrine lives in the sibling `config/conventions.md`; the Local tracker section governs local mode.
+The tracker backend (github, gitlab, or local) is declared in the `tracker:` key below; the Local tracker section governs local mode.
+Mode-invariant doctrine lives in the sibling `config/conventions.md`.
 
 template-version: 4
 
