@@ -54,7 +54,7 @@ In this order:
 
 ## Issue body pointer-back footer
 
-Every filed issue body ends with the graduated-item template shape from `config/repo-state.md`, adapted for import.
+Every filed issue body ends with the graduated-item template shape from `config/conventions.md`, adapted for import.
 The footer is the verbatim item prose, then a `---` rule, then three metadata lines.
 
 ```

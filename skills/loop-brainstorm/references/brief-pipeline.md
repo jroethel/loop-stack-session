@@ -67,7 +67,7 @@ On an accepted commit, graduate the brief's Parking lot into backlog issues.
 This contract is shared by loop-brainstorm and loop-improve and lives only here; each caller invokes it from its own terminal step.
 
 - **Preview first.** Announce the parked-item count and each item's derived title, and ask for assent before creating anything.
-- **Invoke on assent.** Run `scripts/graduate-parking.sh <brief-path>`. It parses the `## Parking lot` section and opens one `idea`-labeled issue per parked item, body built from the graduated-item template in `config/repo-state.md`.
+- **Invoke on assent.** Run `scripts/graduate-parking.sh <brief-path>`. It parses the `## Parking lot` section and opens one `idea`-labeled issue per parked item, body built from the graduated-item template in `config/conventions.md`.
 - **Parking-lot bullet shape.** Each parked item is one bullet whose first sentence is the derived issue title and MUST be period-free and filename-free: graduate-parking.sh truncates the title at the first dot, so a leading `tracker.sh` or `config/repo-state.md` self-truncates. A `Restart context:` continuation line carries what a later session needs to pick the item back up.
 - **Verbose announce.** Each created issue is announced with its number and title.
 - **Reverse.** Undo a graduated issue with `scripts/tracker.sh close <num>` (backend-agnostic; works in either tracker mode).

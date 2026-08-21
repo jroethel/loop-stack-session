@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Graduate parked items from a brief's "## Parking lot" section into backlog issues.
-# Resolves config/repo-state.md (the template source) from the caller's cwd repo, the same
-# convention skills/loop-auto/loop-auto.sh uses - never from this script's own location.
+# Resolves config/repo-state.md (the conforming-repo marker it checks for) from the caller's cwd
+# repo, the same convention skills/loop-auto/loop-auto.sh uses - never from this script's own
+# location. The graduated-item template whose body shape this mirrors lives in config/conventions.md.
 set -uo pipefail
 
 fail() { echo "graduate-parking: $1" >&2; exit 1; }
@@ -10,9 +11,9 @@ fail() { echo "graduate-parking: $1" >&2; exit 1; }
 BRIEF="$1"
 [ -f "$BRIEF" ] || fail "brief not found: $BRIEF (resolved from caller cwd)"
 
-# Template source lives in the caller's repo, resolved against cwd like loop-auto.sh.
+# The conforming-repo marker lives in the caller's repo, resolved against cwd like loop-auto.sh.
 REPO_STATE="config/repo-state.md"
-[ -f "$REPO_STATE" ] || fail "template source missing: $REPO_STATE (resolve from caller cwd, not script location)"
+[ -f "$REPO_STATE" ] || fail "conforming-repo marker missing: $REPO_STATE (resolve from caller cwd, not script location)"
 
 TODAY="$(date +%Y-%m-%d)"
 DRY=0
@@ -67,7 +68,7 @@ while IFS=$'\t' read -r prose restart; do
   title="${prose%%.*}"
   [ -n "$title" ] || title="$prose"
   [ -n "$restart" ] || restart="n/a"
-  # Body shape mirrors the graduated-item template in config/repo-state.md.
+  # Body shape mirrors the graduated-item template in config/conventions.md.
   body="$(printf '%s\n---\nSource brief: %s\nGraduated: %s\nRestart context: %s' \
     "$prose" "$BRIEF" "$TODAY" "$restart")"
   if [ "$DRY" = "1" ]; then

@@ -1,6 +1,6 @@
 ---
 name: loop-setup
-description: Declare a repo's tracker mode, write its repo-state map (config/repo-state.md), and run the mode-appropriate finalize. Run once per repo, safe to re-run.
+description: Declare a repo's tracker mode, write its repo-state map (config/repo-state.md) and conventions (config/conventions.md), and run the mode-appropriate finalize. Run once per repo, safe to re-run.
 ---
 
 # loop-setup
@@ -24,8 +24,8 @@ That line acknowledges the deliberate mode-versus-remote split and silences setu
 
 ## What it does
 
-1. Writes `config/repo-state.md` by rendering `config/repo-state.template.md`.
-   The template is the single schema source; never hand-copy a second schema.
+1. Writes `config/repo-state.md` and `config/conventions.md` by rendering `config/repo-state.template.md` and `config/conventions.template.md` as one versioned unit.
+   The templates are the single schema source; never hand-copy a second schema.
 2. Declares the tracker mode - it does NOT infer it from `git remote`.
    If `config/repo-state.md` already carries a `tracker:` key, setup skips the question entirely (idempotent, never re-asks the mode).
    When the declared mode disagrees with a github or gitlab remote, setup prints "declared tracker: X, but the remote is Y" and offers a declinable switch to the remote's backend.
