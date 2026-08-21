@@ -120,3 +120,15 @@ Chronological; BATCH and DEFAULT entries are the review obligation, ASK/STOP are
     fast-forward merged to main at 2671f4c; worker worktree pruned. The two [judgment]
     checkpoints (placement table, handoff runnability) remain open for the human end review
     per entry 8.
+
+14. BATCH (final-wave advisory terminal review, /loop-review 80fe090)
+    - Decision: ran the two-axis advisory review post-advancement; both axes converged on one
+      finding (placement-table pipe misalignment, traced to the plan's own table, copied
+      faithfully by the executor). Fixed in all three files (both conventions files + the plan
+      source), affected suites re-run green, committed as cefb970. Standards axis also noted
+      the conventions.md / conventions.template.md byte-identical pair as judgment-call
+      Duplicated Code; recorded, no change - the pair is the repo's deliberate template
+      convention and reconcile.sh asserts the verbatim copy.
+    - Rationale: advisory gate is BATCH per loop-drive; the fix was a two-space edit on the
+      exact artifact the human checkpoint reviews.
+    - Reversal: cheap - `git revert cefb970`.
