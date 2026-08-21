@@ -6,8 +6,8 @@ This file is the doctrine half of the config pair: `config/repo-state.md` is the
 ## Config placement
 
 | Artifact               | Audience            | Rendered / lives         | Holds                      |
-| ---                    | ---                 | ---                       | ---                        |
-| config/repo-state.md   | parsers (machine)   | repo-state.template.md    | keys + Lanes table         |
+| ---                    | ---                 | ---                      | ---                        |
+| config/repo-state.md   | parsers (machine)   | repo-state.template.md   | keys + Lanes table         |
 | config/conventions.md  | agents (doctrine)   | conventions.template.md  | this table + all doctrine  |
 | config/context-map.md  | agents (orient)     | living; #34 policy       | one pointer per memory     |
 | config/host.env        | this host (machine) | template; gitignored     | host-local env values      |
