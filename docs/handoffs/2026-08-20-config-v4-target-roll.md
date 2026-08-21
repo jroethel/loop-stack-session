@@ -8,11 +8,11 @@ Each repo is an independent, resumable unit: roll them in any order, one at a ti
 
 | Repo              | Current version | Status  |
 | ---               | ---             | ---     |
-| vaultwise         | v2              | pending |
+| vaultwise         | v2              | done    |
 | pokemine          | v2              | done    |
 | iamawriter        | v2              | done    |
-| substack-scraper  | v2              | pending |
-| ai-benchmark      | none            | pending |
+| substack-scraper  | v2              | done    |
+| ai-benchmark      | none            | done    |
 
 ## Per-repo re-render step
 
