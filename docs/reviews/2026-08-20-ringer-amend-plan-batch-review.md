@@ -70,3 +70,32 @@ Every finding accepted (parent directive "apply"), none dismissed.
 
 Plan revised incorporating all nine findings; loop-plan Step 5 self-review re-run against the revised plan.
 The blocker (F1) reshaped the task list: seam-2 aggregation now spans Task 2 (JSONL math) and Task 3 (the `models` read-model path); display, triage, runbook, and upstream renumber to Tasks 4-7.
+
+### Wave 2 gate - passed
+- T2 (opus, code-feature, pin:risk): validator pass 7/7 at high effort with an independent /tmp synthetic probe; suite 261 OK.
+- Two spec-sanctioned deviations verified honest: list-shaped breakdown lookup helper; --engine amendment passthrough.
+- Merged 2228bc7 (fast-forward) into amend-command; receipt 3113e8f; worktree pruned.
+
+### Wave 3 gate - passed
+- T3 (sonnet, code-feature): validator pass 10/10; live sandbox re-derived; stale-DB probe green; suite 262 OK.
+- Real-log 147->149 growth attributed to the concurrent config-v4-split run (external); read-only invariant holds.
+- Merged f0d7d57 into amend-command; receipt committed; worktree pruned.
+
+### Wave 4 gate - passed
+- T4 (sonnet, code-feature): validator pass 8/8; HTML placement verified beyond greps; suite 264 OK.
+- Merged 02b944b into amend-command; receipt committed; worktree pruned.
+
+### Wave 5 gate - passed
+- T5 (sonnet, code-feature): validator pass 7/7; adversarial CLI probe green; suite 265 OK.
+- Merged 6ef3c17 into amend-command; receipt committed; worktree pruned.
+
+### Wave 6 gate - passed (pass-after-attribution)
+- T6 (glm-5.2 opencode, docs): two run-verdict FAILs, both attributed at the gate as orchestration/check bugs, not model failures.
+  Run p92887: bare model slug (orchestrator manifest bug). Run p93713: check bug (missing repo key broke git patch-export) + JSON-to-shell quote escaping in the transcribed commands.
+- Orchestrator repaired mechanically (de-escape), re-ran every check stage by hand, seven commands byte-diffed identical to the plan; Opus reviewer pass 5/5; committed 9ca35fa; suite 265 OK on integration.
+- MODEL-NOTES receipts 03ad498 flag both runs' scoreboard rows as amend candidates on this host post-merge.
+
+### Gate 13 - T6 spec made self-contained `[gate:BATCH]`
+- Decision: replaced the compiled template's pointer spec ("per section Task 6 of the source plan") with the full embedded content before launch.
+- Rationale: ringer's spec-writing rule - the worker gets no conversation; pointer specs are barred. Single-unit, produced contract unchanged.
+- Reversal: n/a - the emitted artifact was validated against the same canonical content either way.
