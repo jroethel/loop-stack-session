@@ -51,3 +51,72 @@ Chronological; BATCH and DEFAULT entries are the review obligation, ASK/STOP are
      pause was already answered.
    - Reversal: cheap - `git revert` the plan commit; plan content remains editable at any point
      before its task is dispatched.
+
+6. BATCH (loop-drive Step 0, route verdict)
+   - Decision: ONE AGENT, ringer transport - a single one-task manifest executes all five plan
+     tasks serially in one worktree, instead of four waves of mostly one unit each.
+   - Rationale: T1-T3 are strictly serial and only T4/T5 are parallel-eligible (both tiny), so
+     wave machinery buys minutes at real orchestration cost; the plan's executed checks make one
+     worker cheaply verifiable (P6). Alternate shape (4 waves) was the 40 side of a 60/40 lean.
+   - Reversal: scoped re-run - re-launch as a per-wave manifest set if the single unit fails
+     twice or the gate finds cross-task contamination.
+
+7. BATCH (loop-drive Step 2, routing + engine)
+   - Decision: glm-5.2 on the claude-zai lane, task_type code-feature, impl effort high;
+     validation = executed manifest check + orchestrator gate (diff audit vs the plan's verbatim
+     blocks, acceptance re-run on the integration branch); no separate native validator.
+   - Rationale: scoreboard posterior - proven, 61 tasks, 89% pass, 82% first-try - with
+     attribution-clean MODEL-NOTES receipts from this exact repo's packaging loop; quota
+     tie-break also favors the flat-rate lane. Fable never a worker; opus reserved for gate
+     judgment. Single-unit run, so no exploration lane (rule applies at 3+ tasks).
+   - Reversal: re-route at the gate by the same chain (pin opus) if the unit fails validation
+     twice or the lane zero-tokens (probe lane before burning retries, per 8/17 lesson).
+
+8. BATCH (loop-drive, human-checkpoint consolidation)
+   - Decision: the plan's two [judgment] checkpoints (placement-table unambiguity after T1;
+     handoff-doc runnability after T5) are consolidated into the end-of-run human review instead
+     of blocking mid-run.
+   - Rationale: kickoff said "only stop if necessary"; all work lands as local commits on an
+     integration branch, nothing publishes or rolls to target repos in this run, so the
+     judgment review loses nothing by moving to the end.
+   - Reversal: cheap - reject the table or handoff at the end review; edit + re-copy to the
+     template is a two-file change before any push or target roll.
+
+9. Pre-flight note (record-only): working tree clean at base 5de95ae except two untracked
+   files from the #37 ringer-amend stream (docs/plans/2026-08-20-ringer-amend-plan.md and its
+   batch review). Untracked files do not travel into worktrees and are disjoint from all 13
+   owned files, so the dirty-tree STOP invariant (branch from committed state) holds; left
+   untouched.
+
+10. Gate attribution (record-only, attempt 1): run 024858Z failed 1/0-tokens, but the worktree
+    autopsy showed early Task 1 work in flight - the background launch shell was reaped and
+    ringer shut down mid-worker. Attribution: transport kill, not model; both GLM lanes then
+    probed healthy (claude-zai 12s, opencode 8s). The scoreboard fail row for that run reads
+    transport, not capability. Fixes applied before relaunch: check base made dynamic
+    (merge-base with main, since a parallel session advanced main with the #37 plan commit -
+    disjoint files, no conflict) and the relaunch runs detached via nohup so shell reaping
+    cannot kill it again. Relaunched clean (relaunch-never-resume) as run 030012Z.
+
+11. Gate attribution (record-only, attempt 2 / run 030012Z): run verdict FAIL, actual verdict
+    CHECK BUG. The worker completed all five tasks in 7 clean commits (5 planned + 2 sound
+    in-ownership adaptations: keeping the tracker-backend disclosure on the render-anchor line,
+    and octal-escaping the em-dash sweep pattern so the detector file carries no literal byte),
+    ownership exact, tree clean. The check's lifecycle-lint stage failed on two class-a
+    findings that exist at the clean base commit - committing the 2026-08-20 plans superseded
+    the 2026-08-16 packaging plan-set - so the invariant was false before the worker started.
+    Scoreboard fail rows for this run read check-bug, not model failure.
+
+12. BATCH (gate remediation, archive action)
+    - Decision: archived the superseded packaging plan-set + brief (2026-08-16-packaging-plan.md,
+      -plan_loop.md, -brief.md -> docs/archive/), commit dcbb4d4; lifecycle-lint exits 0 after.
+    - Rationale: rule 1a (superseded, no open issue links the stem) and rule 2 (brief travels
+      with plan); ROADMAP records packaging phase 1 closed 2026-08-18, so this is completed
+      work, and the lint header itself classes the archive action as BATCH.
+    - Reversal: cheap - `git revert dcbb4d4` restores the files to their lanes.
+
+13. Gate close (record-only): all 7 patches applied clean to integration/config-v4 off dcbb4d4;
+    hand-run of every check stage green (structure, anchors, key reads, pointers, handoff,
+    em-dash sweep, lifecycle-lint, the three named suites, full tests/run.sh 46/46);
+    fast-forward merged to main at 2671f4c; worker worktree pruned. The two [judgment]
+    checkpoints (placement table, handoff runnability) remain open for the human end review
+    per entry 8.
