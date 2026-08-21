@@ -34,6 +34,17 @@ after="$(cat "$S/config/repo-state.md")"
 diff "$REF/config/repo-state.md" "$S/config/repo-state.md" \
   || fail "accepted re-render does not match the current fresh render"
 
+# v4 is a two-file shape: the accepted re-render also produces conventions.md, verbatim from the template
+[ -f "$S/config/conventions.md" ] || fail "accepted re-render did not create config/conventions.md"
+diff "$REPO/config/conventions.template.md" "$S/config/conventions.md" \
+  || fail "rendered conventions.md is not a verbatim copy of the template"
+# the reworked v4 template must still feed the render anchors: the rendered machine surface
+# carries the tracker-backend disclosure and never leaks the template-only render instruction
+grep -q '(github, gitlab, or local)' "$S/config/repo-state.md" \
+  || fail "v4 render lost the tracker-backend disclosure (template intro anchor broken)"
+! grep -q 'Render it into' "$S/config/repo-state.md" \
+  || fail "v4 render leaked the template-only 'Render it into' instruction"
+
 # a config already at the current version reports nothing
 out="$( cd "$S" && "$SETUP" </dev/null )" || fail "third run errored"
 printf '%s\n' "$out" | grep -qi 'stale' && fail "config already current still reported as stale"
@@ -48,5 +59,29 @@ grep -qi 'Local tracker' "$G/config/repo-state.md" \
   && fail "github config still references the Local tracker section"
 grep -q '^template-version:' "$G/config/repo-state.md" \
   || fail "github config carries no template-version stamp"
+
+# --- v2-era fixture: a v4 re-render preserves every line-anchored key (Remote, tracker,
+#     autonomy-default, tracker-remote-ack), not just the two the v3 reconcile carried ---
+V="$(mktemp -d)"; trap 'rm -rf "$REF" "$S" "$G" "$V"' EXIT
+( cd "$V" && git init -q )
+mkdir -p "$V/config"
+cat > "$V/config/repo-state.md" <<'EOS'
+# Repo State Map
+
+template-version: 2
+
+Remote: none (local tracker; see the Local tracker section)
+tracker: local
+autonomy-default: auto
+tracker-remote-ack: github
+
+old v2 doctrine prose that should be dropped from the machine surface
+EOS
+( cd "$V" && LOOP_ASSUME_YES=1 "$SETUP" </dev/null >/dev/null ) || fail "v2 accept re-render exited non-zero"
+grep -q '^template-version: 4$'        "$V/config/repo-state.md" || fail "v2->v4 re-render did not bump the version"
+grep -q '^tracker: local$'             "$V/config/repo-state.md" || fail "v4 re-render dropped tracker:"
+grep -q '^autonomy-default: auto$'     "$V/config/repo-state.md" || fail "v4 re-render dropped autonomy-default:"
+grep -q '^tracker-remote-ack: github$' "$V/config/repo-state.md" || fail "v4 re-render dropped tracker-remote-ack:"
+[ -f "$V/config/conventions.md" ]                                || fail "v4 re-render did not create conventions.md"
 
 echo "PASS: reconcile - stale/keyless detect+re-render (criterion 1), github render drops Local-tracker (criterion 5), current config is a no-op"

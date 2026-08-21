@@ -20,8 +20,10 @@ version_of() { grep -E '^template-version:' "$1" 2>/dev/null | head -1 \
 HERE="$(cd "$(dirname "$0")" && pwd -P)"
 REPO="$(cd "$HERE/../.." && pwd -P)"
 TPL="$REPO/config/repo-state.template.md"
+CTPL="$REPO/config/conventions.template.md"
 GEN="$REPO/scripts/gen-mirrors.sh"
 [ -f "$TPL" ] || fail "template not found: $TPL"
+[ -f "$CTPL" ] || fail "conventions template not found: $CTPL"
 [ -x "$GEN" ] || fail "gen-mirrors.sh not found or not executable: $GEN"
 TIDY="$REPO/scripts/tidy.sh"
 [ -x "$TIDY" ] || fail "tidy.sh not found or not executable: $TIDY"
@@ -300,15 +302,25 @@ reconcile_config() {   # offer a re-render when the config's template-version di
       ;;
   esac
   cand="$cand"$'\n'"tracker: $MODE"             # mirror tracker.sh mode set's appended key
+  for k in autonomy-default tracker-remote-ack; do
+    kv="$(grep -E "^${k}:" config/repo-state.md | head -1)"
+    [ -n "$kv" ] && cand="$cand"$'\n'"$kv"
+  done
   offers=$((offers + 1))
   echo "config/repo-state.md is stale (template-version '${cv:-none}' vs '$tv'); proposed re-render:"
   diff -u config/repo-state.md <(printf '%s\n' "$cand") || true
-  echo "note: accepting REPLACES the whole file with the render above; any hand edits not shown as kept are lost."
-  if ask "re-render config/repo-state.md to template-version $tv (preserving mode $MODE)?"; then
-    printf '%s\n' "$cand" > config/repo-state.md
-    echo "re-rendered config/repo-state.md (template-version $tv)"
+  if [ -f config/conventions.md ]; then
+    diff -u config/conventions.md "$CTPL" || true
   else
-    echo "left config/repo-state.md unchanged"
+    echo "config/conventions.md is new; it will be created as a verbatim copy of the template"
+  fi
+  echo "note: accepting REPLACES both files with the renders above; any hand edits not shown as kept are lost."
+  if ask "re-render config/repo-state.md and config/conventions.md to template-version $tv (preserving mode $MODE)?"; then
+    printf '%s\n' "$cand" > config/repo-state.md
+    cp "$CTPL" config/conventions.md
+    echo "re-rendered config/repo-state.md and config/conventions.md (template-version $tv)"
+  else
+    echo "left config/repo-state.md and config/conventions.md unchanged"
   fi
 }
 
@@ -430,9 +442,11 @@ else
                     gitlab)  render_gitlab "$remote_url" "$(scripts/tracker.sh group 2>/dev/null || true)" "$(scripts/tracker.sh host 2>/dev/null || true)" > config/repo-state.md ;;
                     local)   render_local          > config/repo-state.md ;;
                     *) fail "tracker mode must be 'github', 'gitlab', or 'local' (got '$MODE')";; esac
-    echo "wrote config/repo-state.md (tracker: $MODE)"
+    cp "$CTPL" config/conventions.md
+    echo "wrote config/repo-state.md and config/conventions.md (tracker: $MODE)"
   else
     MODE="$(determine_mode)"      # legacy keyless config: keep content, just set the key
+    [ -f config/conventions.md ] || cp "$CTPL" config/conventions.md
     echo "legacy config found; recording tracker: $MODE without re-rendering"
   fi
   scripts/tracker.sh mode set "$MODE" \
