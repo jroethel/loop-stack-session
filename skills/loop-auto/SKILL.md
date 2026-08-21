@@ -38,10 +38,15 @@ Fully human-gated: every gate fires live, nothing auto-taken - every ASK, STOP, 
 
 Only after the last ASK gate passes. Up to and including that gate the human is in the loop; after it, the active session orchestrates the rest of the chain under the rules below.
 
+A mode change never retroactively answers a question already asked.
+When the knob flips to `auto` mid-session, any offer or choice already on the table - an unaccepted commit offer, a pending route choice - stays the human's to resolve; setting the mode does not convert it into a DEFAULT take.
+On `set auto` the session first presents one consolidated ASK - `outstanding before autonomy commences: X, Y, Z - take all / pick / none` - resolves it, and only then does autonomy govern the rest of the chain.
+
 ### The four gate classes under autonomy
 
 - ASK always blocks.
   It asks the human and waits; autonomy does not auto-answer an ASK.
+  Offers and questions already pending at the moment `auto` is set are ASK-class too: setting the mode never converts them to DEFAULT takes (see "When autonomy takes effect").
 - STOP always halts and states what it needs.
   A STOP names the missing input or the failing invariant (dirty tree, exceeded effort cap, outward-facing unit) and waits; autonomy never auto-resolves a STOP.
 - BATCH auto-takes the named lean, proceeds, and collects the decision for the end review.

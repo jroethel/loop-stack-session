@@ -28,4 +28,6 @@ grep -Eqi 'appended at every gate|appended per gate' "$LA" || fail "per-gate app
 grep -qi 'reversal' "$LA" || fail "reversal-path field missing from loop-auto"
 # Live-consumption language is present (the knob changes behavior).
 grep -q 'Consumption is live: the knob now governs gate behavior per the four gate classes below.' "$LA" || fail "verbatim live-consumption sentence missing from loop-auto"
+# On 'set auto', offers already on the table are re-presented as one ASK, never auto-taken as DEFAULTs (#13).
+grep -qi 'outstanding before autonomy commences' "$LA" || fail "on-set-auto re-presentation ASK missing from loop-auto"
 echo "PASS: consumption live, protocol homed in loop-auto, managed block lean with pointer + invariant"
