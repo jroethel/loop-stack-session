@@ -99,3 +99,9 @@ The blocker (F1) reshaped the task list: seam-2 aggregation now spans Task 2 (JS
 - Decision: replaced the compiled template's pointer spec ("per section Task 6 of the source plan") with the full embedded content before launch.
 - Rationale: ringer's spec-writing rule - the worker gets no conversation; pointer specs are barred. Single-unit, produced contract unchanged.
 - Reversal: n/a - the emitted artifact was validated against the same canonical content either way.
+
+### Gate 14 - advisory loop-review, Spec finding applied `[gate:BATCH]`
+- Decision: applied the Spec-axis one-liner (triage verdict compare normalized via model_log_text(...).upper(), matching ringer.py's own convention at the aggregators); suite re-run green.
+- The Spec reviewer's "fabricated attribution" flag on T7 was arbitrated against the live upstream thread and overruled - barthballard's comment literally carries the referenced mark --check-fault fork note; sizing stays the user's HC-2 taste call.
+- Standards axis: zero hard violations; four judgement-call smells recorded (duplicated void bookkeeping, (run_id, task_key) clump, scattered amendment type-test, display shotgun surgery) - slipped as follow-up material, not fixed in the loop.
+- Reversal: git revert of the one-liner; smell refactors are future scoped work.
