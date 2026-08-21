@@ -87,7 +87,8 @@ grep -q '^tracker: github$' "$CFG"     || fail "this repo's tracker mode changed
 
 # house style: no em dash anywhere this task touched
 for f in "$SK" "$REF" "$WF" "$CFG" "$TPL" "$CONV" "$CONVTPL"; do
-  grep -q $'—' "$f" && fail "em dash found in $f (house style forbids it)"
+  # octal escape is the em dash (e2 80 94); kept escaped so this file carries no literal byte
+  grep -q $'\342\200\224' "$f" && fail "em dash found in $f (house style forbids it)"
 done
 
 echo "PASS: gitlab doc and skill sweep"
