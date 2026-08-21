@@ -10,14 +10,14 @@ Each repo is an independent, resumable unit: roll them in any order, one at a ti
 
 | Repo                                          | Current version | Status  |
 | ---                                           | ---              | ---     |
-| /mnt/c/python/projects/ltv-rfm-segments       | pre-key          | pending |
-| /mnt/c/python/claude/design-brand-pack        | v2               | pending |
-| /mnt/c/python/claude/forge                    | v2               | pending |
-| /mnt/c/python/claude/mp4transcript            | v2               | pending |
-| /mnt/c/python/claude/sfextract                | v3               | pending |
-| /mnt/c/python/claude/dshon                    | none (fresh)     | pending |
-| /mnt/c/python/claude/nlm-crm                  | none (fresh)     | pending |
-| /mnt/c/python/claude/prospect-news-pipeline   | none (fresh)     | pending |
+| /mnt/c/python/projects/ltv-rfm-segments       | pre-key          | done    |
+| /mnt/c/python/claude/design-brand-pack        | v2               | done    |
+| /mnt/c/python/claude/forge                    | v2               | done    |
+| /mnt/c/python/claude/mp4transcript            | v2               | done    |
+| /mnt/c/python/claude/sfextract                | v3               | done    |
+| /mnt/c/python/claude/dshon                    | none (fresh)     | done    |
+| /mnt/c/python/claude/nlm-crm                  | none (fresh)     | done    |
+| /mnt/c/python/claude/prospect-news-pipeline   | none (fresh)     | done    |
 
 ## Per-repo re-render step
 
