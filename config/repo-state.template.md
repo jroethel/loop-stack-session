@@ -5,7 +5,7 @@ Render it into `config/repo-state.md` by replacing the placeholder below with th
 The tracker backend (github, gitlab, or local) is declared in the `tracker:` key below; the Local tracker section governs local mode.
 Mode-invariant doctrine lives in the sibling `config/conventions.md`.
 
-template-version: 4
+template-version: 5
 
 Remote: {{REMOTE_OR_FALLBACK}}
 backlog-group: {{BACKLOG_GROUP}}

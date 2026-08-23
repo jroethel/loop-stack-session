@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # lifecycle-lint - deterministic lifecycle reconciliation detector (no hooks, no daemons; run
-# on demand and at handoff time). Classes:
+# on demand, before declaring work done (conventions.md rule 6), and at handoff time). Classes:
 #   a  superseded+unlinked plan-set: a live docs/plans/*-plan{,_loop}.md whose date is older
 #      than the newest live plan-set, not archived, and referenced by no OPEN issue
 #   b  orphaned brief: a live docs/briefs/*-brief.md whose plan already sits in docs/archive/

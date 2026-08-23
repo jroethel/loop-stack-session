@@ -5,9 +5,11 @@ set -uo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$HERE/../.." && pwd)"
 SETUP="$REPO/skills/loop-setup/setup.sh"
+TPL="$REPO/config/repo-state.template.md"
 FIX="$REPO/tests/repo-state/fixtures/issues.json"
 fail() { echo "FAIL: $1" >&2; exit 1; }
 [ -x "$SETUP" ] || fail "setup.sh missing"
+TV="$(grep -E '^template-version:' "$TPL" | head -1 | sed -E 's/^template-version:[[:space:]]*//; s/[[:space:]]*$//')"
 
 # --- reference: a clean local setup carries the current template-version ---
 REF="$(mktemp -d)"; trap 'rm -rf "$REF"' EXIT
@@ -78,7 +80,7 @@ tracker-remote-ack: github
 old v2 doctrine prose that should be dropped from the machine surface
 EOS
 ( cd "$V" && LOOP_ASSUME_YES=1 "$SETUP" </dev/null >/dev/null ) || fail "v2 accept re-render exited non-zero"
-grep -q '^template-version: 4$'        "$V/config/repo-state.md" || fail "v2->v4 re-render did not bump the version"
+grep -q "^template-version: $TV\$"     "$V/config/repo-state.md" || fail "v2->current re-render did not bump the version to $TV"
 grep -q '^tracker: local$'             "$V/config/repo-state.md" || fail "v4 re-render dropped tracker:"
 grep -q '^autonomy-default: auto$'     "$V/config/repo-state.md" || fail "v4 re-render dropped autonomy-default:"
 grep -q '^tracker-remote-ack: github$' "$V/config/repo-state.md" || fail "v4 re-render dropped tracker-remote-ack:"

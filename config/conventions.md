@@ -55,6 +55,7 @@ Exactly one status is active at a time; `tracker.sh status` swaps them, and the 
 3. Abandoned work archives only when offered and accepted.
 4. Parking-lot graduation is automatic at brief-commit time.
 5. Every archive or graduation action is verbose: announce each moved file and each created issue with its number.
+6. Declaring a task, run, or chain "done" runs `scripts/lifecycle-lint.sh .` first and resolves what it flags that the finished work clearly implies (archiving a superseded plan/brief, closing the roadmap row or issue, regenerating stale mirrors) in the same pass, under the same verbose-announce discipline as rule 5. A genuinely ambiguous finding (e.g. a mirror the human has uncommitted edits to) is asked about; it is never silently skipped, and never silently done without disclosure.
 
 Graduated-item issue body template (label the issue `idea`):
 
