@@ -58,7 +58,7 @@ R-tag rule: `ROADMAP.md` section headings carry `[R<n>]` tags; IDs are assigned 
 
 Lane scope: the filename grammar applies to `docs/briefs/`, `docs/plans/`, `docs/handoffs/`, `docs/reviews/` top-level `*.md` only.
 It does not apply to subdirs like `docs/reviews/unit-logs/`, nor to archive, memos, or root files.
-Handoffs are `docs/handoffs/YYYY-MM-DD-<slug>.md`; batch reviews are `docs/reviews/YYYY-MM-DD-<slug>-batch-review.md`.
+Handoffs are `docs/handoffs/YYYY-MM-DD.<tokens>.<slug>.md`; batch reviews are `docs/reviews/YYYY-MM-DD.<tokens>.<slug>-batch-review.md`.
 
 ## Where I left off
 
