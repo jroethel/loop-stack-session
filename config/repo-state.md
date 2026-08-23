@@ -4,7 +4,8 @@ This file is the machine surface: the line-anchored keys and the Lanes table tha
 The tracker backend (github, gitlab, or local) is declared in the `tracker:` key below.
 Mode-invariant doctrine lives in the sibling `config/conventions.md`.
 
-template-version: 5
+template-version: 6
+filename-grammar-since: 2026-08-23
 
 Remote: https://github.com/jroethel/loop-stack-session.git
 tracker: github

@@ -32,7 +32,33 @@ The import sweep never offers the root project files `README.md`, `CLAUDE.md`, `
 The `idea` label is the one load-bearing label.
 Unlabeled issues (optionally `bug` or `refactor`) form the Issues lane; issues labeled `idea` form the Backlog lane.
 
-Filename patterns: handoffs are `docs/handoffs/YYYY-MM-DD-<slug>.md`; batch reviews are `docs/reviews/YYYY-MM-DD-<slug>-batch-review.md`.
+## Doc filename tokens
+
+Docs in the four lane directories carry tracker tokens in their filenames so a doc and its tracker item stay joined without opening the file.
+The conformance regex:
+
+```
+^[0-9]{4}-[0-9]{2}-[0-9]{2}(\.[BIRW][0-9]+)*\.[a-z0-9-]+(_loop)?\.md$
+```
+
+A plan's orchestration companion carries `_loop` at the end of its slug (`...-plan_loop.md`); the regex's optional `(_loop)?` group admits it.
+
+Token letter semantics:
+- `I` = Issues-lane GitHub issue.
+- `B` = Backlog-lane (idea label) GitHub issue.
+- `R` = Roadmap item (stable assigned ID).
+- `W` = Wayfinder-lane GitHub issue (map or child ticket, label `wayfinder:*`; excluded from Issues/Backlog by `scripts/gen-mirrors.sh`, so neither `I` nor `B` covers it).
+
+Multi-token syntax: separate segments as in `.I6.I7.`, parsed as leading segments matching `[BIRW][0-9]+`.
+
+Untokened docs keep the dot grammar without tokens; when the item is created the token is inserted (rename-on-log).
+The rename-on-log trigger: `scripts/tracker.sh create` emits a one-line stderr reminder after printing the issue number to stdout.
+
+R-tag rule: `ROADMAP.md` section headings carry `[R<n>]` tags; IDs are assigned monotonically (max existing + 1), never reused, and survive reorders.
+
+Lane scope: the filename grammar applies to `docs/briefs/`, `docs/plans/`, `docs/handoffs/`, `docs/reviews/` top-level `*.md` only.
+It does not apply to subdirs like `docs/reviews/unit-logs/`, nor to archive, memos, or root files.
+Handoffs are `docs/handoffs/YYYY-MM-DD-<slug>.md`; batch reviews are `docs/reviews/YYYY-MM-DD-<slug>-batch-review.md`.
 
 ## Where I left off
 
