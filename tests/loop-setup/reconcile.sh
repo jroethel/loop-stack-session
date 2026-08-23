@@ -18,6 +18,10 @@ REF="$(mktemp -d)"; trap 'rm -rf "$REF"' EXIT
 grep -q '^template-version:' "$REF/config/repo-state.md" \
   || fail "fresh local config carries no template-version stamp"
 
+# fresh render stamps the grammar key with today's date
+grep -q "^filename-grammar-since: $(date +%Y-%m-%d)\$" "$REF/config/repo-state.md" \
+  || fail "fresh render did not stamp filename-grammar-since with today's date"
+
 # --- criterion 1: a keyless/older config is detected; decline = byte-identical, accept = current render ---
 S="$(mktemp -d)"; trap 'rm -rf "$REF" "$S"' EXIT
 ( cd "$S" && git init -q )
@@ -71,6 +75,7 @@ cat > "$V/config/repo-state.md" <<'EOS'
 # Repo State Map
 
 template-version: 2
+filename-grammar-since: 2026-01-01
 
 Remote: none (local tracker; see the Local tracker section)
 tracker: local
@@ -85,5 +90,9 @@ grep -q '^tracker: local$'             "$V/config/repo-state.md" || fail "v4 re-
 grep -q '^autonomy-default: auto$'     "$V/config/repo-state.md" || fail "v4 re-render dropped autonomy-default:"
 grep -q '^tracker-remote-ack: github$' "$V/config/repo-state.md" || fail "v4 re-render dropped tracker-remote-ack:"
 [ -f "$V/config/conventions.md" ]                                || fail "v4 re-render did not create conventions.md"
+grep -q '^filename-grammar-since: 2026-01-01$' "$V/config/repo-state.md" \
+  || fail "accepted re-render did not preserve the earlier filename-grammar-since date"
+[ "$(grep -c '^filename-grammar-since:' "$V/config/repo-state.md")" -eq 1 ] \
+  || fail "reconcile duplicated the filename-grammar-since key (renderer plus carry-forward)"
 
 echo "PASS: reconcile - stale/keyless detect+re-render (criterion 1), github render drops Local-tracker (criterion 5), current config is a no-op"

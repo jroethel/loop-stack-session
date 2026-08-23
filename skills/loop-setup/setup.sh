@@ -205,11 +205,14 @@ render_github() {
   # Fill the placeholder with the remote URL and strip the Local tracker section by heading;
   # drop the "Render it into" instruction line and the gitlab-only lines (backlog-group key and
   # the two glab backlog-view lines). Local-mode disclosures must not survive here.
-  awk -v url="$1" '
+  # since ($2, optional) preserves an adopting repo's earlier grammar date; empty stamps today.
+  local since="${2:-$(date +%Y-%m-%d)}"
+  awk -v url="$1" -v since="$since" '
     BEGIN { skip = 0 }
     index($0, "Render it into") { next }
     index($0, "backlog-group:") { next }
     index($0, "glab issue list") { next }
+    index($0, "{{FILENAME_GRAMMAR_SINCE}}") { print "filename-grammar-since: " since; next }
     index($0, "{{REMOTE_OR_FALLBACK}}") { print "Remote: " url; next }
     /^## Local tracker/ { skip = 1; next }
     /^## / { skip = 0 }
@@ -224,11 +227,14 @@ render_github() {
 render_local() {
   # Fill the placeholder noting local mode; drop the "Render it into" line and the gitlab-only lines.
   # KEEP the ## Local tracker section intact - its disclosures are required in local config.
+  # since ($1, optional) preserves an adopting repo's earlier grammar date; empty stamps today.
   local note="none (local tracker; see the Local tracker section)"
-  awk -v note="$note" '
+  local since="${1:-$(date +%Y-%m-%d)}"
+  awk -v note="$note" -v since="$since" '
     index($0, "Render it into") { next }
     index($0, "backlog-group:") { next }
     index($0, "glab issue list") { next }
+    index($0, "{{FILENAME_GRAMMAR_SINCE}}") { print "filename-grammar-since: " since; next }
     index($0, "{{REMOTE_OR_FALLBACK}}") { print "Remote: " note; next }
     { print }
   ' "$TPL"
@@ -241,12 +247,15 @@ render_gitlab() {
   # Prefixes ONLY the cross-repo glab query with GITLAB_HOST (it is run from outside any repo, where
   # glab cannot resolve a host from context); the per-repo fallback stays host-free. Strips the Local
   # tracker section, drops the "Render it into" line, rewrites the dangling Local-tracker pointer.
-  awk -v url="$1" -v grp="$2" -v host="$3" '
+  # since ($4, optional) preserves an adopting repo's earlier grammar date; empty stamps today.
+  local since="${4:-$(date +%Y-%m-%d)}"
+  awk -v url="$1" -v grp="$2" -v host="$3" -v since="$since" '
     BEGIN { skip = 0 }
     { gsub(/{{BACKLOG_GROUP}}/, grp); gsub(/GitHub/, "GitLab") }
     index($0, "Render it into") { next }
     index($0, "gh search issues") { next }
     index($0, "gh issue list") { next }
+    index($0, "{{FILENAME_GRAMMAR_SINCE}}") { print "filename-grammar-since: " since; next }
     index($0, "glab issue list --group") { if (host != "") sub(/glab issue list --group/, "GITLAB_HOST=" host " glab issue list --group") }
     index($0, "{{REMOTE_OR_FALLBACK}}") { print "Remote: " url; next }
     /^## Local tracker/ { skip = 1; next }
@@ -278,16 +287,20 @@ ensure_roadmap() {
 
 reconcile_config() {   # offer a re-render when the config's template-version differs from the template's
   [ -f config/repo-state.md ] || return 0
-  local tv cv cand remote grp host
+  local tv cv cand remote grp host since
   tv="$(version_of "$TPL")"
   cv="$(version_of config/repo-state.md)"
   [ "$cv" = "$tv" ] && return 0                 # already current -> report nothing
+  # Preserve an adopting repo's earlier grammar date; an absent key stays empty and the
+  # renderers stamp today. Never added to the carry-forward loop below: the renderer already
+  # emits the line, so a second append would duplicate it.
+  since="$(grep -E '^filename-grammar-since:' config/repo-state.md | head -1 | sed -E 's/^filename-grammar-since:[[:space:]]*//')"
   case "$MODE" in
     github)
       remote="$(grep -E '^Remote:' config/repo-state.md | head -1 | sed -E 's/^Remote:[[:space:]]*//')"
       # A remote mode must never preserve a local-tracker placeholder as its Remote value.
       if [ -z "$remote" ] || [ "${remote#none}" != "$remote" ]; then remote="$remote_url"; fi
-      cand="$(render_github "$remote")"
+      cand="$(render_github "$remote" "$since")"
       ;;
     gitlab)
       remote="$(grep -E '^Remote:' config/repo-state.md | head -1 | sed -E 's/^Remote:[[:space:]]*//')"
@@ -295,10 +308,10 @@ reconcile_config() {   # offer a re-render when the config's template-version di
       grp="$(grep -E '^backlog-group:' config/repo-state.md | head -1 | sed -E 's/^backlog-group:[[:space:]]*//')"
       [ -n "$grp" ] || grp="$(scripts/tracker.sh group 2>/dev/null || true)"
       host="$(scripts/tracker.sh host 2>/dev/null || true)"
-      cand="$(render_gitlab "$remote" "$grp" "$host")"
+      cand="$(render_gitlab "$remote" "$grp" "$host" "$since")"
       ;;
     *)
-      cand="$(render_local)"
+      cand="$(render_local "$since")"
       ;;
   esac
   cand="$cand"$'\n'"tracker: $MODE"             # mirror tracker.sh mode set's appended key
