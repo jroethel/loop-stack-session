@@ -435,6 +435,7 @@
     <a href="#substrate-routing">16. Substrate &amp; routing</a>
     <a href="#decision-settling">17. Decisions settled</a>
     <a href="#bc-build-run">18. B+C build run</a>
+    <a href="#rubix-standalone">19. Rubix standalone</a>
   </div>
 </nav>
 
@@ -1408,6 +1409,179 @@
   </div>
 </section>
 
+<section id="rubix-standalone">
+  <h2><span class="num">19</span>Rubix goes standalone: extracting a review, collapsing a contract (2026-08-23)</h2>
+  <p>
+    A <code class="inline">/loop-plan</code> session (Opus + Jeremy) turned section 15's inline rubix review into
+    its own thing. The review - the forward-looking two-lens judgment of a <em>proposed</em> artifact - was
+    trapped in <code class="inline">loop-plan</code> Step 6: it could only run on plans, at one point, and other
+    sessions had to read it out by hand. The lift-out makes it a standalone, artifact-agnostic skill
+    (<code class="inline">rubix-review</code>, its own repo at <code class="inline">~/create/skills/rubix-review</code>)
+    and, in the same move, collapses the reviewer-conduct contract that lived verbatim in three skills down to one
+    canonical source the skill owns. Output: the plan at
+    <code class="inline">docs/plans/2026-08-23.rubix-standalone-skill-plan.md</code> (6 tasks, 4 waves), reshaped
+    by its own rubix review before it was committed. No implementation ran - the plan is the deliverable.
+  </p>
+
+  <div class="aha">
+    <div class="aha-label">Aha: a test that enforces triplication is the obstacle when the goal becomes dedup</div>
+    <p>
+      The contract was not accidentally copied three times - <code class="inline">tests/gates/reviewer-contract.sh</code>
+      <em>enforced</em> byte-identical copies across loop-review, loop-drive, loop-plan, because each skill pastes the
+      text into its own subagent prompts. Collapsing to one source meant rewriting that gate from "3 identical copies"
+      to "1 source, zero verbatim duplicates, consumers point at it". The existing guard was not a bug to route around;
+      it was the thing the change had to convert. Its acceptance check became success criterion 4.
+    </p>
+  </div>
+
+  <div class="aha">
+    <div class="aha-label">Aha: separate the safety invariant from the optional feature, or one soft-check strands the other</div>
+    <p>
+      Two things lived in Step 6: the rubix <em>review</em> (optional, nice-to-have) and the reviewer-conduct
+      <em>contract</em> (a safety rule that keeps a read-only reviewer from running <code class="inline">install.sh</code>).
+      The brief's "soft-check, fall back silently" is right for the review and wrong for the contract. So they split:
+      loop-plan / loop-brainstorm soft-call the review and warn-once-continue when it is absent; loop-review / loop-drive
+      treat the contract as a required co-install and <strong>fail closed</strong> - stop, never review uncontracted -
+      when its file is missing. Same missing repo, deliberately opposite behavior, each message naming which it is.
+    </p>
+  </div>
+
+  <div class="aha">
+    <div class="aha-label">Aha: the model-benchmarks symlink was the rail already in the codebase</div>
+    <p>
+      The contract does not need a novel sharing mechanism. <code class="inline">install.sh</code> already symlinks
+      <code class="inline">config/routing/model-benchmarks.md</code> into <code class="inline">loop-drive/references/</code>,
+      gitignored, materialized at install. The canonical contract rides the identical rail: one file in the rubix-review
+      repo, symlinked into each consumer's <code class="inline">references/</code>, so a repo grep finds the text once.
+      Reused a pattern instead of inventing one (the ponytail ladder, rung 2).
+    </p>
+  </div>
+
+  <div class="aha">
+    <div class="aha-label">Aha: the rubix review found two real bugs in its own extraction plan</div>
+    <p>
+      Two fresh Opus lenses reviewed the plan. Lens A (the maintainer who lives with the install) and Lens B (cold craft)
+      surfaced 11 findings; 9 were incorporated. Two were genuine defects the author missed:
+      <strong>claude-style install stranded the contract</strong> (the installer only targeted <code class="inline">~/.agents/skills</code>,
+      and a fallback path nothing ever populated), and <strong>the rewritten gate could vacuously pass</strong> (its
+      <code class="inline">git ls-files</code> loop inspects zero files if the glob returns empty, and the catch-alive
+      tested a stand-in, not the real sweep). Both fixed: pass loop-stack's resolved skills home to the installer; assert
+      a non-empty enumeration (count &ge; 4) and route the real sweep function through the catch-alive.
+    </p>
+  </div>
+
+  <div class="aha">
+    <div class="aha-label">Aha: move a cross-repo failure from run-time to install-time</div>
+    <p>
+      Lens A's blocker: a separate rubix repo means loop-drive's validators brick mid-run if it is not installed. The fix
+      is not a fallback copy (that re-triplicates the contract and breaks the DRY goal) - it is self-heal: loop-stack's
+      <code class="inline">install.sh</code> installs rubix-review from <code class="inline">LOOP_STACK_RUBIX_ROOT</code>
+      when the contract is missing, verifies its clauses before wiring, and warns loudly if it truly cannot. A missing
+      sibling surfaces at install, where it is cheap and visible, not as a dead reviewer three waves into a drive.
+    </p>
+  </div>
+
+  <div class="aha">
+    <div class="aha-label">Near-miss caught in self-review: bash 3.2 on macOS</div>
+    <p>
+      The hardened gate first used <code class="inline">mapfile</code> - bash 4+, absent from macOS's stock 3.2. It would
+      have failed on Jeremy's own host. Caught by re-deriving: running the gate logic against the live repo before shipping
+      it in the plan. Replaced with a portable <code class="inline">while IFS= read -r</code> loop; verified the enumeration
+      guard, sweep, and catch-alive all behave.
+    </p>
+    <p class="why">
+      The manual's rule: verify by re-deriving through a different route, run the code instead of rereading it. A plan's
+      embedded test that has never been run is a guess.
+    </p>
+  </div>
+
+  <h3>The fresh-host install topology</h3>
+  <p>
+    Jeremy asked for this diagram as a final check that he could see the implications of the install decisions from the
+    review rounds. Agents style, both repos cloned from GitHub:
+  </p>
+  <pre style="background:#f0eee6; padding:1rem; border-radius:6px; overflow-x:auto; font-size:0.82rem; line-height:1.35;">
+                     &#9484;&#9472;&#9472; GitHub (hosted) &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9484;
+                     &#9474;  jroethel/loop-stack-session, jroethel/rubix-review &#9474;
+                     &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9500;
+          git clone &#9585;                                              &#9586; git clone
+  ~/create/loops/loop-stack-session               ~/create/skills/rubix-review
+   (loop-stack clone)                              (= LOOP_STACK_RUBIX_ROOT)
+   &#8226; skills/loop-plan, loop-review, ...          &#8226; references/reviewer-conduct-contract.md  &#9733; SINGLE SOURCE
+   &#8226; install.sh  &#9664;&#9472; you run this           &#8226; install.sh
+
+  loop-stack ./install.sh, in order:
+   &#9312;  self-install rubix if the contract isn't there yet
+        (RUBIX_INSTALL_DIR=~/.agents/skills  bash $LOOP_STACK_RUBIX_ROOT/install.sh)
+   &#9313;  link each loop-stack skill into ~/.agents/skills   (harness-neutral home)
+   &#9314;  harness symlink  ~/.claude/skills &#8594; ~/.agents/skills   (Claude scans ~/.claude/skills)
+   &#9315;  verify the source's clauses, then symlink the contract into the reviewers
+
+  THE CONTRACT CHAIN (what these rounds built):
+   ~/.claude/skills/loop-review/references/reviewer-conduct-contract.md
+      &#8592; ~/.agents/skills/rubix-review/references/reviewer-conduct-contract.md
+         &#8592; ~/create/skills/rubix-review/references/reviewer-conduct-contract.md   &#9733; ONE file
+
+  SAFETY INVARIANT (hard)                    OPTIONAL REVIEW (soft)
+  loop-review, loop-drive read the           loop-plan, loop-brainstorm soft-call
+  contract, paste verbatim; chain            rubix-review (rubix-autorun: ask/on/off);
+  broken &#8594; STOP, never uncontracted.        rubix absent &#8594; warn once, continue.</pre>
+  <p class="why">
+    claude style collapses the two middle columns: <code class="inline">~/.claude/skills</code> is the single home, no
+    <code class="inline">~/.agents</code> hop, everything else identical. The full diagram and its decision table also
+    live in the plan's appendix.
+  </p>
+
+  <table>
+    <tr><th>Decision</th><th>Alternatives considered</th><th>Why</th></tr>
+    <tr>
+      <td>Own repo at <code class="inline">~/create/skills/rubix-review</code>, installed to
+          <code class="inline">~/.agents/skills</code></td>
+      <td>In-repo loop-stack skill with the same no-dependency boundary (Lens A argued for this)</td>
+      <td>The review has outgrown "use rubix from loop-stack" and needs a standalone identity; the drift surface is
+          accepted deliberately and now guarded by self-heal + clause-verify</td>
+    </tr>
+    <tr>
+      <td>Contract sourced by install-time symlink into each <code class="inline">references/</code></td>
+      <td>Runtime pointer read from the sibling skill; inline via a managed marker block</td>
+      <td>Reuses the existing <code class="inline">model-benchmarks.md</code> rail; repo grep finds the text once; keeps
+          runtime self-contained</td>
+    </tr>
+    <tr>
+      <td><code class="inline">rubix-autorun: ask | off | on</code>, default <code class="inline">ask</code>, in
+          <code class="inline">config/repo-state.md</code></td>
+      <td>A boolean off/on; a gitignored chain-state key; a skill-level config file</td>
+      <td>Mirrors loop-auto's committed per-repo default; <code class="inline">ask</code> preserves today's offer
+          behavior; lens-default presets deferred to the new repo's backlog</td>
+    </tr>
+    <tr>
+      <td>Third high-stakes lens is a rubric recommendation, not coded behavior</td>
+      <td>Port the inline "third lens = GLM" as a real dispatch</td>
+      <td>The brief defers variable lens count to rubix-review's own backlog; ship two lenses, recommend a third</td>
+    </tr>
+    <tr>
+      <td>Bash + symlink installer now; npx / native-Windows deferred</td>
+      <td>Build a Node/npx cross-platform installer now; bash + npx wrapper both</td>
+      <td>Jeremy chose "bash now, defer" - the brief's success criteria need only the bash pattern; cross-platform is a
+          separate workstream the new repo owns</td>
+    </tr>
+    <tr>
+      <td>Reject Lens A's "ship a tracked fallback copy of the contract"</td>
+      <td>Keep a loop-stack copy for when the symlink is absent</td>
+      <td>A second verbatim copy violates the whole point (success criterion 4, zero duplicates); the concern is met by
+          self-heal + fail-closed instead</td>
+    </tr>
+  </table>
+
+  <div class="callout-open">
+    <strong>Owner-flagged, out of scope for this lift-out (near-future):</strong> a skill marketplace / more robust
+    installation across all skills, and Jeremy's stated dislike that <code class="inline">~/.agents/skills</code> entries
+    are bare symlinks back to the repo working copies rather than versioned installs. Both were named explicitly as
+    beyond this extraction. Also parked to rubix-review's own backlog: variable lens count, a raw-idea entry point,
+    lens-default behaviors, and the npx / native-Windows installer.
+  </div>
+</section>
+
 </main>
 
 <footer>
@@ -1418,7 +1592,8 @@
   launch UX revision; section 15 added 2026-07-17 after the loop-plan build; section 16 added 2026-07-18 after
   the substrate and routing assessment session; section 17 added 2026-08-02 after the decision-settling session
   (Fable 5 + Jeremy), which also restored the missing section-15 TOC link; section 18 added 2026-08-02 after the
-  seam B+C build run (Fable 5 + Jeremy).
+  seam B+C build run (Fable 5 + Jeremy); section 19 added 2026-08-23 after the Rubix standalone-extraction
+  planning session (Opus + Jeremy), which produced <code class="inline">docs/plans/2026-08-23.rubix-standalone-skill-plan.md</code>.
   Skill names in sections 0-10 are the historical (pre-rename) names; see section 13 for the mapping.
 </footer>
 
