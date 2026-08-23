@@ -400,9 +400,14 @@ Usage: tracker.sh <command> [args]
   claim <num> <session-id> [--reclaim]  receipt-before-flip claim; prints owner id, exit 4 on race
   done <num> --receipt <text> [--ran <cmd>]  evidence-gated completion: agent:done + close
   next-eligible [<session-id>]    select at most one actionable ticket (stale working, else unblocked todo)
+
+Examples:
+  tracker.sh create --label "" --title "Title" --body "Body"      new issue
+  tracker.sh create --label idea --title "Title" --body "Body"    new idea (Backlog lane)
 EOF
 }
 
+case "${1:-}" in -h|--help) usage 2>&1; exit 0 ;; esac
 [ $# -ge 1 ] || { usage; exit 1; }
 sub="$1"; shift
 case "$sub" in
