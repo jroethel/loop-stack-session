@@ -77,6 +77,12 @@ Existing tools and repos found here feed the asset sweep below (reuse candidates
 even when the user forgot to mention them).
 Never ask a question that context already answers.
 
+Scan the tracker too: make one call to `scripts/tracker.sh list` for the open Issues and Backlog
+lanes. Read `references/tracker-scan.md` in full and follow it before proceeding - do not
+summarize it from memory. A match surfaces before Step 2 - say what matched (`covered by #N` /
+`related: #N`) and ask whether to keep brainstorming as new, converge into the existing issue, or
+stop here. No match proceeds silently into Step 2.
+
 ## Step 2 - Scope probes, then domain modeling
 
 Run these before clarifying questions, most expensive mistake first. Each catches a failure that would otherwise survive every downstream layer:

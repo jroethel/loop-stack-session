@@ -6,11 +6,16 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$HERE/../.." && pwd)"
 S="$REPO/skills/loop-brainstorm/SKILL.md"
 G="$REPO/scripts/graduate-parking.sh"
+TS="$REPO/skills/loop-brainstorm/references/tracker-scan.md"
 fail() { echo "FAIL: $1" >&2; exit 1; }
 [ -f "$S" ] || fail "loop-brainstorm SKILL missing"
+[ -f "$TS" ] || fail "shared tracker-scan reference missing"
 # E: domain modeling absorbed.
 grep -Eqi 'glossary|domain model|domain term' "$S" || fail "no domain-modeling / glossary probe"
 grep -Eqi 'stress-test|scenario stress' "$S" || fail "no scenario stress-test probe"
+# #14: fresh idea checked against the open Issues/Backlog lanes before shaping.
+grep -q 'scripts/tracker.sh list' "$S" || fail "loop-brainstorm does not wire the tracker scan"
+grep -q 'tracker-scan.md' "$S" || fail "loop-brainstorm does not point at the shared tracker-scan reference"
 # Reading the user block is present and unchanged in spirit (the heading survives).
 grep -qi 'Reading the user' "$S" || fail "the Reading the user section was removed"
 # Graduation script wired (with preview/confirm) and exists.

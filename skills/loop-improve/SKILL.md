@@ -57,10 +57,8 @@ The Tracker column renders one of `covered by #N`, `related: #N`, or `-`, set in
 
 ## Step 3 - Scan the tracker
 
-Make one call to `scripts/tracker.sh list` for the open Issues and Backlog lanes.
-It returns gh-shaped JSON (number, title, labels) in all three tracker modes.
-Match findings to issue titles by judgment; when a title is ambiguous, read the body (`gh issue view N` in github mode, `glab issue view N` in gitlab mode, `docs/issues/NNN-*.md` in local mode) before deciding covered versus related.
-A finding with no matching open issue gets `-` in the Tracker column.
+Make one call to `scripts/tracker.sh list` for the open Issues and Backlog lanes. Read `~/.claude/skills/loop-brainstorm/references/tracker-scan.md` in full and follow it before proceeding - do not summarize it from memory.
+Render each match against the findings table contract above: `covered by #N`, `related: #N`, or `-` for no match.
 
 ## Step 4 - Present findings and select`[gate:ASK]`
 

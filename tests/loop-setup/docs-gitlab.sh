@@ -10,6 +10,7 @@ SK="$REPO/skills/loop-setup/SKILL.md"
 REF="$REPO/skills/loop-setup/references/import-triage.md"
 WF="$REPO/skills/wayfinder/SKILL.md"
 IMP="$REPO/skills/loop-improve/SKILL.md"
+TS="$REPO/skills/loop-brainstorm/references/tracker-scan.md"
 REV="$REPO/skills/loop-review/SKILL.md"
 CFG="$REPO/config/repo-state.md"
 TPL="$REPO/config/repo-state.template.md"
@@ -76,8 +77,8 @@ for s in 'GitHub remote found' 'GitLab remote found' 'Remote found' 'No remote f
   grep -qF "$s" "$SK" || fail "SKILL.md does not document '$s'"
 done
 
-# loop-improve and loop-review name the gitlab read path alongside the others
-grep -qi 'glab issue view' "$IMP" || fail "loop-improve does not name the gitlab issue-read command"
+# loop-improve (via the shared tracker-scan reference) and loop-review name the gitlab read path
+grep -qi 'glab issue view' "$TS"  || fail "shared tracker-scan reference does not name the gitlab issue-read command"
 grep -qi 'glab issue view' "$REV" || fail "loop-review does not name the gitlab issue-read command"
 
 # this repo's own config is current (expected version derived from the template, never pinned)

@@ -8,6 +8,7 @@ REPO="$(cd "$HERE/../.." && pwd)"
 S="$REPO/skills/loop-improve/SKILL.md"
 PB="$REPO/skills/loop-improve/references/audit-playbook.md"
 BP="$REPO/skills/loop-brainstorm/references/brief-pipeline.md"
+TS="$REPO/skills/loop-brainstorm/references/tracker-scan.md"
 BS="$REPO/skills/loop-brainstorm/SKILL.md"
 RM="$REPO/README.md"
 fail() { echo "FAIL: $1" >&2; exit 1; }
@@ -15,6 +16,7 @@ fail() { echo "FAIL: $1" >&2; exit 1; }
 [ -f "$S" ]  || fail "loop-improve SKILL missing"
 [ -f "$PB" ] || fail "vendored audit playbook missing"
 [ -f "$BP" ] || fail "shared brief-pipeline reference missing"
+[ -f "$TS" ] || fail "shared tracker-scan reference missing"
 
 # frontmatter: name + trigger phrases + read-only + one-brief convergence
 grep -qE '^name:[[:space:]]*loop-improve' "$S" || fail "frontmatter name is not loop-improve"
@@ -35,8 +37,9 @@ grep -q 'related: #'   "$S"  || fail "Tracker column does not render 'related: #
 grep -qi 'same work'   "$S"  || fail "no definition of covered (same work)"
 grep -qi 'different ask' "$S" || fail "no definition of related (same area, different ask)"
 
-# tracker scan wired to the backend-agnostic lister
+# tracker scan wired to the backend-agnostic lister, via the shared reference
 grep -q 'scripts/tracker.sh list' "$S" || fail "tracker scan not wired to scripts/tracker.sh list"
+grep -q 'tracker-scan.md' "$S" || fail "loop-improve does not point at the shared tracker-scan reference"
 
 # selection gate is ASK; convergence/commit/graduation/supersede are DEFAULT
 grep -qE '\[gate:ASK\]'     "$S" || fail "findings-selection round is not tagged ASK"
