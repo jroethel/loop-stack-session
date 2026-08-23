@@ -472,7 +472,7 @@ case "$MODE" in
     if [ "$DRY_REMOTE" -eq 0 ]; then
       command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1 \
         || fail "tracker: github requires an authenticated gh CLI (install gh and run: gh auth login)"
-      [ -n "$remote_url" ] || echo "no remote - to create one: gh repo create --private"
+      [ -n "$remote_url" ] || fail "tracker: github requires an origin remote - create one with: gh repo create --private, then re-run"
       if ! gh label list --limit 200 2>/dev/null | awk '{print $1}' | grep -qx 'idea'; then
         gh label create idea --description "Backlog candidate" 2>/dev/null \
           && echo "created label idea" || echo "label idea not created; continuing"

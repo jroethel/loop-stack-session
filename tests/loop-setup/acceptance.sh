@@ -82,4 +82,23 @@ rc3=$?
 set -e 2>/dev/null || true
 [ "$rc3" -ne 0 ] || fail "github mode with unauth gh did NOT fail fast (exit 0)"
 printf '%s\n' "$err3" | grep -qi 'gh\|auth' || fail "fail-fast message does not name the gh/auth prerequisite"
-echo "PASS: loop-setup declared-mode - criteria 1 (both modes idempotent), 2 (legacy re-ask), 3 (fail-fast), 5 (disclosures)"
+
+# --- criterion 3b (#41): tracker: github with no origin remote fails fast with one message, no downstream FAILs ---
+BIN4="$(mktemp -d)"; F4="$(mktemp -d)"; trap 'rm -rf "$L" "$G" "$LG1" "$LG2" "$BIN" "$F3" "$BIN4" "$F4"' EXIT
+cat > "$BIN4/gh" <<'EOS'
+#!/usr/bin/env bash
+# authenticated stub: auth status succeeds; everything else fails
+[ "$1" = "auth" ] && exit 0
+exit 1
+EOS
+chmod +x "$BIN4/gh"
+( cd "$F4" && git init -q )   # no origin remote
+set +e
+err4="$( cd "$F4" && PATH="$BIN4:$PATH" LOOP_TRACKER_ANSWER=github "$SETUP" </dev/null 2>&1 )"
+rc4=$?
+set -e 2>/dev/null || true
+[ "$rc4" -ne 0 ] || fail "github mode with no remote did NOT fail fast (exit 0)"
+printf '%s\n' "$err4" | grep -q 'gh repo create --private' || fail "github no-remote fail does not carry the creation hint"
+printf '%s\n' "$err4" | grep -q 'gen-mirrors.sh failed' && fail "github no-remote path still fell through to gen-mirrors.sh"
+
+echo "PASS: loop-setup declared-mode - criteria 1 (both modes idempotent), 2 (legacy re-ask), 3/3b (fail-fast), 5 (disclosures)"

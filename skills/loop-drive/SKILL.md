@@ -214,8 +214,10 @@ Write `<source-plan-name>_loop.md` next to the source plan, containing, in order
 9. A one-paragraph "kicking it off" section: the sentence the human says to start, where the per-wave summaries appear, the watch points from Step 7, and a pointer to the resume prompt.
 
 Follow the user's markdown house style (~/.claude/CLAUDE.md).
-Do not start executing the loop; drafting the plan and executing it are separate approvals unless the user said otherwise.
-When the user does approve execution, go through Step 7 before launching anything.
+Drafting the plan and executing it are separate approvals.
+With the autonomy knob at auto, the transition into execution after the pin review passes auto-takes`[gate:DEFAULT]` - invoking /loop-drive on a finished plan under auto is the execution approval; log the launch decision in the batch-review journal.
+With the knob at pause or unset, the transition is an ask`[gate:ASK]` - do not start executing until the user approves.
+Either way, go through Step 7 before launching anything.
 
 ## Step 7 - Drive dashboard, then launch
 

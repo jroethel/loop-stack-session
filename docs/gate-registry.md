@@ -1,4 +1,4 @@
-<!-- generated: 2026-08-15T20:19:52Z -->
+<!-- generated: 2026-08-23T18:50:04Z -->
 <!-- regenerate: scripts/gen-gate-registry.sh . -->
 <!-- DO NOT EDIT -->
 <!-- This registry reflects tagged gates only and is not a completeness guarantee. -->
@@ -8,6 +8,7 @@
 | skill | type | trigger |
 |---|---|---|
 | loop-brainstorm | ASK | ## Step 3 - Clarifying questions in rounds |
+| loop-drive | ASK | With the knob at pause or unset, the transition is an ask - do not start... |
 | loop-improve | ASK | ## Step 4 - Present findings and select |
 | loop-molt | ASK | 1. **Constraint register FIRST** - before classifying anything, ask the ... |
 | loop-plan | ASK | ## Step 2 - Resolve the open questions |
@@ -25,6 +26,7 @@
 | loop-brainstorm | DEFAULT | ## Steps 5-6 - The brief |
 | loop-brainstorm | DEFAULT | ## Step 8 - User review gate |
 | loop-brainstorm | DEFAULT | ## Step 9 - Terminal state (pinned) |
+| loop-drive | DEFAULT | With the autonomy knob at auto, the transition into execution after the ... |
 | loop-drive | DEFAULT | When the user approves execution (including the single-artifact exits fr... |
 | loop-improve | DEFAULT | ## Step 5 - Converge through the shared brief pipeline |
 | loop-improve | DEFAULT | ## Step 6 - Leftover graduation and supersede-close |
