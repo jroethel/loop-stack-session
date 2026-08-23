@@ -82,5 +82,49 @@ out="$("$L" "$SB")"; rc=$?
 printf '%s\n' "$out" | grep -q '^LINT c #8' || fail "class-c: did not flag the non-idea issue"
 printf '%s\n' "$out" | grep -q '^LINT c #7' && fail "class-c: flagged the idea-lane issue (should be exempt)"
 
+# (f) filename grammar: key present -> post-cutoff lane docs must match <date>.<tokens>.<slug>.md;
+# dash-form post-cutoff names and malformed tokens are flagged; pre-cutoff legacy names are exempt;
+# earlier runs in this suite had no key and no LINT f line, covering the absent-key skip.
+printf 'filename-grammar-since: 2026-09-01\n' >> "$SB/config/repo-state.md"
+mkdir -p "$SB/docs/handoffs" "$SB/docs/reviews"
+echo "# Good tokened"  > "$SB/docs/briefs/2026-09-02.I6.good-brief.md"
+echo "# Good multi"    > "$SB/docs/plans/2026-09-02.I6.I7.multi-plan.md"
+echo "# Good wayfinder" > "$SB/docs/briefs/2026-09-02.W3.wayfinder-brief.md"
+echo "# Good plain"    > "$SB/docs/handoffs/2026-09-02.plain-handoff.md"
+echo "# Good loop"     > "$SB/docs/plans/2026-09-02.thing-plan_loop.md"
+echo "# Old dash form" > "$SB/docs/briefs/2026-09-02-old-form-brief.md"
+echo "# Lowercase tok" > "$SB/docs/briefs/2026-09-02.i6.lower-brief.md"
+echo "# Pre-cutoff"   > "$SB/docs/briefs/2026-08-01-old-dash-brief.md"
+out="$("$L" "$SB")"
+printf '%s\n' "$out" | grep -q '^LINT f .*old-form-brief'  || fail "class-f: did not flag the post-cutoff dash-form name"
+printf '%s\n' "$out" | grep -q '^LINT f .*lower-brief'     || fail "class-f: did not flag the malformed lowercase token"
+printf '%s\n' "$out" | grep -q '^LINT f .*good-brief'      && fail "class-f: flagged a conforming tokened name"
+printf '%s\n' "$out" | grep -q '^LINT f .*multi-plan'      && fail "class-f: flagged a conforming multi-token name"
+printf '%s\n' "$out" | grep -q '^LINT f .*wayfinder-brief' && fail "class-f: flagged a conforming wayfinder-token name"
+printf '%s\n' "$out" | grep -q '^LINT f .*plain-handoff'   && fail "class-f: flagged a conforming untokened dot name"
+printf '%s\n' "$out" | grep -q '^LINT f .*plan_loop'       && fail "class-f: flagged a conforming _loop companion name"
+printf '%s\n' "$out" | grep -q '^LINT f .*old-dash-brief'  && fail "class-f: flagged a pre-cutoff legacy name (grandfathering broken)"
+# one grep per token: listing a token's docs stays a single pipeline
+n="$(cd "$SB" && ls docs/briefs | grep '\.I6\.')"
+[ "$n" = "2026-09-02.I6.good-brief.md" ] || fail "grep-by-token did not list the tokened brief"
+
+# (g) roadmap R-tags: duplicates and malformed tags flagged; unique-only passes; absence passes
+cat > "$SB/ROADMAP.md" <<'RM'
+# Roadmap
+
+## 1. First [R1]
+
+## 2. Second [R1]
+
+## 3. Third [R]
+RM
+out="$("$L" "$SB")"
+printf '%s\n' "$out" | grep -q "^LINT g ROADMAP.md: duplicate R-tag '\[R1\]'" || fail "class-g: did not flag the duplicate tag"
+printf '%s\n' "$out" | grep -q "^LINT g ROADMAP.md: malformed R-tag '\[R\]'"  || fail "class-g: did not flag the malformed tag"
+printf '# Roadmap\n\n## 1. Only [R1]\n' > "$SB/ROADMAP.md"
+out="$("$L" "$SB")"
+printf '%s\n' "$out" | grep -q '^LINT g' && fail "class-g: flagged a unique-tag roadmap"
+rm "$SB/ROADMAP.md"
+
 [ ! -s "$GHLOG" ] || { cat "$GHLOG"; fail "lint leaked to a live tracker with no mode declared"; }
 echo "PASS: lifecycle-lint flags a+b, spares newest cycle, exit-codes right, no live-tracker leak"
