@@ -21,7 +21,8 @@ cat > "$SB/issues.json" <<'EOS'
  {"number":9,"title":"the map","labels":[{"name":"wayfinder:map"}],"updatedAt":"2026-08-02T00:00:00Z"}]
 EOS
 
-( cd "$SB" && MIRRORS_JSON_FILE=./issues.json ./scripts/gen-mirrors.sh . >/dev/null ) \
+mkdir -p "$SB/children"
+( cd "$SB" && MIRRORS_JSON_FILE=./issues.json MIRRORS_CHILDREN_DIR=./children ./scripts/gen-mirrors.sh . >/dev/null ) \
   || fail "gen-mirrors.sh failed in gitlab mode"
 
 grep -q 'source of truth: GitLab issues' "$SB/ISSUES.md" \
@@ -38,10 +39,12 @@ grep -q '| 9 |' "$SB/BACKLOG.md" && fail "wayfinder issue leaked into BACKLOG.md
 
 # github and local disclosures are unchanged
 printf 'tracker: github\n' > "$SB/config/repo-state.md"
-( cd "$SB" && MIRRORS_JSON_FILE=./issues.json ./scripts/gen-mirrors.sh . >/dev/null ) || fail "github regen failed"
+( cd "$SB" && MIRRORS_JSON_FILE=./issues.json MIRRORS_CHILDREN_DIR=./children ./scripts/gen-mirrors.sh . >/dev/null ) \
+  || fail "github regen failed"
 grep -q 'source of truth: GitHub issues' "$SB/ISSUES.md" || fail "github disclosure regressed"
 printf 'tracker: local\n' > "$SB/config/repo-state.md"
-( cd "$SB" && MIRRORS_JSON_FILE=./issues.json ./scripts/gen-mirrors.sh . >/dev/null ) || fail "local regen failed"
+( cd "$SB" && MIRRORS_JSON_FILE=./issues.json MIRRORS_CHILDREN_DIR=./children ./scripts/gen-mirrors.sh . >/dev/null ) \
+  || fail "local regen failed"
 grep -q 'source of truth: docs/issues/ local tracker' "$SB/ISSUES.md" || fail "local disclosure regressed"
 
 echo "PASS: gen-mirrors gitlab disclosure"

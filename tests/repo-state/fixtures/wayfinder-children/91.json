@@ -1,0 +1,4 @@
+[
+  {"number":5,"title":"Landscape: harness engineering discourse","state":"closed","labels":[{"name":"wayfinder:research"}],"body":"## Question\nsomething\n"},
+  {"number":6,"title":"First domino","state":"open","labels":[{"name":"wayfinder:grilling"}],"body":"## Question\nBlocked by: #5\n"}
+]

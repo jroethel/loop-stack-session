@@ -11,15 +11,16 @@ tracker: github
 
 ## Lanes
 
-| Lane          | Home                      | How                                             |
-| ---           | ---                       | ---                                             |
-| Roadmap       | `ROADMAP.md`              | Living file; edit in place, no mirror.          |
-| Issues        | GitHub (open, no `idea`)  | `ISSUES.md` via `scripts/gen-mirrors.sh .`.     |
-| Backlog       | GitHub (label `idea`)     | `BACKLOG.md` via `scripts/gen-mirrors.sh .`.    |
-| Handoffs      | `docs/handoffs/`          | Per session; git fallback in conventions.md.    |
-| Chain state   | `docs/chain-state.md`     | Runtime, gitignored.                            |
-| Batch reviews | `docs/reviews/`           | Per review run.                                 |
-| Archive       | `docs/archive/`           | Moved work lands here.                          |
+| Lane          | Home                           | How                                            |
+| ---           | ---                            | ---                                            |
+| Roadmap       | `ROADMAP.md`                   | Living file; edit in place, no mirror.         |
+| Issues        | GitHub (open, no `idea`)       | `ISSUES.md` via `scripts/gen-mirrors.sh .`.    |
+| Backlog       | GitHub (label `idea`)          | `BACKLOG.md` via `scripts/gen-mirrors.sh .`.   |
+| Wayfinder     | GitHub (label `wayfinder:map`) | `WAYFINDER.md` via `scripts/gen-mirrors.sh .`. |
+| Handoffs      | `docs/handoffs/`               | Per session; git fallback in conventions.md.   |
+| Chain state   | `docs/chain-state.md`          | Runtime, gitignored.                           |
+| Batch reviews | `docs/reviews/`                | Per review run.                                |
+| Archive       | `docs/archive/`                | Moved work lands here.                         |
 
 Backlog cross-repo view: `gh search issues --owner jroethel --label idea --state open`.
 Per-repo fallback when private-repo search is unavailable: `gh issue list --label idea --state open`.

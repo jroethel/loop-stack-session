@@ -25,7 +25,9 @@ cat > "$TMPW/issues.json" <<'EOF'
  {"number":92,"title":"A real backlog idea","labels":[{"name":"idea"}],"updatedAt":"2026-08-02T00:00:00Z"},
  {"number":93,"title":"A plain issue","labels":[],"updatedAt":"2026-08-02T00:00:00Z"}]
 EOF
-( cd "$TMPW" && MIRRORS_JSON_FILE="$TMPW/issues.json" bash "$M" "$TMPW" ) || fail "gen-mirrors failed on fixture"
+mkdir -p "$TMPW/children"
+( cd "$TMPW" && MIRRORS_JSON_FILE="$TMPW/issues.json" MIRRORS_CHILDREN_DIR="$TMPW/children" bash "$M" "$TMPW" ) \
+  || fail "gen-mirrors failed on fixture"
 # Anchor to the table-row form so a tmpdir path containing 91/92/93 in the header cannot false-match.
 grep -Eq '^\| *91 *\|' "$TMPW/ISSUES.md" "$TMPW/BACKLOG.md" && fail "wayfinder:map issue leaked into a mirror"
 grep -Eq '^\| *92 *\|' "$TMPW/BACKLOG.md" || fail "idea issue missing from BACKLOG.md (exclusion over-reached)"
