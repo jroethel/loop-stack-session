@@ -55,7 +55,7 @@ Create a task for each item and complete them in order:
 3. **Ask clarifying questions** - in AskUserQuestion frontier rounds
 4. **Propose 2-3 approaches** - trade-offs and your recommendation
 5. **Present the brief section by section** - approval per chunk
-6. **Write the brief file** - `docs/briefs/YYYY-MM-DD-<topic>-brief.md` in the target project
+6. **Write the brief file** - `docs/briefs/YYYY-MM-DD.<tokens>.<topic>-brief.md` in the target project
 7. **Self-review** - the checks under Self-review below, fixed inline
 8. **User reviews the brief** - and gets offered the commit
 9. **Hand off** - name the next stage exactly as pinned under Terminal state, then stop
@@ -159,7 +159,8 @@ Read `references/brief-pipeline.md` in full and follow it before proceeding - do
 ## Steps 5-6 - The brief`[gate:DEFAULT]`
 
 Present the brief section by section, scaled to complexity, checking in after each chunk.
-Then write it to `docs/briefs/YYYY-MM-DD-<topic>-brief.md`, following the user's markdown house style (~/.claude/CLAUDE.md).
+Then write it to `docs/briefs/YYYY-MM-DD.<tokens>.<topic>-brief.md`, following the user's markdown house style (~/.claude/CLAUDE.md).
+When the work belongs to a logged tracker item, include its token segment(s) (e.g. .I6 for issue 6, .B4 for backlog item 4, .R1 for roadmap item 1, .W3 for wayfinder ticket 3); when the item is not yet logged, omit the token segments entirely and insert them when the item is created.
 The brief's default section shape, the checkability tagging rule, and the "what the brief is not" test are the shared convergence reference's middle section.
 Read `references/brief-pipeline.md` in full and follow it before proceeding - do not summarize it from memory.
 

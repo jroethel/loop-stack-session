@@ -60,7 +60,8 @@ Narrowing is sometimes right, but it is never silent and never auto-taken - it s
 ### Batch-review list format
 
 The batch-review list is the run's gate journal: it is created the moment autonomy takes effect and appended at every gate as it fires, in chronological order, so a run that dies mid-chain still leaves the record of every decision taken so far.
-The list home is `docs/reviews/YYYY-MM-DD-<slug>-batch-review.md` (declared in `config/repo-state.md`).
+The list home is `docs/reviews/YYYY-MM-DD.<tokens>.<slug>-batch-review.md` (declared in `config/repo-state.md`).
+When the work belongs to a logged tracker item, include its token segment(s) (e.g. .I6 for issue 6, .B4 for backlog item 4, .R1 for roadmap item 1, .W3 for wayfinder ticket 3); when the item is not yet logged, omit the token segments entirely and insert them when the item is created.
 All four gate classes are logged, but they carry two different obligations.
 ASK and STOP entries are record-only: the human was present for them, so they preserve the chronology and the context around neighboring decisions but need no review.
 BATCH and DEFAULT entries are the review obligation: each is a decision auto-taken for the human, to accept or reverse at the end-of-chain checkpoint.

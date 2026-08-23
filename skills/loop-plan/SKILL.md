@@ -33,7 +33,7 @@ Create a task for each item and complete them in order:
 1. **Ingest** - read the brief and everything it points to; explore the codebase
 2. **Resolve open questions** - the brief's planning questions get answered here, not carried
 3. **Decompose** - file map, task boundaries, dependency graph, ownership
-4. **Write the plan file** - `docs/plans/YYYY-MM-DD-<topic>-plan.md`
+4. **Write the plan file** - `docs/plans/YYYY-MM-DD.<tokens>.<topic>-plan.md`
 5. **Self-review** - including the loop-drive contract check, fixed inline
 6. **Offer the Rubix review** - optional; two fresh-context dispatches
 7. **User reviews the plan** - and gets offered the commit
@@ -84,7 +84,8 @@ For a wide refactor, expand-contract is the reference pattern: land the new stru
 
 ## Step 4 - Write the plan file
 
-Save to `docs/plans/YYYY-MM-DD-<topic>-plan.md`, following the user's markdown house style (~/.claude/CLAUDE.md).
+Save to `docs/plans/YYYY-MM-DD.<tokens>.<topic>-plan.md`, following the user's markdown house style (~/.claude/CLAUDE.md).
+When the work belongs to a logged tracker item, include its token segment(s) (e.g. .I6 for issue 6, .B4 for backlog item 4, .R1 for roadmap item 1, .W3 for wayfinder ticket 3); when the item is not yet logged, omit the token segments entirely and insert them when the item is created.
 
 **Header, in order:**
 

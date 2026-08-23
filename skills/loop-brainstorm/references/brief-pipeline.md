@@ -14,7 +14,8 @@ The chosen approach, the alternatives, and the rationale all go in the brief; de
 ## The brief
 
 Present it section by section, scaled to complexity, checking in after each chunk.
-Then write it to `docs/briefs/YYYY-MM-DD-<topic>-brief.md` (one sentence per line, plain dashes, aligned table pipes).
+Then write it to `docs/briefs/YYYY-MM-DD.<tokens>.<topic>-brief.md` (one sentence per line, plain dashes, aligned table pipes).
+When the work belongs to a logged tracker item, include its token segment(s) (e.g. .I6 for issue 6, .B4 for backlog item 4, .R1 for roadmap item 1, .W3 for wayfinder ticket 3); when the item is not yet logged, omit the token segments entirely and insert them when the item is created.
 
 The sections below are the brief's default shape.
 Scale each to the idea - one sentence is fine for a simple one - and use your judgment to drop a section that genuinely does not apply, saying in the brief what you dropped and why.
