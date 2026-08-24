@@ -221,7 +221,7 @@ Either way, go through Step 7 before launching anything.
 
 ## Step 7 - Drive dashboard, then launch
 
-When the user approves execution (including the single-artifact exits from Step 0), ask once via AskUserQuestion, multiSelect: "See execution details before I launch?"`[gate:DEFAULT]`
+When the user approves execution (including the single-artifact exits from Step 0), offer the pre-launch detail menu once per run: with the knob at pause or unset, ask via AskUserQuestion, multiSelect: "See execution details before I launch?"; with the knob at auto, never fire the ask - auto-take the nothing-selected default (launch immediately), print the dashboard and watch points inline, and journal the take.`[gate:DEFAULT]`
 
 - **Dashboard**: what will run - the routing table condensed (unit, wave, model, transport, effort) plus the topology diagram.
 - **Dry run**: prove the "go" before firing it - execute the pre-flight checklist for real (ringer: `./ringer.py lint <manifest>`, engines present; native: clean tree, worktree-able state) and print the exact wave-1 launches (commands and Agent briefs) without starting any worker.
