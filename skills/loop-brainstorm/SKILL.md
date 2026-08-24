@@ -182,6 +182,15 @@ Tell the user where the brief was written, invite review and changes before plan
 The review-gate and commit-offer flow - the invitation, waiting for the response, and re-running self-review on requested changes - is the shared convergence reference's final section.
 Read `references/brief-pipeline.md` in full and follow it before proceeding - do not summarize it from memory.
 
+Before the hand-off to /loop-plan, offer a Rubix pass on the finished brief, soft-checked the same way as loop-plan Step 6:
+
+- Read `rubix-autorun` from `config/repo-state.md` (default `ask` when absent).
+- **If the rubix-review skill is available:** `ask` -> offer a Rubix review of the brief once; `on` -> invoke it without asking; `off` -> skip silently.
+  On acceptance/auto, invoke the rubix-review skill on the brief file, present its findings, and fold accepted ones into the brief before the hand-off.
+- **If the rubix-review skill is not available:** warn once per context ("the optional Rubix review is unavailable (rubix-review not installed); continuing without it") and fall back to the plain hand-off - never a hard failure.
+
+The offer rides this gate; it adds no new gate tag of its own.
+
 On an accepted commit, graduate the brief's Parking lot: preview the parked-item count and each derived title, then on assent invoke `scripts/graduate-parking.sh <brief-path>`.
 The full graduation contract (preview/assent, bullet-shape/title-truncation rule, verbose announce, reverse, autonomy journaling) is the shared convergence reference's Graduation section - `references/brief-pipeline.md`, its single home; do not restate it here.
 This graduation is a DEFAULT step in prose, not a new gate tag.

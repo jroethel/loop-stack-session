@@ -9,6 +9,7 @@ filename-grammar-since: 2026-08-23
 
 Remote: https://github.com/jroethel/loop-stack-session.git
 tracker: github
+rubix-autorun: ask
 
 ## Lanes
 

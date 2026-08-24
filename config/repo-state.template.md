@@ -7,9 +7,12 @@ Mode-invariant doctrine lives in the sibling `config/conventions.md`.
 
 template-version: 6
 
+rubix-autorun values: ask (offer the optional Rubix review once) | off (skip silently) | on (run without asking); absent means ask.
+
 Remote: {{REMOTE_OR_FALLBACK}}
 backlog-group: {{BACKLOG_GROUP}}
 filename-grammar-since: {{FILENAME_GRAMMAR_SINCE}}
+rubix-autorun: ask
 
 ## Lanes
 
