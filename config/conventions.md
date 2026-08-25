@@ -25,6 +25,11 @@ The committed tracker backend is a line-anchored `tracker:` key in `config/repo-
 Every loop-stack script reads it and obeys it; none infers the backend from `git remote`.
 `scripts/tracker.sh mode get|set` reads and writes it; `skills/loop-setup/setup.sh` asks it once when the key is missing.
 
+The committed Rubix-review autorun policy is a line-anchored `rubix-autorun:` key in `config/repo-state.md` (values `ask`, `off`, or `on`; absent means `ask`).
+`ask` offers the optional Rubix review once, `on` runs it without asking, and `off` skips it silently.
+`skills/loop-plan/SKILL.md` (Step 6) and `skills/loop-brainstorm/SKILL.md` read it; `config/repo-state.template.md` carries the default and value legend for new repos.
+Mapping note: the brief specified a binary "off by default" meaning "offer, do not auto-run"; it shipped as this three-value key defaulting to `ask`, and the token `off` took on the new meaning "skip silently".
+
 ## File ownership
 
 All root-level ALL-CAPS markdown files (`ROADMAP.md`, `ISSUES.md`, `BACKLOG.md`) belong to this convention; everything else it owns lives under `docs/` or `config/`, and this file is the definitive list.
