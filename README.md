@@ -134,6 +134,19 @@ Notes for using it with loop-stack:
 - `loop-drive` shells out to `./ringer.py` in the ringer checkout, whose location is the parameter home's `LOOP_STACK_RINGER_ROOT` (default `~/repos/ringer`); set it in `config/host.env` if the clone lives elsewhere.
 - `./ringer.py install-agent` is what registers the ringer skill and its once-per-session nudge hooks; uninstall with `./ringer.py uninstall-agent`.
 
+### rubix-review (reviewer-conduct contract)
+
+`loop-review` and `loop-drive` fail closed without the canonical reviewer-conduct contract, which ships in the rubix-review skill (a required co-install, distinct from the optional Rubix *review*).
+
+```sh
+git clone https://github.com/jroethel/rubix-review.git ~/create/skills/rubix-review
+```
+
+Notes for using it with loop-stack:
+
+- loop-stack's `./install.sh` self-installs rubix-review from `LOOP_STACK_RUBIX_ROOT` (default `~/create/skills/rubix-review`) when the contract is not already wired; set that variable in `config/host.env` if the clone lives elsewhere.
+- If rubix-review is missing at install time, `./install.sh` WARNs with the exact clone-and-reinstall commands; re-run it after cloning to wire the contract.
+
 ## Multi-host
 
 Git push/pull is the supported reconciliation mechanism between the owner's hosts: each host installs via `git pull && ./install.sh && tests/run.sh`.

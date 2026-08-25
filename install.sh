@@ -213,6 +213,9 @@ else
   echo "WARNING: rubix-review not installed and LOOP_STACK_RUBIX_ROOT ($LOOP_STACK_RUBIX_ROOT) has no installer -"
   echo "         the reviewer-conduct contract is a REQUIRED co-install (distinct from the optional Rubix review);"
   echo "         loop-review and loop-drive reviewers fail closed until you install rubix-review and re-run this installer."
+  echo "         to fix, run these two commands:"
+  echo "           git clone https://github.com/jroethel/rubix-review.git $LOOP_STACK_RUBIX_ROOT"
+  echo "           bash $0"
 fi
 
 # 3. CLAUDE.md managed block: replace in place, never duplicate.

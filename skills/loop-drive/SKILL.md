@@ -143,7 +143,11 @@ Judge the raw evidence (the diff, the executed check output, the artifact), and 
 
 The reviewer-conduct contract for validator subagents is the canonical `references/reviewer-conduct-contract.md`, installed from the rubix-review skill (a required co-install, not an optional feature - unlike the optional Rubix *review* itself).
 Read it and paste its contents verbatim into every validator prompt.
-If that file is absent, stop and report that rubix-review must be installed and loop-stack's install.sh re-run - do not run the validators uncontracted.
+If that file is absent, stop and do not run the validators uncontracted; report that rubix-review must be installed and loop-stack's installer re-run, with the two exact commands:
+```sh
+git clone https://github.com/jroethel/rubix-review.git ~/create/skills/rubix-review
+./install.sh   # from the loop-stack checkout
+```
 
 Native validators also get: mandatory independent test rerun, criterion-by-criterion walk with evidence, scope-boundary diff audit, read-only, and a `{verdict: pass|fail|spec-problem, criteria: [...], notes}` contract (spec-problem routes spec bugs to the orchestrator instead of a futile fix loop).
 Every validator prompt (both transports) states verdict discipline explicitly: if ANY criterion fails, the overall verdict is fail - without this line, first attempts write pass while their own notes contradict it.

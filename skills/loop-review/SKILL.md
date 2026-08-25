@@ -83,7 +83,11 @@ Choose the reviewer model by its role (a review/validation gate) per the user's 
 
 The reviewer-conduct contract is the canonical `references/reviewer-conduct-contract.md`, installed from the rubix-review skill (a required co-install, not an optional feature - unlike the Rubix *review* itself).
 Read it and paste its contents verbatim into each subagent prompt below.
-If that file is absent, stop and report that rubix-review must be installed and loop-stack's install.sh re-run - do not run the Spec/Standards subagents uncontracted.
+If that file is absent, stop and do not run the Spec/Standards subagents uncontracted; report that rubix-review must be installed and loop-stack's installer re-run, with the two exact commands:
+```sh
+git clone https://github.com/jroethel/rubix-review.git ~/create/skills/rubix-review
+./install.sh   # from the loop-stack checkout
+```
 
 **Standards subagent prompt** - include:
 
