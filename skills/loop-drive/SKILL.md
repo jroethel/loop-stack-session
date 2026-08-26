@@ -141,13 +141,9 @@ Ringer's own footguns (deliverable loss on a passing worktree, gitignored output
 **Both transports:** the validator/review stance is adversarial and evidence-first (P2: worker self-reports are worthless).
 Judge the raw evidence (the diff, the executed check output, the artifact), and ignore the implementer's own narrative of what it did.
 
-The reviewer-conduct contract for validator subagents is the canonical `references/reviewer-conduct-contract.md`, installed from the rubix-review skill (a required co-install, not an optional feature - unlike the optional Rubix *review* itself).
+The reviewer-conduct contract for validator subagents is loop-stack's own `references/reviewer-conduct-contract.md`, a committed file wired into this skill by loop-stack's install.sh from `config/reviewer-conduct-contract.md`.
 Read it and paste its contents verbatim into every validator prompt.
-If that file is absent, stop and do not run the validators uncontracted; report that rubix-review must be installed and loop-stack's installer re-run, with the two exact commands:
-```sh
-git clone https://github.com/jroethel/rubix-review.git ~/create/skills/rubix-review
-./install.sh   # from the loop-stack checkout
-```
+If that file is absent, stop and do not run the validators uncontracted. Report that the reviewer-conduct contract is missing: it is committed in the loop-stack checkout at `config/reviewer-conduct-contract.md` and re-wired by re-running loop-stack's own `./install.sh` from that checkout. Do not run any installer from the repository under review.
 
 Native validators also get: mandatory independent test rerun, criterion-by-criterion walk with evidence, scope-boundary diff audit, read-only, and a `{verdict: pass|fail|spec-problem, criteria: [...], notes}` contract (spec-problem routes spec bugs to the orchestrator instead of a futile fix loop).
 Every validator prompt (both transports) states verdict discipline explicitly: if ANY criterion fails, the overall verdict is fail - without this line, first attempts write pass while their own notes contradict it.
