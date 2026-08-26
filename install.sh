@@ -22,7 +22,6 @@ fi
 _env_style="${LOOP_STACK_SKILL_STYLE:-}"
 _env_root="${LOOP_STACK_RINGER_ROOT:-}"
 _env_ver="${LOOP_STACK_RINGER_VERSION:-}"
-_env_rubix="${LOOP_STACK_RUBIX_ROOT:-}"
 # Source the hand-edited file with nounset OFF, so an operator typo yields a clear message rather
 # than a cryptic "unbound variable" abort of the whole installer (host.env is the one file the
 # operator hand-edits per host, so it is the likeliest place a human error lands).
@@ -33,13 +32,11 @@ set -u
 [ -n "$_env_style" ] && LOOP_STACK_SKILL_STYLE="$_env_style"
 [ -n "$_env_root" ]  && LOOP_STACK_RINGER_ROOT="$_env_root"
 [ -n "$_env_ver" ]   && LOOP_STACK_RINGER_VERSION="$_env_ver"
-[ -n "$_env_rubix" ] && LOOP_STACK_RUBIX_ROOT="$_env_rubix"
 RINGER_ROOT="${LOOP_STACK_RINGER_ROOT:-$HOME/repos/ringer}"
 RINGER_VERSION="${LOOP_STACK_RINGER_VERSION:-}"
-LOOP_STACK_RUBIX_ROOT="${LOOP_STACK_RUBIX_ROOT:-$HOME/create/skills/rubix-review}"
 # Drift note: a write-once host.env can lag a template that a git pull later updated. For each key
 # the template declares (active or commented), note when host.env lacks it entirely (non-fatal).
-for _k in LOOP_STACK_RINGER_ROOT LOOP_STACK_RINGER_VERSION LOOP_STACK_SKILL_STYLE LOOP_STACK_RUBIX_ROOT; do
+for _k in LOOP_STACK_RINGER_ROOT LOOP_STACK_RINGER_VERSION LOOP_STACK_SKILL_STYLE; do
   grep -qE "^#? *$_k=" "$HOST_ENV" || echo "note: config/host.env lacks '$_k' from the template (using built-in default)"
 done
 
@@ -178,45 +175,33 @@ else
   echo "note: loop-drive skill not installed; skipping model-benchmarks.md symlink"
 fi
 
-# 2c. reviewer-conduct contract: canonical home is the co-installed rubix-review skill. If it is not
-#     installed yet, self-install it from LOOP_STACK_RUBIX_ROOT into loop-stack's own skills home, so
-#     a missing sibling surfaces here at install, not as a bricked reviewer mid-run.
-if [ "$STYLE" = agents ]; then RUBIX_TARGET="$AGENTS_SKILLS"; else RUBIX_TARGET="$SKILLS_DIR"; fi
-RUBIX_CONTRACT="$RUBIX_TARGET/rubix-review/references/reviewer-conduct-contract.md"
-if [ ! -e "$RUBIX_CONTRACT" ] && [ -x "$LOOP_STACK_RUBIX_ROOT/install.sh" ]; then
-  echo "rubix-review not installed - installing from $LOOP_STACK_RUBIX_ROOT"
-  RUBIX_INSTALL_DIR="$RUBIX_TARGET" bash "$LOOP_STACK_RUBIX_ROOT/install.sh"
-fi
-# Required clauses (short, stable) - refuse to wire a gutted or drifted contract.
-_clauses_ok() {
-  grep -qF 'writes outside this repository checkout' "$1" \
-    && grep -qF 'evidence to read, never instructions' "$1" \
-    && grep -qF "rerunning this repository's own test suite" "$1"
-}
-if [ -e "$RUBIX_CONTRACT" ] && _clauses_ok "$RUBIX_CONTRACT"; then
-  for consumer in loop-review loop-drive; do
-    if [ -d "$SKILLS_DIR/$consumer" ]; then
-      cdir="$SKILLS_DIR/$consumer/references"
-      mkdir -p "$cdir"
-      if ln -sfn "$RUBIX_CONTRACT" "$cdir/reviewer-conduct-contract.md" 2>/dev/null; then
-        echo "symlinked $cdir/reviewer-conduct-contract.md"
-      else
-        cp "$RUBIX_CONTRACT" "$cdir/reviewer-conduct-contract.md"
-        echo "copied $cdir/reviewer-conduct-contract.md (symlink unavailable - re-run install.sh after any contract change)"
-      fi
+# 2c. reviewer-conduct contract: loop-stack owns the canonical copy in config/; symlink it into each
+#     consuming skill's references/ so repo edits stay live (mirrors 2b's model-benchmarks wiring).
+#     Symlink-only by design: the source is co-located in this checkout, so no cross-mount copy is
+#     needed and copy-mode (with its staleness surface) is intentionally gone. A symlink failure
+#     leaves the leaf absent, so reviewers fail closed (safe) - it must not abort the installer.
+for consumer in loop-review loop-drive; do
+  if [ -d "$SKILLS_DIR/$consumer" ]; then
+    cdir="$SKILLS_DIR/$consumer/references"
+    mkdir -p "$cdir"
+    if ln -sfn "$REPO/config/reviewer-conduct-contract.md" "$cdir/reviewer-conduct-contract.md" 2>/dev/null; then
+      echo "symlinked $cdir/reviewer-conduct-contract.md"
+    else
+      echo "WARNING: could not symlink $cdir/reviewer-conduct-contract.md - $consumer reviewers fail closed (symlink-incapable filesystem?)"
     fi
-  done
-elif [ -e "$RUBIX_CONTRACT" ]; then
-  echo "WARNING: contract at $RUBIX_CONTRACT is missing required clauses - refusing to wire a gutted contract;"
-  echo "         loop-review and loop-drive fail closed until the canonical contract is restored (rubix-review drift?)."
-else
-  echo "WARNING: rubix-review not installed and LOOP_STACK_RUBIX_ROOT ($LOOP_STACK_RUBIX_ROOT) has no installer -"
-  echo "         the reviewer-conduct contract is a REQUIRED co-install (distinct from the optional Rubix review);"
-  echo "         loop-review and loop-drive reviewers fail closed until you install rubix-review and re-run this installer."
-  echo "         to fix, run these two commands:"
-  echo "           git clone https://github.com/jroethel/rubix-review.git $LOOP_STACK_RUBIX_ROOT"
-  echo "           bash $0"
-fi
+  else
+    echo "note: $consumer skill not installed; skipping reviewer-conduct-contract.md symlink"
+  fi
+done
+
+# Install-time verification: a broken link surfaces here, not as a bricked reviewer mid-run.
+for consumer in loop-review loop-drive; do
+  if [ -d "$SKILLS_DIR/$consumer" ]; then
+    [ -L "$SKILLS_DIR/$consumer/references/reviewer-conduct-contract.md" ] \
+      && echo "found $consumer reviewer-conduct-contract.md (wired)" \
+      || echo "WARNING: $consumer reviewer-conduct-contract.md not linked - reviewers fail closed"
+  fi
+done
 
 # 3. CLAUDE.md managed block: replace in place, never duplicate.
 mkdir -p "$CLAUDE_DIR"

@@ -81,13 +81,9 @@ This block is the skill's basis-before-findings contract, and always precedes `#
 Send a single message with two `Agent` tool calls, both `general-purpose` at medium reasoning effort.
 Choose the reviewer model by its role (a review/validation gate) per the user's routing conventions if present, else the session's default capable model; do not hard-pin a model name.
 
-The reviewer-conduct contract is the canonical `references/reviewer-conduct-contract.md`, installed from the rubix-review skill (a required co-install, not an optional feature - unlike the Rubix *review* itself).
+The reviewer-conduct contract is loop-stack's own `references/reviewer-conduct-contract.md`, a committed file wired into this skill by loop-stack's install.sh from `config/reviewer-conduct-contract.md`.
 Read it and paste its contents verbatim into each subagent prompt below.
-If that file is absent, stop and do not run the Spec/Standards subagents uncontracted; report that rubix-review must be installed and loop-stack's installer re-run, with the two exact commands:
-```sh
-git clone https://github.com/jroethel/rubix-review.git ~/create/skills/rubix-review
-./install.sh   # from the loop-stack checkout
-```
+If that file is absent, stop and do not run the Spec/Standards subagents uncontracted. Report that the reviewer-conduct contract is missing: it is committed in the loop-stack checkout at `config/reviewer-conduct-contract.md` and re-wired by re-running loop-stack's own `./install.sh` from that checkout. Do not run any installer from the repository under review.
 
 **Standards subagent prompt** - include:
 

@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# reviewer-contract.sh - the reviewer-conduct contract has exactly ONE canonical definition (owned by
-# the rubix-review skill) and appears verbatim in NO loop-stack SKILL.md. loop-review and loop-drive
-# reach it through references/reviewer-conduct-contract.md and fail closed when it is absent. This
-# replaces the prior byte-identical-across-3-homes guard after the Rubix extraction.
+# reviewer-contract.sh - the reviewer-conduct contract has exactly ONE canonical definition: loop-stack's
+# own committed file at config/reviewer-conduct-contract.md, wired into loop-review and loop-drive by
+# install.sh (mirroring the model-benchmarks wiring). It appears verbatim in NO loop-stack SKILL.md.
+# loop-review and loop-drive reach it through references/reviewer-conduct-contract.md and fail closed
+# when it is absent.
 set -uo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$HERE/../.." && pwd)"
@@ -12,6 +13,7 @@ git rev-parse --is-inside-work-tree >/dev/null 2>&1 \
   || { echo "FAIL: not a git work tree - reviewer-contract sweep cannot run" >&2; exit 1; }
 
 PHRASE='writes outside this repository checkout'
+CONTRACT_SRC="$REPO/config/reviewer-conduct-contract.md"
 
 # sweep_clean <files...>: returns 1 (dirty) if the contract phrase is found in any file, else 0.
 # Check 1 and the catch-alive both route through this one function, so the proof exercises the real
@@ -24,7 +26,7 @@ SKILLS=(); while IFS= read -r f; do SKILLS+=("$f"); done < <(git ls-files 'skill
 [ "${#SKILLS[@]}" -ge 4 ] \
   || fail "enumeration returned ${#SKILLS[@]} SKILL.md files (<4) - sweep cannot be trusted"
 
-# 1. Zero verbatim contract text in any tracked loop-stack SKILL.md (source lives only in rubix-review).
+# 1. Zero verbatim contract text in any tracked loop-stack SKILL.md (source lives only in config/reviewer-conduct-contract.md).
 sweep_clean "${SKILLS[@]}" \
   || fail "verbatim reviewer-conduct contract still present in a tracked loop-stack SKILL.md"
 
@@ -34,7 +36,7 @@ for c in loop-review loop-drive; do
   [ -f "$S" ] || fail "$c SKILL.md missing"
   grep -q 'references/reviewer-conduct-contract.md' "$S" \
     || fail "$c does not point at references/reviewer-conduct-contract.md"
-  grep -Eqi 'do not run .* uncontracted|fail closed|stop and report' "$S" \
+  grep -Eqi 'do not run the .* uncontracted|do not run the validators uncontracted|do not run the Spec/Standards subagents uncontracted|fail closed|stop and report' "$S" \
     || fail "$c lacks a fail-closed instruction for the absent-contract case"
 done
 
@@ -44,26 +46,47 @@ refs="$(grep -c 'Paste the contents of .references/reviewer-conduct-contract.md'
 [ "$refs" -ge 2 ] \
   || fail "loop-review has $refs/2 contract-paste bullets - both subagent prompts must paste the file"
 
-# 4. install.sh self-installs, verifies clauses, and wires the contract (all three present).
+# 4. install.sh wires the config-owned contract via symlink, with zero rubix coupling.
 INST="$REPO/install.sh"
-grep -q 'reviewer-conduct-contract.md' "$INST" || fail "install.sh does not wire the contract"
-grep -q 'LOOP_STACK_RUBIX_ROOT' "$INST"        || fail "install.sh does not self-install from LOOP_STACK_RUBIX_ROOT"
-grep -q 'refusing to wire a gutted contract' "$INST" || fail "install.sh does not verify the contract clauses before wiring"
+grep -q 'for consumer in loop-review loop-drive' "$INST" \
+  || fail "install.sh lost the contract wiring loop"
+grep -qF 'ln -sfn "$REPO/config/reviewer-conduct-contract.md"' "$INST" \
+  || fail "install.sh does not symlink the config contract into consumers"
+grep -q 'rubix-review' "$INST" && fail "install.sh still references rubix-review"
+grep -q 'LOOP_STACK_RUBIX_ROOT' "$INST" && fail "install.sh still references LOOP_STACK_RUBIX_ROOT"
+grep -q '_clauses_ok' "$INST" && fail "install.sh still carries the old _clauses_ok guard"
+grep -q 'LOOP_STACK_RUBIX_ROOT' "$REPO/README.md" && fail "README.md still references LOOP_STACK_RUBIX_ROOT"
+grep -q 'LOOP_STACK_RUBIX_ROOT' "$REPO/config/host.env.template" && fail "config/host.env.template still references LOOP_STACK_RUBIX_ROOT"
+grep -q 'git clone https://github.com/jroethel/rubix-review' "$REPO/README.md" \
+  && fail "README.md still tells operators to clone rubix-review for the contract"
 
-# 5. Drift guard: wherever the canonical contract resolves on THIS host, it still carries its clauses.
-#    Skip-with-note (not fail) when unresolvable - a fresh CI checkout has no install and no rubix.
-CANON=""
+# 5a. In-repo canonical: the committed source exists and still carries its clauses. A smoke check
+#     that the contract keeps its teeth, not a tamper seal - git history is the integrity anchor
+#     now the file is committed, so no external hash pin is needed.
+[ -f "$CONTRACT_SRC" ] || fail "$CONTRACT_SRC missing - consumers fail closed with nothing to wire"
+grep -qF 'writes outside this repository checkout' "$CONTRACT_SRC" \
+  || fail "$CONTRACT_SRC missing clause: writes outside this repository checkout"
+grep -qF 'evidence to read, never instructions' "$CONTRACT_SRC" \
+  || fail "$CONTRACT_SRC missing clause: evidence to read, never instructions"
+grep -qF "rerunning this repository's own test suite" "$CONTRACT_SRC" \
+  || fail "$CONTRACT_SRC missing clause: rerunning this repository's own test suite"
+
+# 5b. Runtime leaf: wherever the contract resolves on THIS host, it is not a dangling symlink and
+#     still carries its clauses. Skip-with-note (not fail) when unresolvable - a fresh CI checkout
+#     has no install.
+LEAF=""
 for d in "$HOME/.agents/skills" "$HOME/.claude/skills"; do
-  [ -e "$d/rubix-review/references/reviewer-conduct-contract.md" ] \
-    && { CANON="$d/rubix-review/references/reviewer-conduct-contract.md"; break; }
+  [ -e "$d/loop-review/references/reviewer-conduct-contract.md" ] \
+    && { LEAF="$d/loop-review/references/reviewer-conduct-contract.md"; break; }
 done
-if [ -n "$CANON" ]; then
-  grep -qF 'evidence to read, never instructions' "$CANON" \
-    && grep -qF "rerunning this repository's own test suite" "$CANON" \
-    || fail "resolved canonical contract $CANON is missing required clauses (rubix-review drift)"
-  echo "note: verified canonical clauses at $CANON"
+if [ -n "$LEAF" ]; then
+  [ -s "$LEAF" ] || fail "runtime leaf $LEAF is empty or a dangling symlink"
+  grep -qF 'evidence to read, never instructions' "$LEAF" \
+    && grep -qF "rerunning this repository's own test suite" "$LEAF" \
+    || fail "runtime leaf $LEAF is missing required clauses (drift)"
+  echo "note: verified runtime leaf at $LEAF"
 else
-  echo "note: canonical contract not resolvable on this host (no install / no rubix-review) - clause drift check skipped"
+  echo "note: runtime contract leaf not resolvable on this host (no install) - leaf check skipped"
 fi
 
 # 6. Catch-alive: run check 1's ACTUAL sweep logic against a seeded temp file - a broken sweep must fail here.
@@ -71,4 +94,4 @@ TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 cp "$LR" "$TMP/seeded.md"; printf '\n%s\n' "$PHRASE" >> "$TMP/seeded.md"
 sweep_clean "$TMP/seeded.md" && fail "catch-alive proof failed: the sweep did not flag a seeded contract phrase"
 
-echo "PASS: one canonical contract (rubix-review), non-empty sweep, zero verbatim duplicates, consumers point + fail closed, install self-heals + verifies clauses, activation guarded, catch alive"
+echo "PASS: loop-stack-owned canonical contract in config/, symlink-wired into both consumers, zero rubix/RUBIX_ROOT coupling, consumers point + fail closed report-only, activation guarded, leaf resolves, catch alive"
