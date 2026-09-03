@@ -1,0 +1,17 @@
+filters:
+  and:
+    - 'board_card == true'
+views:
+  - type: cards
+    name: By lane
+    groupBy:
+      property: column
+      direction: ASC
+    order:
+      - column
+      - repo
+      - staleness
+      - health
+      - title
+      - last_work
+      - position

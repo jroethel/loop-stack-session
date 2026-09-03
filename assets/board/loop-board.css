@@ -1,0 +1,61 @@
+/* Loop board kanban layout for the Obsidian Bases "By lane" view.
+
+   Why this snippet exists (spike 2026-09-02.I52):
+   Native Bases groups cards by the `column` property, but it renders the cards
+   view with a JS-virtualized layout: each group is `position: absolute` with an
+   inline JS-computed `top` and `inset-inline: 0` (full width), so the groups
+   stack vertically down the page. A static CSS `display: grid`/`flex` on the
+   container alone does nothing, because absolutely-positioned children are out
+   of flow. This snippet pulls the groups back into normal flow and lays them
+   out as side-by-side kanban lanes. Scoped by `data-view-name="By lane"` so no
+   other Bases view in the vault is touched.
+
+   ponytail: forcing position:static disables Bases' card virtualization, so all
+   cards render at once. Fine for a board of dozens of cards; if a lane ever
+   holds hundreds, revisit (paginate the source query, not this snippet).
+
+   Staleness color is NOT handled here. Bases core exposes no per-value hook on a
+   card element (a card carries only the class `bases-cards-item`; frontmatter
+   `cssclasses` does not propagate to Bases cards, and CSS cannot match a
+   property's text value), so a card cannot be colored by its `staleness` band
+   from CSS alone. The render pipeline bakes a per-band colored indicator (an
+   emoji) into each card's title instead, which needs no CSS. See the spike
+   findings note. */
+
+/* Pull each group out of Bases' absolute positioning so the container's grid
+   can place them. Heading and its group are siblings (heading, group, heading,
+   group, ...); a two-row column-flow grid pairs each heading atop its lane. */
+.bases-view[data-view-name="By lane"] .bases-cards-container {
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) !important;
+  grid-auto-flow: column !important;
+  grid-auto-columns: 260px !important;
+  gap: 0 12px;
+  height: auto !important;
+  position: static !important;
+  overflow-x: auto;
+}
+
+.bases-view[data-view-name="By lane"] .bases-cards-group {
+  position: static !important;
+  inset-inline: auto !important;
+  top: auto !important;
+  height: auto !important;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  background: var(--background-secondary);
+  border-radius: 0 0 6px 6px;
+}
+
+.bases-view[data-view-name="By lane"] .bases-group-heading {
+  position: static !important;
+  top: auto !important;
+  inset-inline: auto !important;
+  padding: 6px 8px;
+  font-weight: 600;
+  background: var(--background-secondary-alt);
+  border-bottom: 2px solid var(--interactive-accent);
+  border-radius: 6px 6px 0 0;
+}
