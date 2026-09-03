@@ -157,7 +157,7 @@ done <<< "$cards"
   printf 'Rendered: %s\n\n' "$stamp"
   printf '## Tracker (per conforming repo)\n'
   if [ "$tracker_report" != "$NL" ]; then
-    while IFS= read -r l; do printf -- '- %s\n' "$l"; done <<< "$tracker_report"
+    while IFS= read -r l; do [ -n "$l" ] && printf -- '- %s\n' "$l"; done <<< "$tracker_report"
   else
     printf 'no tracker cards this render\n'
   fi
