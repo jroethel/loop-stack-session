@@ -24,7 +24,14 @@ skips="${3:-}"
 [ -n "$cortex" ] || fail "LOOP_BOARD_CORTEX is required to scope LOOP_BOARD_HOME"
 cortex="${cortex%/}"
 [ -n "$cortex" ] || fail "LOOP_BOARD_CORTEX is required to scope LOOP_BOARD_HOME"
+
+# canonicalize both paths before the containment check: a raw string-prefix compare on the
+# unresolved values is defeated by a `..` segment that resolves outside LOOP_BOARD_CORTEX
+mkdir -p "$home" || fail "cannot create LOOP_BOARD_HOME ($home)"
+cortex="$(cd "$cortex" 2>/dev/null && pwd -P)" || fail "LOOP_BOARD_CORTEX does not resolve to a real directory"
+home="$(cd "$home" 2>/dev/null && pwd -P)" || fail "LOOP_BOARD_HOME does not resolve to a real directory"
 case "$home" in
+  "$cortex") ;;
   "$cortex"/*) ;;
   *) fail "LOOP_BOARD_HOME ($home) is not under LOOP_BOARD_CORTEX ($cortex)" ;;
 esac
