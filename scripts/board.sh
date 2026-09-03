@@ -17,7 +17,7 @@ find_repos() {              # one scan root -> absolute repo paths, one per line
   while IFS= read -r g; do
     [ -n "$g" ] || continue
     (cd "$(dirname "$g")" && pwd) 2>/dev/null
-  done < <(find "$1" -maxdepth 3 -name .git -type d 2>/dev/null)
+  done < <(find "$1" -maxdepth 3 -name .git \( -type d -o -type f \) 2>/dev/null)
 }
 
 owner_of() {                # origin owner from https or ssh-scp URLs, empty when no origin
@@ -88,7 +88,6 @@ cmd_pipeline() {
       docs/spikes/2026-09-02.I52.board-bases-spike-findings.md 2>/dev/null; then
     LOOP_BOARD_CSS=1
   fi
-  local skips
   skips="$(mktemp)" || fail "cannot create a temp file for the skip counts"
   trap 'rm -f "$skips"' EXIT
   export LOOP_BOARD_CSS
