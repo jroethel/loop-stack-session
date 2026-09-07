@@ -1,0 +1,75 @@
+/* Loop board kanban layout (spike 2026-09-02.I52, reworked 2026-09-07).
+
+   Why this shape: native Bases renders one grouped cards view with a JS
+   virtualizer that computes its mount set once, per view, from an internal
+   vertical model. At board scale (114 cards) it mounts only the first ~70
+   cards, so a CSS-only kanban over one grouped view leaves later lanes
+   permanently empty. Instead, Board.md embeds one filtered view per lane
+   (![[by-lane.base#backlog]] ...), each embed gets its own virtualizer well
+   under the ceiling, and Bases' native card layout runs untouched inside
+   each embed. This snippet only lays the embeds out side by side and labels
+   them. Scoped by the `loop-board` cssclass carried in Board.md frontmatter,
+   so nothing else in the vault is touched. */
+
+/* Live preview: embed blocks are siblings of .cm-line rows in .cm-content.
+   Flow them as a horizontal row; the text rows between them collapse. */
+.loop-board .cm-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: max-content;
+}
+.loop-board .cm-content > .cm-line {
+  flex: 0 0 0;
+  overflow: hidden;
+}
+
+/* Reading view: each embed block sits in its own child div of the sizer. */
+.loop-board .markdown-preview-sizer {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: max-content;
+}
+
+/* The board is wider than a readable line; let it use the full pane. */
+.loop-board .cm-sizer,
+.loop-board .markdown-preview-sizer {
+  max-width: none !important;
+  margin-inline: 0 !important;
+}
+
+/* Live preview's editor scroller ships overflow-x: hidden, which clips the
+   lane row with no way for a user to scroll it. Auto restores native
+   horizontal scrolling (trackpad deltaX and a visible, draggable scrollbar). */
+.loop-board .cm-scroller {
+  overflow-x: auto !important;
+}
+
+/* One embed = one lane: bounded height, scrolls internally. The embedded
+   view's virtualizer tracks the embed's scroll, so cards mount as the lane
+   scrolls (verified live at 70 cards). */
+.loop-board .bases-embed {
+  flex: 0 0 272px;
+  width: 272px;
+  max-height: calc(100vh - 220px);
+  overflow-y: auto;
+  background: var(--background-secondary);
+  border-radius: 6px;
+}
+
+/* Lane heading from the embedded view's own name, so an empty lane still
+   shows its heading with no extra markup in Board.md. Sticky so the label
+   stays put while the lane scrolls. */
+.loop-board .bases-embed .bases-view::before {
+  content: attr(data-view-name);
+  display: block;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 6px 8px;
+  font-weight: 700;
+  background: var(--background-secondary-alt);
+  border-bottom: 2px solid var(--interactive-accent);
+  border-radius: 6px 6px 0 0;
+}

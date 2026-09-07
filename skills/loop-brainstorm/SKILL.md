@@ -140,6 +140,9 @@ The decisions are the user's; put each to them and wait.
 The frontier stays capped at brief-shaped questions.
 Questions you do NOT ask here: architecture, components, schedulers, data flow, file formats,
 library choices.
+This ban governs what you ask the user, not what you think or research - architecture
+exploration is a required input to Step 4 (see the Approaches section of the shared
+convergence reference).
 If one surfaces on the frontier anyway, it becomes a one-line entry under the brief's Open
 questions for planning, never a round entry.
 

@@ -8,8 +8,13 @@ The shared graduation contract lives here (single home); each calling skill keep
 
 ## Approaches
 
+Architecture thinking and outward research are required inputs to this step; the purity rules below govern what lands in the brief, never what you investigate.
+Before proposing, name each candidate's enabling assumptions about the outside world - ecosystem, tooling, platform capabilities - and buy a fresh observation for any that is decision-bearing and possibly stale.
+A negative about the external ecosystem ("no plugin exists", "X isn't supported") cannot kill or park a candidate until checked against the current ecosystem this session, dated; local absence is never evidence of world absence.
+Score research inputs by transferable mechanism, not topic overlap.
+
 Propose 2-3 genuinely different approaches with trade-offs, lead with your recommendation, and say why.
-The chosen approach, the alternatives, and the rationale all go in the brief; decisions without recorded rationale get relitigated.
+The chosen approach, the alternatives, the rationale, and the dated ecosystem facts it rests on all go in the brief; decisions without recorded rationale get relitigated.
 
 ## The brief
 
@@ -41,9 +46,11 @@ For a `[judgment]` criterion, attempt one reformulation toward checkable - "feel
 Downstream, /loop-plan routes every `[judgment]` tag to a human checkpoint (never a worker task), and the One-Minute Test front-door checkability question and /loop-drive's step 1 halt condition consume the tags directly (P6: work enters a swarm only when checking is cheaper than producing).
 
 **What the brief is not.**
-The brief contains no components, no data flow, no schedulers, no file formats, no library names, no phased build roadmap.
-If any of those appears in your draft, move it to Open questions for planning as a single line and delete the prose.
-The test: every sentence in the brief should survive the implementation being swapped out entirely.
+Outside the Approach and Known vs guessed sections, the brief contains no components, no data flow, no schedulers, no file formats, no library names, no phased build roadmap.
+If any of those appears elsewhere in your draft, move it to Open questions for planning as a single line and delete the prose.
+Approach and Known vs guessed may name plugins, platforms, and mechanisms when decision-bearing - that is which-shape-and-why, the grain those sections exist to record.
+What stays banned even there: speccing the innards of the chosen shape.
+The test for every other section: every sentence should survive the implementation being swapped out entirely.
 
 ## Self-review
 
@@ -51,7 +58,7 @@ Look at the written brief with fresh eyes and fix inline:
 
 1. **Placeholder scan** - any TBD, vague requirement, or empty REQUIRED section.
 2. **Internal consistency** - do sections contradict each other?
-3. **Architecture scan** - run the "survives an implementation swap" test on every sentence.
+3. **Architecture scan** - run the "survives an implementation swap" test on every sentence outside Approach and Known vs guessed; inside them, check the grain instead (which-shape-and-why stays, innards-spec moves to Open questions for planning).
 4. **Ambiguity check** - could any criterion be read two ways? Pick one, make it explicit.
 5. **Tag audit** - is every success criterion tagged, and every `[judgment]` tag the survivor of an attempted reformulation?
 

@@ -1,0 +1,13 @@
+filters:
+  and:
+    - 'board_card == true'
+views:
+  - type: table
+    name: By repo
+    order:
+      - repo
+      - column
+      - title
+      - staleness
+      - last_work
+      - health

@@ -436,6 +436,7 @@
     <a href="#decision-settling">17. Decisions settled</a>
     <a href="#bc-build-run">18. B+C build run</a>
     <a href="#rubix-standalone">19. Rubix standalone</a>
+    <a href="#architecture-home">20. Architecture's home</a>
   </div>
 </nav>
 
@@ -1582,6 +1583,125 @@
   </div>
 </section>
 
+<section id="architecture-home">
+  <h2><span class="num">20</span>Architecture's home: scoping the purity rules instead of softening them (2026-09-01)</h2>
+  <p>
+    Issue #56 tracked a frustration from the #52 (board-view) research: sessions twice needed Jeremy's explicit
+    steering to surface material findings. One scored a research video "low relevance" by topic-match when it
+    demonstrated a directly transferable mechanism; one verified "no kanban plugin installed" on the local vault and
+    reported it as a stopping point without checking that the ecosystem had moved (Obsidian shipped Bases; a wave of
+    Bases-native kanban plugins now exists, changing Candidate B's viability). The question: where in the loop-stack
+    process is architecture brainstorming and exploratory research supposed to live and be held to a standard? This
+    session (Fable 5 + Jeremy) diagnosed the cause in the skill prose and shipped a four-spot, two-file edit.
+  </p>
+
+  <div class="aha">
+    <div class="aha-label">Aha: both exploration steps point inward; no step ever looks at the world</div>
+    <p>
+      Brainstorm Step 1 explores "files, docs, recent commits"; loop-plan Step 1 explores "the codebase the plan will
+      land in". Nowhere did the process oblige an outward look at the current state of the ecosystem - so approach
+      viability was judged on whatever the session happened to remember, which is exactly how a stale ecosystem fact
+      survives until Jeremy personally pushes. The fix adds the outward-research obligation to the one place where
+      candidates live or die: the Approaches step of <code class="inline">brief-pipeline.md</code>.
+    </p>
+  </div>
+
+  <div class="aha">
+    <div class="aha-label">Aha: the stage penalized architecture three times and rewarded it zero times</div>
+    <p>
+      Three separate mechanisms stripped architecture from the brainstorm stage: the Step 3 frontier ban (never ask the
+      user architecture questions), the "What the brief is not" delete rule (any component or library name in the draft
+      gets reduced to one Open-questions line), and self-review scan #3 (the implementation-swap test run on every
+      sentence as a delete pass). Meanwhile the Approaches section - the one step that needs architecture thinking -
+      carried no research obligation at all. A session optimizing against those checks learns "engaging with
+      architecture is a cost here", which is precisely the #52 scoring behavior. The rules were written to govern what
+      lands in the brief, but nothing in the text said the boundary was the brief rather than the thinking.
+    </p>
+    <p class="why">
+      Surfaced answering Jeremy's stated concern: "it may be teaching sessions that architecture thinking is out of
+      scope for the whole stage, when the ban is only about what gets asked of you."
+    </p>
+  </div>
+
+  <div class="aha">
+    <div class="aha-label">Aha: a latent contradiction, and sessions resolve it toward the rule with a checklist</div>
+    <p>
+      The Approach section's contract is "the chosen one, the 2-3 considered, and the rationale at decision time" - but
+      a decision-bearing rationale sentence ("Bases-native kanban plugins now exist, making write-back nearly free")
+      names a plugin, and the swap test as written ordered it deleted. Two rules contradicted, and sessions resolved
+      the conflict in the purity rule's favor because it was the one backed by a self-review checklist item. Lesson:
+      when two prose rules collide, the one with an enforcement step wins in practice, so scoping must be written into
+      the enforcement step itself, not just the prose.
+    </p>
+  </div>
+
+  <div class="aha">
+    <div class="aha-label">Aha: which-architecture belongs to brainstorm Step 4, innards to loop-plan - never a new stage</div>
+    <p>
+      Jeremy's probe "where does architecture brainstorming get done? in loop-plan?" settled the grain split. Loop-plan
+      consumes the approach decision (its Approach header is "2-3 sentences, from the brief's chosen approach and
+      rationale") - it elaborates a chosen shape against the codebase. Putting divergent which-shape work after that
+      convergence gate can only run as expensive backtracking. And #52 had already improvised a "tech brief" artifact
+      when the process gave architecture no room - read as evidence that the Approach section scales up for big items,
+      not evidence that the pipeline needs a fourth stage.
+    </p>
+  </div>
+
+  <div class="aha">
+    <div class="aha-label">Aha: the two #52 incidents are different failure classes, and only one is fully fixable by process</div>
+    <p>
+      The kanban miss is a process failure with a clean rule: a negative about the external ecosystem ("no plugin
+      exists") cannot kill or park a candidate until checked against the current ecosystem, this session, dated - local
+      absence is never evidence of world absence. The video-scoring miss is a judgment failure (relevance scored by
+      topic overlap instead of transferable mechanism); the shipped one-liner ("score research inputs by transferable
+      mechanism, not topic overlap") is advisory, not checklist-enforceable. #56 stays open pending Jeremy's live test
+      of whether the prose actually changes session behavior.
+    </p>
+  </div>
+
+  <div class="aha">
+    <div class="aha-label">Near-miss: the first proposal softened the ban instead of scoping it</div>
+    <p>
+      The initial fix said architecture research is a required input but left "architecture is banned from reaching the
+      brief" intact - which would have left the research with no recorded home, recreating the original problem one
+      layer down. Jeremy's question exposed it, and the fix sharpened to scoping: the purity rules and swap test apply
+      to every section <em>except</em> Approach and Known vs guessed, which may name plugins, platforms, and mechanisms
+      when decision-bearing; speccing the innards of the chosen shape stays banned everywhere.
+    </p>
+  </div>
+
+  <h3>What shipped</h3>
+  <p>
+    Four spots, two files. In <code class="inline">skills/loop-brainstorm/references/brief-pipeline.md</code>: the
+    Approaches research obligation + freshness rule for negatives, the scoped "What the brief is not", and the scoped
+    self-review scan #3 (loop-improve inherits all three via the shared convergence reference). In
+    <code class="inline">skills/loop-brainstorm/SKILL.md</code>: one boundary sentence at the Step 3 ban pointing to
+    Step 4. Handoff with full before/after blocks:
+    <code class="inline">docs/handoffs/2026-09-01.I56-architecture-research-home.md</code>.
+  </p>
+
+  <table>
+    <tr><th>Decision</th><th>Alternatives considered</th><th>Why</th></tr>
+    <tr>
+      <td>Architecture research lives in brainstorm Step 4 (Approaches)</td>
+      <td>A standalone /loop-research skill; a research slot in /loop-plan</td>
+      <td>Plan is too late (it consumes the approach decision); a standalone stage adds pipeline weight and research
+          with no decision attached is what the One-Minute Test exists to kill</td>
+    </tr>
+    <tr>
+      <td>Scope the purity rules to exempt Approach and Known vs guessed</td>
+      <td>Soften or delete the swap test; leave rules absolute and rely on the new research prose</td>
+      <td>Absolute rules contradicted the Approach section's own contract, and the checklist-backed rule wins in
+          practice - so the exemption had to land in the checklist too</td>
+    </tr>
+    <tr>
+      <td>#56 stays open with the commit as reference</td>
+      <td>Close as fixed-by-edits</td>
+      <td>The judgment-failure half is advisory prose only; Jeremy tests live behavior before closing</td>
+    </tr>
+  </table>
+</section>
+
 </main>
 
 <footer>
@@ -1593,7 +1713,9 @@
   the substrate and routing assessment session; section 17 added 2026-08-02 after the decision-settling session
   (Fable 5 + Jeremy), which also restored the missing section-15 TOC link; section 18 added 2026-08-02 after the
   seam B+C build run (Fable 5 + Jeremy); section 19 added 2026-08-23 after the Rubix standalone-extraction
-  planning session (Opus + Jeremy), which produced <code class="inline">docs/plans/2026-08-23.rubix-standalone-skill-plan.md</code>.
+  planning session (Opus + Jeremy), which produced <code class="inline">docs/plans/2026-08-23.rubix-standalone-skill-plan.md</code>;
+  section 20 added 2026-09-01 after the #56 architecture-language session (Fable 5 + Jeremy), which edited
+  <code class="inline">loop-brainstorm</code> and its shared convergence reference.
   Skill names in sections 0-10 are the historical (pre-rename) names; see section 13 for the mapping.
 </footer>
 

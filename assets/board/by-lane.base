@@ -1,0 +1,84 @@
+filters:
+  and:
+    - 'board_card == true'
+views:
+  - type: cards
+    name: backlog
+    filters: 'column == "backlog"'
+    order:
+      - title
+      - repo
+      - staleness
+      - health
+      - last_work
+      - position
+  - type: cards
+    name: next-up
+    filters: 'column == "next-up"'
+    order:
+      - title
+      - repo
+      - staleness
+      - health
+      - last_work
+      - position
+  - type: cards
+    name: in-session
+    filters: 'column == "in-session"'
+    order:
+      - title
+      - repo
+      - staleness
+      - health
+      - last_work
+      - position
+  - type: cards
+    name: blocked-on-you
+    filters: 'column == "blocked-on-you"'
+    order:
+      - title
+      - repo
+      - staleness
+      - health
+      - last_work
+      - position
+  - type: cards
+    name: blocked-on-fact
+    filters: 'column == "blocked-on-fact"'
+    order:
+      - title
+      - repo
+      - staleness
+      - health
+      - last_work
+      - position
+  - type: cards
+    name: awaiting-review
+    filters: 'column == "awaiting-review"'
+    order:
+      - title
+      - repo
+      - staleness
+      - health
+      - last_work
+      - position
+  - type: cards
+    name: handed-off
+    filters: 'column == "handed-off"'
+    order:
+      - title
+      - repo
+      - staleness
+      - health
+      - last_work
+      - position
+  - type: cards
+    name: done
+    filters: 'column == "done"'
+    order:
+      - title
+      - repo
+      - staleness
+      - health
+      - last_work
+      - position
