@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # board-render-obsidian.sh - read the Card TSV (stdin, 12 fields, board-cards.sh's contract) and
 # write the board directory under LOOP_BOARD_HOME: one note per card, a _health.md note, and the
-# two .base views seeded from the committed templates only when absent. Every note is staged in
+# two .base views plus Board.md (the kanban entry note embedding one filtered view per lane),
+# seeded from the committed templates only when absent. Every note is staged in
 # <home>/.staging and swapped in as a set, so a rejected or dying render leaves the prior board
 # intact and no card note is deleted before its replacement exists. The one sanctioned write
 # outside the board home is the CSS snippet (LOOP_BOARD_CSS=1, create-if-absent, never refreshed).
@@ -186,9 +187,9 @@ done <<< "$cards"
   fi
 } > "$home/.staging/_health.md" || fail "cannot write the staged health note"
 
-for v in by-lane by-repo; do
-  [ -f "$home/$v.base" ] || cp "$ASSETS/$v.base" "$home/$v.base" \
-    || fail "cannot seed $v.base from $ASSETS"
+for v in by-lane.base by-repo.base Board.md; do    # Board.md embeds one filtered view per lane
+  [ -f "$home/$v" ] || cp "$ASSETS/$v" "$home/$v" \
+    || fail "cannot seed $v from $ASSETS"
 done
 
 for p in "$home/.staging"/*; do                 # swap the whole set in, then prune orphans

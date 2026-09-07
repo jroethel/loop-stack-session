@@ -1,111 +1,64 @@
-/* Loop board kanban layout for the Obsidian Bases "By lane" view.
+/* Loop board kanban layout (spike 2026-09-02.I52, reworked 2026-09-07).
 
-   Why this snippet exists (spike 2026-09-02.I52):
-   Native Bases groups cards by the `column` property, but it renders the cards
-   view with a JS-virtualized layout: each group is `position: absolute` with an
-   inline JS-computed `top` and `inset-inline: 0` (full width), so the groups
-   stack vertically down the page. A static CSS `display: grid`/`flex` on the
-   container alone does nothing, because absolutely-positioned children are out
-   of flow. This snippet pulls the groups back into normal flow and lays them
-   out as side-by-side kanban lanes. Scoped by `data-view-name="By lane"` so no
-   other Bases view in the vault is touched.
+   Why this shape: native Bases renders one grouped cards view with a JS
+   virtualizer that computes its mount set once, per view, from an internal
+   vertical model. At board scale (114 cards) it mounts only the first ~70
+   cards, so a CSS-only kanban over one grouped view leaves later lanes
+   permanently empty. Instead, Board.md embeds one filtered view per lane
+   (![[by-lane.base#backlog]] ...), each embed gets its own virtualizer well
+   under the ceiling, and Bases' native card layout runs untouched inside
+   each embed. This snippet only lays the embeds out side by side and labels
+   them. Scoped by the `loop-board` cssclass carried in Board.md frontmatter,
+   so nothing else in the vault is touched. */
 
-   ponytail: forcing position:static disables Bases' card virtualization, so all
-   cards render at once. Fine for a board of dozens of cards; if a lane ever
-   holds hundreds, revisit (paginate the source query, not this snippet).
-
-   Staleness color is NOT handled here. Bases core exposes no per-value hook on a
-   card element (a card carries only the class `bases-cards-item`; frontmatter
-   `cssclasses` does not propagate to Bases cards, and CSS cannot match a
-   property's text value), so a card cannot be colored by its `staleness` band
-   from CSS alone. The render pipeline bakes a per-band colored indicator (an
-   emoji) into each card's title instead, which needs no CSS. See the spike
-   findings note. */
-
-/* Pull each group out of Bases' absolute positioning so the container's grid
-   can place them. Heading and its group are siblings (heading, group, heading,
-   group, ...); a two-row column-flow grid pairs each heading atop its lane. */
-.bases-view[data-view-name="By lane"] .bases-cards-container {
-  display: grid !important;
-  grid-template-rows: auto minmax(0, 1fr) !important;
-  grid-auto-flow: column !important;
-  grid-auto-columns: 260px !important;
-  gap: 0 12px;
-  height: auto !important;
-  position: static !important;
-  overflow-x: auto;
-}
-
-.bases-view[data-view-name="By lane"] .bases-cards-group {
-  position: static !important;
-  inset-inline: auto !important;
-  top: auto !important;
-  height: auto !important;
-  /* Bound the lane and scroll it internally (classic kanban) instead of a
-     board that grows to the tallest lane's full card stack.
-     ponytail: the Bases virtualizer computes its mount set once per view init
-     from its own vertical model and ignores this layout entirely - at 114
-     cards it mounts only the first ~70 (all of lane 1, none of lane 2).
-     Verified invariant under scroll/resize/reopen/reload; not fixable from
-     CSS. Upgrade path: per-lane filtered views embedded side by side. */
-  max-height: calc(100vh - 260px);
-  overflow-y: auto;
+/* Live preview: embed blocks are siblings of .cm-line rows in .cm-content.
+   Flow them as a horizontal row; the text rows between them collapse. */
+.loop-board .cm-content {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 8px;
-  background: var(--background-secondary);
-  border-radius: 0 0 6px 6px;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: max-content;
+}
+.loop-board .cm-content > .cm-line {
+  flex: 0 0 0;
+  overflow: hidden;
 }
 
-.bases-view[data-view-name="By lane"] .bases-group-heading {
-  position: static !important;
-  top: auto !important;
-  inset-inline: auto !important;
+/* Reading view: each embed block sits in its own child div of the sizer. */
+.loop-board .markdown-preview-sizer {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: max-content;
+}
+
+/* The board is wider than a readable line; let it use the full pane. */
+.loop-board .cm-sizer,
+.loop-board .markdown-preview-sizer {
+  max-width: none !important;
+  margin-inline: 0 !important;
+}
+
+/* One embed = one lane: bounded height, scrolls internally. The embedded
+   view's virtualizer tracks the embed's scroll, so cards mount as the lane
+   scrolls (verified live at 70 cards). */
+.loop-board .bases-embed {
+  flex: 0 0 272px;
+  width: 272px;
+  max-height: calc(100vh - 220px);
+  overflow-y: auto;
+  background: var(--background-secondary);
+  border-radius: 6px;
+}
+
+/* Lane heading from the embedded view's own name, so an empty lane still
+   shows its heading with no extra markup in Board.md. */
+.loop-board .bases-embed .bases-view::before {
+  content: attr(data-view-name);
+  display: block;
   padding: 6px 8px;
-  font-weight: 600;
+  font-weight: 700;
   background: var(--background-secondary-alt);
   border-bottom: 2px solid var(--interactive-accent);
   border-radius: 6px 6px 0 0;
-}
-
-/* The cards themselves are also absolutely positioned by the virtualizer
-   (inline top/inset-inline-start computed for the native full-width layout).
-   Once the groups went static they stopped being the cards' containing block,
-   so the cards positioned against the workspace leaf and rendered over the
-   view header. Pull them into flow too: the group's flex column stacks them. */
-.bases-view[data-view-name="By lane"] .bases-cards-item {
-  position: static !important;
-  width: auto !important;
-  height: auto !important;
-  contain: content !important; /* stock is contain:strict; size containment would pin height at padding-only */
-  flex: none; /* the bounded lane is a definite-height flex column; default shrink squashes every card to its padding */
-}
-
-/* ...and the property rows inside a card are absolute with inline height:0
-   from the same measuring pass; in flow they take their natural text height. */
-.bases-view[data-view-name="By lane"] .bases-cards-item .bases-cards-property {
-  position: static !important;
-  top: auto !important;
-  inset-inline: auto !important;
-  height: auto !important;
-}
-
-/* Bases mounts an invisible measurement probe (a heading + group pair with
-   inline opacity:0 / z-index:-1). In-flow it occupies the first grid column
-   as a ghost lane; hide the pair so the first visible lane is a real one. */
-.bases-view[data-view-name="By lane"] .bases-group-heading[style*="z-index: -1"],
-.bases-view[data-view-name="By lane"] .bases-cards-group[style*="z-index: -1"] {
-  display: none;
-}
-
-/* The heading stacks the property name ("column") above the value; only the
-   value names the lane. Drop the label, let the value read as the lane title. */
-.bases-view[data-view-name="By lane"] .bases-group-heading .bases-group-property {
-  display: none;
-}
-.bases-view[data-view-name="By lane"] .bases-group-heading .bases-group-value {
-  font-size: 1.05em;
-  font-weight: 700;
-  color: var(--text-normal);
 }

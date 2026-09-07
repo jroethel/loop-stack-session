@@ -28,6 +28,7 @@ grep -rq 'column: in-session' "$home" || fail "frontmatter column missing"
 grep -rq 'Resume:' "$home" || fail "resume prompt block missing"
 [ -f "$home/_health.md" ] || fail "health note missing"
 [ -f "$home/by-lane.base" ] || fail "by-lane.base not seeded"
+[ -f "$home/Board.md" ] || fail "Board.md not seeded"
 
 # user edits an existing .base; re-render must preserve it and must not touch outside files
 echo "# user tweak" >> "$home/by-lane.base"
