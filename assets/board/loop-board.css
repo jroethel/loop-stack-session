@@ -39,6 +39,13 @@
   margin-inline: 0 !important;
 }
 
+/* Live preview's editor scroller ships overflow-x: hidden, which clips the
+   lane row with no way for a user to scroll it. Auto restores native
+   horizontal scrolling (trackpad deltaX and a visible, draggable scrollbar). */
+.loop-board .cm-scroller {
+  overflow-x: auto !important;
+}
+
 /* One embed = one lane: bounded height, scrolls internally. The embedded
    view's virtualizer tracks the embed's scroll, so cards mount as the lane
    scrolls (verified live at 70 cards). */
@@ -52,10 +59,14 @@
 }
 
 /* Lane heading from the embedded view's own name, so an empty lane still
-   shows its heading with no extra markup in Board.md. */
+   shows its heading with no extra markup in Board.md. Sticky so the label
+   stays put while the lane scrolls. */
 .loop-board .bases-embed .bases-view::before {
   content: attr(data-view-name);
   display: block;
+  position: sticky;
+  top: 0;
+  z-index: 1;
   padding: 6px 8px;
   font-weight: 700;
   background: var(--background-secondary-alt);
