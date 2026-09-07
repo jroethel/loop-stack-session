@@ -167,6 +167,19 @@ done <<< "$cards"
   if ! grep '^# skipped:' "$skips" 2>/dev/null | sed 's/^# /- /'; then
     printf 'none reported\n'
   fi
+  printf '\n## Column mapping\n'
+  printf '| Column            | What puts a card there                                                      |\n'
+  printf '| ---               | ---                                                                         |\n'
+  printf '| backlog           | Tracker issue with the idea label (token B<n>)                              |\n'
+  printf '| next-up           | agent:todo or no agent: label (token I<n>); plus every git card             |\n'
+  printf '| in-session        | agent:working                                                               |\n'
+  printf '| blocked-on-you    | agent:needs-input                                                           |\n'
+  printf '| blocked-on-fact   | Empty in the MVP (session cards, seam 1)                                    |\n'
+  printf '| awaiting-review   | agent:review                                                                |\n'
+  printf '| handed-off        | Empty in the MVP (session/handoff records, seam 1)                          |\n'
+  printf '| done              | Empty in the MVP (agent:done closes the issue; closed-issue lookback later) |\n'
+  printf '\nwayfinder:* issues get no card. A git card is suppressed only when its repo is\n'
+  printf 'conforming, clean, and already has a tracker card.\n'
   if [ "${LOOP_BOARD_CSS:-}" = 1 ]; then
     printf '\n## CSS snippet\n'
     printf 'One-time: enable `loop-board` under Settings > Appearance > CSS snippets.\n'
