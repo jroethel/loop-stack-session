@@ -48,7 +48,7 @@ fm_free() {                # free-text frontmatter value: quoted, so a title wit
   fi
 }
 
-band_emoji() {             # staleness band -> colored dot on the body H1 (spike: Bases has no CSS hook)
+band_emoji() {             # staleness band -> colored dot in the title property + body H1 (Bases card face shows properties, not body; spike: no CSS hook)
   case "$1" in
     1) echo "🟢" ;;
     2) echo "🟡" ;;
@@ -133,7 +133,7 @@ while IFS= read -r row; do
     fm_free 'behind:' "$behind"
     printf 'health: %s\n' "$health"
     printf 'render_asof: %s\n' "$asof"
-    fm_free 'title:' "$title"
+    fm_free 'title:' "$h1"
     printf -- '---\n\n'
     printf '# %s\n\n' "$h1"
     printf '**Column:** %s\n' "$column"
