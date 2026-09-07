@@ -41,6 +41,15 @@
   inset-inline: auto !important;
   top: auto !important;
   height: auto !important;
+  /* Bound the lane and scroll it internally (classic kanban) instead of a
+     board that grows to the tallest lane's full card stack.
+     ponytail: the Bases virtualizer computes its mount set once per view init
+     from its own vertical model and ignores this layout entirely - at 114
+     cards it mounts only the first ~70 (all of lane 1, none of lane 2).
+     Verified invariant under scroll/resize/reopen/reload; not fixable from
+     CSS. Upgrade path: per-lane filtered views embedded side by side. */
+  max-height: calc(100vh - 260px);
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -58,4 +67,45 @@
   background: var(--background-secondary-alt);
   border-bottom: 2px solid var(--interactive-accent);
   border-radius: 6px 6px 0 0;
+}
+
+/* The cards themselves are also absolutely positioned by the virtualizer
+   (inline top/inset-inline-start computed for the native full-width layout).
+   Once the groups went static they stopped being the cards' containing block,
+   so the cards positioned against the workspace leaf and rendered over the
+   view header. Pull them into flow too: the group's flex column stacks them. */
+.bases-view[data-view-name="By lane"] .bases-cards-item {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  contain: content !important; /* stock is contain:strict; size containment would pin height at padding-only */
+  flex: none; /* the bounded lane is a definite-height flex column; default shrink squashes every card to its padding */
+}
+
+/* ...and the property rows inside a card are absolute with inline height:0
+   from the same measuring pass; in flow they take their natural text height. */
+.bases-view[data-view-name="By lane"] .bases-cards-item .bases-cards-property {
+  position: static !important;
+  top: auto !important;
+  inset-inline: auto !important;
+  height: auto !important;
+}
+
+/* Bases mounts an invisible measurement probe (a heading + group pair with
+   inline opacity:0 / z-index:-1). In-flow it occupies the first grid column
+   as a ghost lane; hide the pair so the first visible lane is a real one. */
+.bases-view[data-view-name="By lane"] .bases-group-heading[style*="z-index: -1"],
+.bases-view[data-view-name="By lane"] .bases-cards-group[style*="z-index: -1"] {
+  display: none;
+}
+
+/* The heading stacks the property name ("column") above the value; only the
+   value names the lane. Drop the label, let the value read as the lane title. */
+.bases-view[data-view-name="By lane"] .bases-group-heading .bases-group-property {
+  display: none;
+}
+.bases-view[data-view-name="By lane"] .bases-group-heading .bases-group-value {
+  font-size: 1.05em;
+  font-weight: 700;
+  color: var(--text-normal);
 }
