@@ -25,7 +25,7 @@ ALLOW=(
   diagrams/                            # conversation-evolution diagrams narrate the historical ~/repos/ringer explore
   docs/archive/
   docs/handoffs/
-  docs/sessions/                      # session-card log lines quote real commands, which carry home paths
+  docs/sessions/                       # session-card log lines quote real commands, which carry home paths
   docs/reviews/
   docs/briefs/
   docs/plans/
