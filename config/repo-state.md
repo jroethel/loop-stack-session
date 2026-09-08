@@ -6,6 +6,7 @@ Mode-invariant doctrine lives in the sibling `config/conventions.md`.
 
 template-version: 6
 filename-grammar-since: 2026-08-23
+lifecycle-lint-since: 2026-09-07
 
 Remote: https://github.com/jroethel/loop-stack-session.git
 tracker: github
