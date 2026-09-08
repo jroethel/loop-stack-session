@@ -40,3 +40,7 @@ Nothing is executed yet; the next session runs the plan.
 - `/loop-auto` to set the knob once the run shape is chosen.
 - `/loop-review <pre-run-base>` fires automatically as loop-drive's final-wave advisory review; no manual invocation needed.
 - `/handoff` at the next session boundary.
+
+## Transitions
+
+- 2026-09-08T02:21:48Z action 0 superseded - pre-adoption bulk backfill, human-confirmed 2026-09-08

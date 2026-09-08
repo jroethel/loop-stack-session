@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# board-render-obsidian.sh - read the Card TSV (stdin, 12 fields, board-cards.sh's contract) and
+# board-render-obsidian.sh - read the Card TSV (stdin, 13 fields, board-cards.sh's contract) and
 # write the board directory under LOOP_BOARD_HOME: one note per card, a _health.md note, and the
 # two .base views plus Board.md (the kanban entry note embedding one filtered view per lane),
 # seeded from the committed templates only when absent. Every note is staged in
@@ -88,9 +88,9 @@ is_card_note() {           # true when the file's frontmatter block carries boar
 input="$(cat)" || fail "cannot read the Card TSV from stdin"
 cards="$(printf '%s\n' "$input" | awk -F'\t' -v us="$US" '
     NF == 0 || $1 ~ /^#/ { next }
-    NF != 12 { printf "row %d carries %d fields, expected 12\n", NR, NF | "cat 1>&2"; exit 3 }
-    { for (i = 1; i <= 12; i++) printf "%s%s", $i, us; printf "\n" }
-  ')" || fail "rejecting the Card TSV: a row does not have exactly 12 fields; no writes made"
+    NF != 13 { printf "row %d carries %d fields, expected 13\n", NR, NF | "cat 1>&2"; exit 3 }
+    { for (i = 1; i <= 13; i++) printf "%s%s", $i, us; printf "\n" }
+  ')" || fail "rejecting the Card TSV: a row does not have exactly 13 fields; no writes made"
 
 # a render that dies mid-staging must not leave stray card notes inside the board home
 trap '[ -e "$home/.staging" ] && rm -rf "$home/.staging" || true' EXIT
@@ -105,7 +105,7 @@ while IFS= read -r row; do
   IFS="$US" read -r -a f <<< "$row"
   card_id="${f[0]:-}"; repo="${f[1]:-}"; source="${f[2]:-}"; column="${f[3]:-}"
   title="${f[4]:-}"; token="${f[5]:-}"; band="${f[6]:-}"; last_work="${f[7]:-}"
-  pos="${f[8]:-}"; behind="${f[9]:-}"; health="${f[10]:-}"; epoch="${f[11]:-}"
+  pos="${f[8]:-}"; behind="${f[9]:-}"; health="${f[10]:-}"; epoch="${f[11]:-}"; marker="${f[12]:-}"
 
   asof="$(fmt_epoch "${epoch:-0}" '+%Y-%m-%dT%H:%M:%SZ')"
   [ -n "$asof" ] || asof="$stamp"
@@ -120,7 +120,8 @@ while IFS= read -r row; do
   name="${card_id//\//-}"; name="${name//#/-}"; name="$name.md"
   keep="$keep$name$NL"
   emoji="$(band_emoji "$band")"
-  h1="$title"; [ -n "$emoji" ] && h1="$emoji $title"
+  h1="$title"; [ -n "$marker" ] && h1="[$marker] $h1"
+  [ -n "$emoji" ] && h1="$emoji $h1"
   {
     printf -- '---\n'
     printf 'board_card: true\n'
@@ -134,6 +135,7 @@ while IFS= read -r row; do
     fm_free 'behind:' "$behind"
     printf 'health: %s\n' "$health"
     printf 'render_asof: %s\n' "$asof"
+    printf 'marker: %s\n' "$marker"   # fixed vocabulary: unquoted, so a Bases filter matches literally
     fm_free 'title:' "$h1"
     printf -- '---\n\n'
     printf '# %s\n\n' "$h1"
@@ -175,12 +177,14 @@ done <<< "$cards"
   printf '| next-up           | agent:todo or no agent: label (token I<n>); plus every git card             |\n'
   printf '| in-session        | agent:working                                                               |\n'
   printf '| blocked-on-you    | agent:needs-input                                                           |\n'
-  printf '| blocked-on-fact   | Empty in the MVP (session cards, seam 1)                                    |\n'
+  printf '| blocked-on-fact   | Session card closed blocked                                                 |\n'
   printf '| awaiting-review   | agent:review                                                                |\n'
-  printf '| handed-off        | Empty in the MVP (session/handoff records, seam 1)                          |\n'
-  printf '| done              | Empty in the MVP (agent:done closes the issue; closed-issue lookback later) |\n'
+  printf '| handed-off        | Live handoff record, or the handed-off label                                |\n'
+  printf '| done              | Session card closed done or aborted; issue closed within 60 days            |\n'
+  printf '\nA marker (went-stale, died-mid-work) prefixes the card title and is filterable as the marker property.\n'
   printf '\nwayfinder:* issues get no card. A git card is suppressed only when its repo is\n'
-  printf 'conforming, clean, and already has a tracker card.\n'
+  printf 'conforming, clean, already has a tracker card, and is not went-stale (a went-stale\n'
+  printf 'repo always keeps its git card so the marker has a carrier).\n'
   if [ "${LOOP_BOARD_CSS:-}" = 1 ]; then
     printf '\n## CSS snippet\n'
     printf 'One-time: enable `loop-board` under Settings > Appearance > CSS snippets.\n'

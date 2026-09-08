@@ -52,3 +52,7 @@ Do Seam A next: freshness-check #19/#25/#26/#27 against current code, then /loop
 them, surfacing the render_gitlab per-line-fix vs backend-neutral-{{BACKEND}}-template
 approach fork. Then /loop-plan the Seam B brief. Do not rebuild C or D.
 ```
+
+## Transitions
+
+- 2026-09-08T02:21:48Z action 0 executed - pre-adoption bulk backfill, human-confirmed 2026-09-08

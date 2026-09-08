@@ -31,3 +31,7 @@ Engine note: the demo-parity lane (glm-5.2 via claude-zai) was down (z.ai 529/ti
 
 - Push: `git push` from `main` (the only outstanding action; everything is committed locally, nothing pushed).
 - Optional: demo-parity probe re-run on glm-5.2/claude-zai when z.ai recovers (J13 reversal path); not required, the shipped evidence stands.
+
+## Transitions
+
+- 2026-09-08T02:21:49Z action 0 executed - pre-adoption bulk backfill, human-confirmed 2026-09-08

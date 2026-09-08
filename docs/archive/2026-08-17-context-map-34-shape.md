@@ -65,3 +65,7 @@ No ordering constraint; the Snipd check ruled the current distribution defensibl
 
 Pull #34 off the backlog (explicit, announced - scope rule), run `/loop-brainstorm` with this handoff as the input brief-seed.
 The brainstorm's open questions are only: ratify the write policy above, pick the ~20 lines' initial contents, and decide whether any external pointer (Obsidian/QMD) earns a line now or waits.
+
+## Transitions
+
+- 2026-09-08T02:21:48Z action 0 executed - pre-adoption bulk backfill, human-confirmed 2026-09-08

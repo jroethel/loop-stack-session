@@ -66,10 +66,11 @@ corroborating look with known blind spots.
 - Origin design record - `PLAN.md` and `conversation-archive.md` - the approved full build plan and the 2026-07-10 session behind it, the "why is the stack shaped this way" that code and commits never narrate.
 - Model-routing prior tier - `config/routing/model-benchmarks.md` - the routing chain's prior-tier scoreboard and loop-which's tier examples, how an agent resolves a tier to a model before any local scoreboard evidence exists.
 - Git conventions for loop work - `docs/git-guide.md` - loop-stack's return points, worktree gates, and recovery moves, which generic git knowledge does not cover.
+- Session records doctrine - `config/conventions.md` "Session records" section - the one-card-per-session rule and its closed terminal-status vocabulary, which `scripts/session-card.sh` implements and every conforming session opens and closes under.
 
 ### External (dated)
 
-- Research corpus - `~/create/research/research/` outside the repo, query via `qmd search '<topic>'` (collection `research`) - the 13 digests behind the 2026-08 evaluation, the evidence a design decision cites without pasting any of it. (2026-08-18)
+- Research corpus - `~/create/research/graph-engineering/` outside the repo, query via `qmd search '<topic>'` (collection `research`) - the 13 digests behind the 2026-08 evaluation, the evidence a design decision cites without pasting any of it. (2026-08-31)
 
 ### Transient (dated, expected to die at a molt or archive pass)
 

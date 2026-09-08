@@ -5,7 +5,7 @@ Render it into `config/repo-state.md` by replacing the placeholder below with th
 The tracker backend (github, gitlab, or local) is declared in the `tracker:` key below; the Local tracker section governs local mode.
 Mode-invariant doctrine lives in the sibling `config/conventions.md`.
 
-template-version: 6
+template-version: 7
 
 rubix-autorun values: ask (offer the optional Rubix review once) | off (skip silently) | on (run without asking); absent means ask.
 
@@ -26,6 +26,9 @@ rubix-autorun: ask
 | Chain state   | `docs/chain-state.md`          | Runtime, gitignored.                           |
 | Batch reviews | `docs/reviews/`                | Per review run.                                |
 | Archive       | `docs/archive/`                | Moved work lands here.                         |
+| Sessions      | `docs/sessions/`               | One card per session; see conventions.md.      |
+
+Every session opens a session card before its first substantive action: scripts/session-card.sh open (doctrine: conventions.md, Session records).
 
 Backlog cross-repo view: `gh search issues --owner jroethel --label idea --state open`.
 Per-repo fallback when private-repo search is unavailable: `gh issue list --label idea --state open`.

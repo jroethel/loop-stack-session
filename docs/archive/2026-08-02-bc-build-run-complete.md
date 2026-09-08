@@ -30,3 +30,7 @@ Backlog issues #4 and #5 are natural riders on this wave; pulling any other back
 - `/loop-plan`, then `/loop-drive` per the chain.
 - `/loop-auto` to set the knob once the plan is approved.
 - `/handoff` at the session boundary (writes here and refreshes the mirrors).
+
+## Transitions
+
+- 2026-09-08T02:21:48Z action 0 executed - pre-adoption bulk backfill, human-confirmed 2026-09-08

@@ -35,3 +35,7 @@ Result in one line: 3 ringer waves, 10/10 tasks PASS attempt 1 on claude-zai/glm
 - `/loop-brainstorm` when picking up idea #8 (tracker mode) - it is the next shaped-work candidate.
 - `/loop-review <base>` for any follow-up change sets.
 - `/handoff` at the next session boundary.
+
+## Transitions
+
+- 2026-09-08T02:21:48Z action 0 executed - pre-adoption bulk backfill, human-confirmed 2026-09-08
