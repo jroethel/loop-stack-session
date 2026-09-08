@@ -119,9 +119,10 @@ auth=""; hcount=0; HOFFROWS=""
 while IFS= read -r base; do
   [ -n "$base" ] || continue
   hcount=$((hcount + 1))
-  auth="$base"
   hd="${base:0:10}"
   if is_date "$hd"; then
+    auth="$base"      # only a date-named handoff can be authoritative: a name outside the grammar
+                      # sorts unpredictably and must never hijack the resume pointer
     if [ -z "$recorded" ] || [[ "$hd" > "$recorded" ]]; then recorded="$hd"; fi
   else
     hd=""

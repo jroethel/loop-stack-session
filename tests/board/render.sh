@@ -18,6 +18,7 @@ card() { printf '%s\tcreate/%s\t%s\t%s\t%s\t%s\t1\t2026-09-01\t%s\t%s\tok\t%s\t%
 {
   card 'create/repoA#I52' repoA tracker in-session 'Board MVP' I52 '' '' ''
   card 'create/repoA#git' repoA git next-up 'repoA working tree' '' '2 uncommitted, +0 ahead' '' went-stale
+  printf '#tracker\tcreate/repoZ\tok (no open issues)\n'   # conforming, zero tracker cards
 } > "$tmp/cards.tsv"
 
 before="$(outside_hash)"
@@ -27,6 +28,10 @@ n="$(grep -rl 'board_card: true' "$home" | grep -c .)"
 grep -rq 'column: in-session' "$home" || fail "frontmatter column missing"
 grep -rq 'Resume:' "$home" || fail "resume prompt block missing"
 [ -f "$home/_health.md" ] || fail "health note missing"
+grep -q 'create/repoZ: ok (no open issues)' "$home/_health.md" \
+  || fail "a conforming repo with zero tracker cards is missing from the health note"
+grep -q "First commands: cd $HOME/create/repoA " "$home/create-repoA-git.md" \
+  || fail "the resume block's first-commands line does not resolve the repo key"
 [ -f "$home/by-lane.base" ] || fail "by-lane.base not seeded"
 [ -f "$home/Board.md" ] || fail "Board.md not seeded"
 

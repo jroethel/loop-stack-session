@@ -163,6 +163,9 @@ while IFS= read -r line; do
     fi
   fi
   [ "$failed" -eq 0 ] || continue
+  # a conforming repo whose tracker answered with zero open issues emits no tracker card, so the
+  # health note's per-conforming-repo list would silently drop it; carry the status on a comment row
+  [ "$conf" = yes ] && [ "$tc" -eq 0 ] && printf '#tracker\t%s\tok (no open issues)\n' "$key"
   if [ "$conf" = yes ]; then
     # recorded state, via take-stock's 7-field TSV; the rows are re-joined on US because a tab
     # IFS collapses the empty token/marker fields (cf. board-render-obsidian.sh), and the call

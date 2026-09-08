@@ -59,6 +59,13 @@ band_emoji() {             # staleness band -> colored dot in the title property
   esac
 }
 
+repo_path() {              # repo key -> absolute path; keys are $HOME-relative, or already
+  case "$1" in            # absolute when the scan root that found the repo is outside $HOME
+    /*) printf '%s' "$1" ;;
+    *)  printf '%s' "$HOME/$1" ;;
+  esac
+}
+
 entry_point() {            # column source position repo_key -> resume entry, first match wins
   [ "$1" = done ] && { echo "archive or close"; return 0; }
   [ "$1" = blocked-on-you ] && { echo "answer the needs-input, then /loop-drive"; return 0; }
@@ -66,7 +73,7 @@ entry_point() {            # column source position repo_key -> resume entry, fi
     echo "review and commit, then /loop-drive"; return 0
   fi
   local p
-  for p in "$HOME/$4"/docs/plans/*.md; do
+  for p in "$(repo_path "$4")"/docs/plans/*.md; do
     [ -f "$p" ] && { echo "/loop-drive"; return 0; }
   done
   echo "/loop-plan"
@@ -91,6 +98,10 @@ cards="$(printf '%s\n' "$input" | awk -F'\t' -v us="$US" '
     NF != 13 { printf "row %d carries %d fields, expected 13\n", NR, NF | "cat 1>&2"; exit 3 }
     { for (i = 1; i <= 13; i++) printf "%s%s", $i, us; printf "\n" }
   ')" || fail "rejecting the Card TSV: a row does not have exactly 13 fields; no writes made"
+
+# conforming repos whose tracker answered with zero cards ride in on comment rows, which the card
+# scan above drops: they carry no note, only the health note's per-repo tracker status
+zero_tracker="$(printf '%s\n' "$input" | awk -F'\t' '$1 == "#tracker" { print $2 ": " $3 }')"
 
 # a render that dies mid-staging must not leave stray card notes inside the board home
 trap '[ -e "$home/.staging" ] && rm -rf "$home/.staging" || true' EXIT
@@ -149,11 +160,18 @@ while IFS= read -r row; do
     printf 'Resume: %s  %s\n' "$repo" "${token:-$title}"
     printf 'State: %s | %s | last work %s (band %s)\n' "$column" "${pos:-clean}" "$last_work" "$band"
     [ -n "$behind" ] && printf '%s\n' "$behind"
-    printf 'Entry: %s\n' "$(entry_point "$column" "$source" "$pos" "$repo")"
-    printf 'Next: cd %s && git log --oneline -5 && git status ; read config/context-map.md\n' "$HOME/$repo"
+    printf 'Start here: %s\n' "$(entry_point "$column" "$source" "$pos" "$repo")"
+    printf 'First commands: cd %s && git log --oneline -5 && git status ; read config/context-map.md\n' \
+      "$(repo_path "$repo")"
     printf '```\n'
   } > "$home/.staging/$name" || fail "cannot write the staged note for $card_id"
 done <<< "$cards"
+
+while IFS= read -r l; do                 # zero-card conforming repos, after the cards so a repo
+  [ -n "$l" ] || continue                # that emitted tracker cards keeps its own status line
+  fn_seen "$tracker_seen" "${l%%:*}" && continue
+  tracker_seen="$tracker_seen${l%%:*}$NL"; tracker_report="$tracker_report$l$NL"
+done <<< "$zero_tracker"
 
 {
   printf '# Board health\n\n'

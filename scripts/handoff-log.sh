@@ -134,7 +134,13 @@ case "$1" in
   state)
     parse "$FILE"
     if [ "$COMPLETE" = 1 ]; then
-      case "$FILE" in *docs/archive/*) echo consumed ;; *) echo consumed-unarchived ;; esac
+      # unarchived is a positive test on the live lane, never "not under docs/archive": a path in
+      # neither lane is a consumed record someone moved, not a lint target
+      case "$FILE" in
+        *docs/archive/*)  echo consumed ;;
+        *docs/handoffs/*) echo consumed-unarchived ;;
+        *)                echo consumed ;;
+      esac
     else
       echo live
     fi

@@ -6,8 +6,23 @@
 set -uo pipefail
 fail() { echo "board: $1" >&2; exit 1; }
 
-ROOTS="${LOOP_BOARD_ROOTS:-$HOME/create $HOME/projects $HOME/repos}"
-OWNER="${LOOP_BOARD_OWNER:-jroethel}"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
+HOST_ENV="$SCRIPT_DIR/../config/host.env"
+
+# This host's board parameters come from config/host.env, read in a subshell so a set environment
+# variable still wins on every key below - a one-off run can point the board anywhere.
+if [ -f "$HOST_ENV" ]; then
+  IFS=$'\037' read -r H_CORTEX H_HOME H_ROOTS H_OWNER H_CSS <<< "$(
+    . "$HOST_ENV" >/dev/null 2>&1
+    printf '%s\037%s\037%s\037%s\037%s' "${LOOP_BOARD_CORTEX:-}" "${LOOP_BOARD_HOME:-}" \
+      "${LOOP_BOARD_ROOTS:-}" "${LOOP_BOARD_OWNER:-}" "${LOOP_BOARD_CSS:-}"
+  )"
+fi
+LOOP_BOARD_CORTEX="${LOOP_BOARD_CORTEX:-${H_CORTEX:-}}"
+LOOP_BOARD_HOME="${LOOP_BOARD_HOME:-${H_HOME:-}}"
+LOOP_BOARD_CSS="${LOOP_BOARD_CSS:-${H_CSS:-}}"
+ROOTS="${LOOP_BOARD_ROOTS:-${H_ROOTS:-$HOME/create $HOME/projects $HOME/repos}}"
+OWNER="${LOOP_BOARD_OWNER:-${H_OWNER:-jroethel}}"
 NL='
 '
 
@@ -51,21 +66,22 @@ repo_row() {                # one repo -> its TSV row on stdout, or nothing when
 }
 
 cmd_discover() {
-  local root repo parent key d seen="$NL" repos skipped
+  local root repo key d seen="$NL" repos skipped
   for root in $ROOTS; do
     if [ ! -d "$root" ]; then
       echo "# board: scan root not found: $root" >&2
       continue
     fi
-    parent="$(cd "$root/.." && pwd)"
     repos="$NL"
     while IFS= read -r repo; do
       [ -n "$repo" ] || continue
       fn_seen "$seen" "$repo" && continue                 # already emitted under an earlier root
       seen="$seen$repo$NL"
       repos="$repos$repo$NL"
-      key="${repo#$parent/}"                              # $HOME-relative for the default roots
-      [ "$key" != "$repo" ] || key="${repo#$HOME/}"
+      key="${repo#$HOME/}"                                # $HOME-relative, else the absolute path:
+                                                          # the renderer resolves a resume `cd` from
+                                                          # the key, so it must stay resolvable under
+                                                          # a scan root outside $HOME
       repo_row "$repo" "$key" "$root"
     done < <(find_repos "$root")
     skipped=0
@@ -82,18 +98,13 @@ cmd_discover() {
 fn_seen() { case "$NL$1" in *"$NL$2$NL"*) return 0 ;; *) return 1 ;; esac; }
 
 cmd_pipeline() {
-  [ -n "${LOOP_BOARD_HOME:-}" ] || fail "LOOP_BOARD_HOME is required for a rendering run"
-  if [ -z "${LOOP_BOARD_CSS:-}" ] \
-    && grep -qiE 'css[ -]needed:[[:space:]]*yes' \
-      docs/spikes/2026-09-02.I52.board-bases-spike-findings.md 2>/dev/null; then
-    LOOP_BOARD_CSS=1
-  fi
+  [ -n "$LOOP_BOARD_HOME" ] || fail "LOOP_BOARD_HOME is required for a rendering run (environment, or config/host.env)"
   skips="$(mktemp)" || fail "cannot create a temp file for the skip counts"
   trap 'rm -f "$skips"' EXIT
   export LOOP_BOARD_CSS
   cmd_discover 2>"$skips" \
     | scripts/board-cards.sh \
-    | scripts/board-render-obsidian.sh "$LOOP_BOARD_HOME" "${LOOP_BOARD_CORTEX:-}" "$skips"
+    | scripts/board-render-obsidian.sh "$LOOP_BOARD_HOME" "$LOOP_BOARD_CORTEX" "$skips"
 }
 
 case "${1:-}" in
