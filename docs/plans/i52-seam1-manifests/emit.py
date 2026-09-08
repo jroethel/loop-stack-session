@@ -82,13 +82,15 @@ SCOPED = {
 }
 TASKNUM = {"t1-session-card": 1, "t2-handoff-log": 2, "t4-card-marker": 4,
            "t3-take-stock": 3, "t5-board-wiring": 5, "t9-template-v7": 9}
+# t4's acceptance spans two suites; its required assertions live per file (a wave-1 check bug
+# audited render.sh's messages inside cards.sh and forced a spurious FAIL - keep these per-file).
 TESTPATH = {
-    "t1-session-card": "tests/sessions/session-card.sh",
-    "t2-handoff-log": "tests/sessions/handoff-lifecycle.sh",
-    "t4-card-marker": "tests/board/cards.sh",
-    "t3-take-stock": "tests/sessions/take-stock.sh",
-    "t5-board-wiring": "tests/board/cards.sh",
-    "t9-template-v7": "tests/loop-setup/reconcile.sh",
+    "t1-session-card": ["tests/sessions/session-card.sh"],
+    "t2-handoff-log": ["tests/sessions/handoff-lifecycle.sh"],
+    "t4-card-marker": ["tests/board/cards.sh", "tests/board/render.sh"],
+    "t3-take-stock": ["tests/sessions/take-stock.sh"],
+    "t5-board-wiring": ["tests/board/cards.sh"],
+    "t9-template-v7": ["tests/loop-setup/reconcile.sh"],
 }
 OVERWRITE = {"t1-session-card", "t2-handoff-log", "t3-take-stock"}
 VERIFIED = {
@@ -100,16 +102,20 @@ VERIFIED = {
     "t9-template-v7": "The reconcile suite passes at template-version 7: rubix-autorun and lifecycle-lint-since both survive a re-render unduplicated, no placeholder is introduced, the Sessions lane row exists, the three new scripts are vendored executable, and conventions.md is byte-identical to the template.",
 }
 REQUIRED = {
-    "t4-card-marker": [
-        "a row does not have 13 fields",
-        "field 13 (marker) must be empty for an ordinary git card",
-        "the marker did not reach the card frontmatter",
-        "the marker did not prefix the rendered title",
-        "an unmarked card still needs an explicit marker key",
-        "an unmarked card must carry no marker prefix in its title",
-        "render should reject a 12-field row now that the contract is 13",
-        "failed render wiped the prior board",
-    ],
+    "t4-card-marker": {
+        "tests/board/cards.sh": [
+            "a row does not have 13 fields",
+            "field 13 (marker) must be empty for an ordinary git card",
+        ],
+        "tests/board/render.sh": [
+            "the marker did not reach the card frontmatter",
+            "the marker did not prefix the rendered title",
+            "an unmarked card still needs an explicit marker key",
+            "an unmarked card must carry no marker prefix in its title",
+            "render should reject a 12-field row now that the contract is 13",
+            "failed render wiped the prior board",
+        ],
+    },
     "t5-board-wiring": [
         "a session card closed blocked must land in blocked-on-fact",
         "a live handoff must land in handed-off",
@@ -178,31 +184,37 @@ Leave everything uncommitted. The harness exports the patch."""
 
 
 def check_body(key):
-    tp = TESTPATH[key]
+    tps = TESTPATH[key]
+    req = REQUIRED.get(key)
+    if isinstance(req, list):
+        req = {tps[0]: req}
     own_re = "|".join(re.escape(p) for p in OWN[key])
     parts = ["set -uo pipefail", "export LC_ALL=C",
              "PATCH=%s/%s.patch" % (PATCH_DIR, key),
              'mkdir -p "$(dirname "$PATCH")"', ""]
     if key in OVERWRITE:
         parts += ["# acceptance-test custody: canonical overwrite",
-                  'mkdir -p "$(dirname %s)"' % tp,
-                  "cat > %s <<'CANONICAL_TEST_EOF'" % tp,
+                  'mkdir -p "$(dirname %s)"' % tps[0],
+                  "cat > %s <<'CANONICAL_TEST_EOF'" % tps[0],
                   canonical_test(TASKNUM[key]),
                   "CANONICAL_TEST_EOF", ""]
     else:
-        parts += ["# acceptance-test custody: every required assertion message must be present",
-                  "missing=0",
-                  "while IFS= read -r line; do",
-                  '  [ -n "$line" ] || continue',
-                  '  grep -Fq -- "$line" %s || { echo "CHECK FAIL: required assertion missing from %s: $line"; missing=1; }' % (tp, tp),
-                  "done <<'REQUIRED_EOF'",
-                  "\n".join(REQUIRED[key]),
-                  "REQUIRED_EOF",
-                  '[ "$missing" -eq 0 ] || exit 1', ""]
-    parts += ["# run the acceptance test, printing everything",
-              "bash %s; rc=$?" % tp,
-              '[ "$rc" -eq 0 ] || { echo "CHECK FAIL: acceptance test %s exited $rc; its output above names the failed assertion"; exit 1; }' % tp,
-              "",
+        parts += ["# acceptance-test custody: every required assertion message must be present,",
+                  "# audited in the file that actually carries it",
+                  "missing=0"]
+        for fp, msgs in req.items():
+            parts += ["while IFS= read -r line; do",
+                      '  [ -n "$line" ] || continue',
+                      '  grep -Fq -- "$line" %s || { echo "CHECK FAIL: required assertion missing from %s: $line"; missing=1; }' % (fp, fp),
+                      "done <<'REQUIRED_EOF'",
+                      "\n".join(msgs),
+                      "REQUIRED_EOF"]
+        parts += ['[ "$missing" -eq 0 ] || exit 1', ""]
+    parts += ["# run the acceptance test suite(s), printing everything"]
+    for fp in tps:
+        parts += ["bash %s; rc=$?" % fp,
+                  '[ "$rc" -eq 0 ] || { echo "CHECK FAIL: acceptance test %s exited $rc; its output above names the failed assertion"; exit 1; }' % fp]
+    parts += ["",
               "# scoped regression gate (this task's suites only)",
               SCOPED[key],
               "rc=$?",
@@ -225,7 +237,7 @@ def check_body(key):
 
 
 def spec_for(key):
-    tp = TESTPATH[key]
+    tp = " and ".join(TESTPATH[key])
     custody = (CUSTODY_OVERWRITE if key in OVERWRITE else CUSTODY_ASSERT) % tp
     header = HEADER % {"owned": "\n".join("- " + p for p in OWN[key]),
                        "scoped": SCOPED[key], "custody": custody}
