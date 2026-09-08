@@ -8,8 +8,21 @@ fail() { echo "board: $1" >&2; exit 1; }
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd -P)"
 HOST_ENV="$SCRIPT_DIR/../config/host.env"
-ROOTS="${LOOP_BOARD_ROOTS:-$HOME/create $HOME/projects $HOME/repos}"
-OWNER="${LOOP_BOARD_OWNER:-jroethel}"
+
+# This host's board parameters come from config/host.env, read in a subshell so a set environment
+# variable still wins on every key below - a one-off run can point the board anywhere.
+if [ -f "$HOST_ENV" ]; then
+  IFS=$'\037' read -r H_CORTEX H_HOME H_ROOTS H_OWNER H_CSS <<< "$(
+    . "$HOST_ENV" >/dev/null 2>&1
+    printf '%s\037%s\037%s\037%s\037%s' "${LOOP_BOARD_CORTEX:-}" "${LOOP_BOARD_HOME:-}" \
+      "${LOOP_BOARD_ROOTS:-}" "${LOOP_BOARD_OWNER:-}" "${LOOP_BOARD_CSS:-}"
+  )"
+fi
+LOOP_BOARD_CORTEX="${LOOP_BOARD_CORTEX:-${H_CORTEX:-}}"
+LOOP_BOARD_HOME="${LOOP_BOARD_HOME:-${H_HOME:-}}"
+LOOP_BOARD_CSS="${LOOP_BOARD_CSS:-${H_CSS:-}}"
+ROOTS="${LOOP_BOARD_ROOTS:-${H_ROOTS:-$HOME/create $HOME/projects $HOME/repos}}"
+OWNER="${LOOP_BOARD_OWNER:-${H_OWNER:-jroethel}}"
 NL='
 '
 
@@ -85,18 +98,13 @@ cmd_discover() {
 fn_seen() { case "$NL$1" in *"$NL$2$NL"*) return 0 ;; *) return 1 ;; esac; }
 
 cmd_pipeline() {
-  [ -n "${LOOP_BOARD_HOME:-}" ] || fail "LOOP_BOARD_HOME is required for a rendering run"
-  # CSS verdict: env wins, else this host's config key. The spike that first recorded the verdict
-  # is history, not a runtime input - a dated doc must never decide what a run writes.
-  if [ -z "${LOOP_BOARD_CSS:-}" ] && [ -f "$HOST_ENV" ]; then
-    LOOP_BOARD_CSS="$(. "$HOST_ENV" >/dev/null 2>&1; printf '%s' "${LOOP_BOARD_CSS:-}")"
-  fi
+  [ -n "$LOOP_BOARD_HOME" ] || fail "LOOP_BOARD_HOME is required for a rendering run (environment, or config/host.env)"
   skips="$(mktemp)" || fail "cannot create a temp file for the skip counts"
   trap 'rm -f "$skips"' EXIT
   export LOOP_BOARD_CSS
   cmd_discover 2>"$skips" \
     | scripts/board-cards.sh \
-    | scripts/board-render-obsidian.sh "$LOOP_BOARD_HOME" "${LOOP_BOARD_CORTEX:-}" "$skips"
+    | scripts/board-render-obsidian.sh "$LOOP_BOARD_HOME" "$LOOP_BOARD_CORTEX" "$skips"
 }
 
 case "${1:-}" in
