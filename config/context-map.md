@@ -69,7 +69,7 @@ corroborating look with known blind spots.
 
 ### External (dated)
 
-- Research corpus - `~/create/research/research/` outside the repo, query via `qmd search '<topic>'` (collection `research`) - the 13 digests behind the 2026-08 evaluation, the evidence a design decision cites without pasting any of it. (2026-08-18)
+- Research corpus - `~/create/research/graph-engineering/` outside the repo, query via `qmd search '<topic>'` (collection `research`) - the 13 digests behind the 2026-08 evaluation, the evidence a design decision cites without pasting any of it. (2026-08-31)
 
 ### Transient (dated, expected to die at a molt or archive pass)
 
