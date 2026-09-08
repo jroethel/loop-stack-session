@@ -231,7 +231,7 @@ while IFS= read -r line; do
       note="$bn behind as of $(fmt_epoch "$fe" '+%Y-%m-%d %H:%M')"
     fi
   fi
-  card "$key#git" "$key" git next-up "$key working tree" "" \
+  card "$key#git" "$key" git next-up "${key##*/} working tree" "" \
     "$(band_of_age "$(( (RENDER_EPOCH - epoch) / 86400 ))")" \
     "$(fmt_epoch "$epoch" '+%Y-%m-%d')" "$pos" "$note" "$health" "$RENDER_EPOCH" "$stale"
 done
