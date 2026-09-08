@@ -58,3 +58,7 @@ git -C ~/create/loops/loop-stack-session branch -d molt-cycle-1 integration/cont
 > Read docs/handoffs/2026-08-15-control-plane-drive-close.md for state; the constraint register of docs/archive/2026-08-15-defects-check-custody-brief.md still governs (note: brief docs now in docs/briefs/ for cycle briefs 1-2, check both).
 > After the shakedown: the BATCH-gated pcs disposition pass (memo-ize ~/create/pcs/2026-08-15-consolidated-recommendations.md into docs/memos/, archive the evaluation doc and kickoff prompt, confirm the protocol vendored in skills/loop-molt/references/, add the pcs pointer to the context map, surface - do not decide - the ~/create/research/ rename); then open the packaging /loop-brainstorm against the clean stack.
 > Known follow-ups on the backlog: idea #30 (install.sh non-interactive guard + reviewer-prompt blacklist); loop-review standards notes (brace-scan duplication tracker.sh/lifecycle-lint.sh; lint class-d inert on github - test coverage gap).
+
+## Transitions
+
+- 2026-09-08T02:21:48Z action 0 executed - pre-adoption bulk backfill, human-confirmed 2026-09-08

@@ -110,3 +110,7 @@ That means Task 3's g2 did not land, and everything downstream of it in forge is
 If resuming cold: read the plan, not this file, for the work.
 The chain state is that planning is complete and execution has not begun.
 Nothing is half-done, so there is no partial state to reconcile; the next session starts clean at whichever route it picks.
+
+## Transitions
+
+- 2026-09-08T02:21:48Z action 0 superseded - pre-adoption bulk backfill, human-confirmed 2026-09-08

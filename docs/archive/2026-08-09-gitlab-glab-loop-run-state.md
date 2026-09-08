@@ -132,3 +132,7 @@ Wave 6 (Task 7, live forge smoke) is a human checkpoint: every write to gitlab.c
 
 All 13 brief criteria observed (results table filled in the source plan's Task 7 section).
 Remaining user actions: accept/reverse the journal's BATCH/DEFAULT entries, merge `integration/gitlab-glab-loop` to main, merge forge's `loop-setup-gitlab-adoption`, and triage the 5-item slip list.
+
+## Transitions
+
+- 2026-09-08T02:21:48Z action 0 superseded - pre-adoption bulk backfill, human-confirmed 2026-09-08

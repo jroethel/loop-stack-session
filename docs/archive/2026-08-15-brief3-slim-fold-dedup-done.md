@@ -37,3 +37,7 @@ Timing is Jeremy's call: merge brief 3 now, or continue to brief 4 (control-plan
 
 - **Brief 4 (control-plane)**, fresh session, Opus: autonomy pause; `/loop-plan` WITH rubix, Lens B at Fable, BEFORE Jeremy's review; STOP for approval; execute only after he approves, then autonomy auto. Plans against THIS repo state.
 - **After brief 4 merges**: first real `/loop-molt` shakedown, then the BATCH-gated pcs disposition pass, then the packaging `/loop-brainstorm`.
+
+## Transitions
+
+- 2026-09-08T02:21:48Z action 0 executed - pre-adoption bulk backfill, human-confirmed 2026-09-08

@@ -12,3 +12,7 @@ Remaining, all owner-fired:
 - H2 (criterion 6): host-2 rollout on the WSL host - `git pull && LOOP_STACK_SKILL_STYLE=<agents|claude> ./install.sh && tests/run.sh`; stale-config recovery is in the source plan's H2 block.
 - H3 (criterion 7): one real loop on host 2 to a landed unit with tracker receipts (judgment).
 - H4 (criterion 8): `scripts/tracker.sh close 16` with a note referencing the README Multi-host section - staged, fire on ship.
+
+## Transitions
+
+- 2026-09-08T02:21:48Z action 0 superseded - pre-adoption bulk backfill, human-confirmed 2026-09-08

@@ -68,3 +68,7 @@ Someone closer to how wayfinder actually gets used day to day may see a better c
 I lean toward (1) now - it's a one-line accuracy fix with no downside - with (2) and (3) as
 separate, independently-sized follow-ups rather than bundled into one piece of work. That's a
 recommendation, not a decision; the cited issue is where that gets made.
+
+## Transitions
+
+- 2026-09-08T02:21:49Z action 0 superseded - pre-adoption bulk backfill, human-confirmed 2026-09-08

@@ -36,3 +36,7 @@ Then:
 - Verify with `git diff config/` and `bash scripts/lifecycle-lint.sh .` before committing.
 
 Mark the repo's row above done (change `pending`) as each roll lands, so this file is the roll's resume state.
+
+## Transitions
+
+- 2026-09-08T02:21:49Z action 0 superseded - pre-adoption bulk backfill, human-confirmed 2026-09-08

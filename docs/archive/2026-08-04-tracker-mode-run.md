@@ -34,3 +34,7 @@ Advisory before trusting migration on anything precious: run an un-dry `scripts/
 ## Upgrade note for other repos
 
 Repos that installed loop-stack before this change re-run `skills/loop-setup/setup.sh` once to gain `scripts/tracker.sh` and the `tracker:` key (safe to re-run; it will ask the mode once).
+
+## Transitions
+
+- 2026-09-08T02:21:48Z action 0 executed - pre-adoption bulk backfill, human-confirmed 2026-09-08

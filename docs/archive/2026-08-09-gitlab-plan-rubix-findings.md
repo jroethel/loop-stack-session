@@ -302,3 +302,7 @@ This document is now a record, not a work queue.
 Original restart context: nothing was edited and nothing was committed, so there is no partial state.
 To resume: read this document's findings table, pick a subset, apply it to `docs/plans/2026-08-09-gitlab-glab-support-plan.md`, then re-run the plan's Step 5 self-review before any routing decision.
 The plan's own "Review record" section has not been updated for this second review; whoever applies findings should add a third entry there recording which ones were taken and which were declined, matching the format already used for the first Rubix round.
+
+## Transitions
+
+- 2026-09-08T02:21:48Z action 0 superseded - pre-adoption bulk backfill, human-confirmed 2026-09-08
