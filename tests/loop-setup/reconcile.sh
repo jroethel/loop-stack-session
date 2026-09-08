@@ -95,4 +95,40 @@ grep -q '^filename-grammar-since: 2026-01-01$' "$V/config/repo-state.md" \
 [ "$(grep -c '^filename-grammar-since:' "$V/config/repo-state.md")" -eq 1 ] \
   || fail "reconcile duplicated the filename-grammar-since key (renderer plus carry-forward)"
 
+# --- v7: rubix-autorun and lifecycle-lint-since survive a re-render, unduplicated ---
+W="$(mktemp -d)"; trap 'rm -rf "$REF" "$S" "$G" "$V" "$W"' EXIT
+( cd "$W" && git init -q )
+mkdir -p "$W/config"
+cat > "$W/config/repo-state.md" <<'EOS'
+# Repo State Map
+
+template-version: 6
+filename-grammar-since: 2026-02-02
+lifecycle-lint-since: 2026-09-08
+
+Remote: none (local tracker; see the Local tracker section)
+tracker: local
+rubix-autorun: off
+EOS
+( cd "$W" && LOOP_ASSUME_YES=1 "$SETUP" </dev/null >/dev/null ) || fail "v7 accept re-render exited non-zero"
+grep -q "^template-version: $TV\$" "$W/config/repo-state.md" || fail "re-render did not bump the version to $TV"
+grep -q '^rubix-autorun: off$' "$W/config/repo-state.md" || fail "re-render reset rubix-autorun to ask (the drift bug)"
+[ "$(grep -c '^rubix-autorun:' "$W/config/repo-state.md")" -eq 1 ] || fail "re-render duplicated rubix-autorun"
+grep -q '^lifecycle-lint-since: 2026-09-08$' "$W/config/repo-state.md" \
+  || fail "re-render dropped lifecycle-lint-since"
+[ "$(grep -c '^lifecycle-lint-since:' "$W/config/repo-state.md")" -eq 1 ] \
+  || fail "re-render duplicated lifecycle-lint-since"
+grep -q '{{LIFECYCLE_LINT_SINCE}}' "$TPL" && fail "the template must carry no LIFECYCLE_LINT_SINCE placeholder"
+grep -q 'docs/sessions' "$W/config/repo-state.md" || fail "the v7 Lanes table has no Sessions row"
+for s in session-card.sh handoff-log.sh take-stock.sh; do
+  [ -f "$W/scripts/$s" ] || fail "the v7 roll did not vendor scripts/$s"
+  [ -x "$W/scripts/$s" ] || fail "vendored scripts/$s is not executable"
+done
+grep -q 'docs/spikes/' "$REPO/config/conventions.template.md" \
+  || fail "the conventions template does not exclude docs/spikes/ from the import sweep"
+grep -q 'docs/sessions/' "$REPO/config/conventions.template.md" \
+  || fail "the conventions template does not exclude docs/sessions/ from the import sweep"
+diff "$REPO/config/conventions.template.md" "$REPO/config/conventions.md" \
+  || fail "this repo's conventions.md has drifted from the v7 template"
+
 echo "PASS: reconcile - stale/keyless detect+re-render (criterion 1), github render drops Local-tracker (criterion 5), current config is a no-op"

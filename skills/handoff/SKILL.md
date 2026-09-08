@@ -13,5 +13,6 @@ Otherwise this is a non-conforming repo: create `docs/handoffs/` inside the proj
 When the work belongs to a logged tracker item, include its token segment(s) (e.g. .I6 for issue 6, .B4 for backlog item 4, .R1 for roadmap item 1, .W3 for wayfinder ticket 3); when the item is not yet logged, omit the token segments entirely and insert them when the item is created.
 
 Include a "suggested skills" section in the document, which suggests skills that the agent should invoke.
+Include a "## Next actions" section listing one next action per "- " line; that list is what handoff consumption dispositions index into.
 
 Redact any sensitive information, such as API keys, passwords, or personally identifiable information.

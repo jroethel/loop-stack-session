@@ -31,7 +31,7 @@ TIDY="$REPO/scripts/tidy.sh"
 is_excluded() {   # $1 = NORMALIZED path (no ./ prefix); true for the live tracker home, loop-stack's
                   # own dirs, the ALL-CAPS mirrors, and the depth-1 root project documents
   case "$1" in
-    docs/issues/*|docs/handoffs/*|docs/reviews/*|docs/briefs/*|docs/plans/*|docs/archive/*) return 0 ;;
+    docs/issues/*|docs/handoffs/*|docs/spikes/*|docs/sessions/*|docs/reviews/*|docs/briefs/*|docs/plans/*|docs/archive/*) return 0 ;;
   esac
   # docs/plans/* is a governed lane: config/repo-state.md's Archive-and-graduation rules own plan
   # and brief archival ("a brief archives when its plan archives"), so the sweep never offers one.
@@ -184,9 +184,30 @@ if [ ! -f scripts/lifecycle-lint.sh ]; then
   echo "installed scripts/lifecycle-lint.sh"
 fi
 
+SESC="$REPO/scripts/session-card.sh"
+[ -x "$SESC" ] || fail "session-card.sh not found or not executable: $SESC"
+if [ ! -f scripts/session-card.sh ]; then
+  mkdir -p scripts; cp "$SESC" scripts/session-card.sh && chmod +x scripts/session-card.sh
+  echo "installed scripts/session-card.sh"
+fi
+
+HLOG="$REPO/scripts/handoff-log.sh"
+[ -x "$HLOG" ] || fail "handoff-log.sh not found or not executable: $HLOG"
+if [ ! -f scripts/handoff-log.sh ]; then
+  mkdir -p scripts; cp "$HLOG" scripts/handoff-log.sh && chmod +x scripts/handoff-log.sh
+  echo "installed scripts/handoff-log.sh"
+fi
+
+TSTK="$REPO/scripts/take-stock.sh"
+[ -x "$TSTK" ] || fail "take-stock.sh not found or not executable: $TSTK"
+if [ ! -f scripts/take-stock.sh ]; then
+  mkdir -p scripts; cp "$TSTK" scripts/take-stock.sh && chmod +x scripts/take-stock.sh
+  echo "installed scripts/take-stock.sh"
+fi
+
 # Refresh vendored scripts that have drifted from loop-stack's current copies (content compare via
 # cmp -s, no version stamps). Each drifted file is offered on its own; declining leaves it untouched.
-for pair in "gen-mirrors.sh:$GEN" "tracker.sh:$TRK" "graduate-parking.sh:$GRAD" "migrate-tracker.sh:$MIG" "lifecycle-lint.sh:$LINT"; do
+for pair in "gen-mirrors.sh:$GEN" "tracker.sh:$TRK" "graduate-parking.sh:$GRAD" "migrate-tracker.sh:$MIG" "lifecycle-lint.sh:$LINT" "session-card.sh:$SESC" "handoff-log.sh:$HLOG" "take-stock.sh:$TSTK"; do
   name="${pair%%:*}"; src="${pair#*:}"
   [ -f "scripts/$name" ] || continue
   cmp -s "scripts/$name" "$src" && continue
@@ -287,7 +308,7 @@ ensure_roadmap() {
 
 reconcile_config() {   # offer a re-render when the config's template-version differs from the template's
   [ -f config/repo-state.md ] || return 0
-  local tv cv cand remote grp host since
+  local tv cv cand remote grp host since ra
   tv="$(version_of "$TPL")"
   cv="$(version_of config/repo-state.md)"
   [ "$cv" = "$tv" ] && return 0                 # already current -> report nothing
@@ -315,10 +336,19 @@ reconcile_config() {   # offer a re-render when the config's template-version di
       ;;
   esac
   cand="$cand"$'\n'"tracker: $MODE"             # mirror tracker.sh mode set's appended key
-  for k in autonomy-default tracker-remote-ack; do
+  for k in autonomy-default tracker-remote-ack lifecycle-lint-since; do
     kv="$(grep -E "^${k}:" config/repo-state.md | head -1)"
     [ -n "$kv" ] && cand="$cand"$'\n'"$kv"
   done
+  # rubix-autorun rides a substitution, not the carry-forward loop: the renderer already emits the
+  # template's default line, so appending would duplicate the key. Substitute the repo's own value
+  # onto the rendered candidate before the diff -u the human reviews, so the approved diff is the
+  # file that gets written.
+  ra="$(grep -E '^rubix-autorun:' config/repo-state.md | head -1 | sed -E 's/^rubix-autorun:[[:space:]]*//; s/[[:space:]]*$//')"
+  case "$ra" in
+    ask|off|on) cand="$(printf '%s\n' "$cand" | sed -E "s|^rubix-autorun:.*|rubix-autorun: $ra|")" ;;
+    *) : ;;   # unrecognized or absent: leave the rendered default; never interpolate free text into sed
+  esac
   offers=$((offers + 1))
   echo "config/repo-state.md is stale (template-version '${cv:-none}' vs '$tv'); proposed re-render:"
   diff -u config/repo-state.md <(printf '%s\n' "$cand") || true
