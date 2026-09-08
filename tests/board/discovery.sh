@@ -20,7 +20,9 @@ mkrepo "$root/dirty"; git -C "$root/dirty" remote add origin https://github.com/
 mkdir -p "$root/notgit"                                  # non-git dir, must be skipped and counted
 mkdir -p "$root/nest/deep"; mkrepo "$root/nest/deep"; git -C "$root/nest/deep" remote add origin git@github.com:jroethel/deep.git; commit "$root/nest/deep"
 
-out="$(LOOP_BOARD_ROOTS="$root" LOOP_BOARD_OWNER=jroethel bash "$REPO/scripts/board.sh" discover 2>"$tmp/err")" || fail "discover exited non-zero"
+# HOME is pointed at the fixture: keys are $HOME-relative by contract, and a scan root outside
+# $HOME keys absolute (the renderer resolves a resume `cd` from the key)
+out="$(HOME="$tmp" LOOP_BOARD_ROOTS="$root" LOOP_BOARD_OWNER=jroethel bash "$REPO/scripts/board.sh" discover 2>"$tmp/err")" || fail "discover exited non-zero"
 
 field() { awk -F'\t' -v k="$1" -v c="$2" '$2==k{print $c}' <<<"$out"; }
 grep -q "create/conforming" <<<"$out" || fail "conforming repo missing"
@@ -33,5 +35,11 @@ grep -q "create/dirty" <<<"$out" || fail "dirty third-party clone should be incl
 [ "$(field create/dirty 7)" -ge 1 ] || fail "uncommitted count not reported"
 grep -q "create/nest/deep" <<<"$out" || fail "depth-2 repo missing"
 awk -F'\t' 'NF!=9{exit 3}' <<<"$out" || fail "a row does not have 9 fields"
+
+# a scan root outside $HOME keys by absolute path, never a root-relative key the renderer would
+# then resolve against the wrong $HOME
+out2="$(HOME="$tmp/elsewhere" LOOP_BOARD_ROOTS="$root" LOOP_BOARD_OWNER=jroethel bash "$REPO/scripts/board.sh" discover 2>/dev/null)"
+awk -F'\t' -v k="$root/conforming" '$2==k{f=1} END{exit f?0:1}' <<<"$out2" \
+  || fail "a repo under a non-\$HOME scan root must key by absolute path"
 grep -qE 'skipped: [0-9]+ non-git' "$tmp/err" || fail "non-git dirs not reported to stderr"
 echo "PASS: discovery includes/excludes correctly over https+ssh, 9 fields, skip count reported"

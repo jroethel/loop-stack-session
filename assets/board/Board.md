@@ -2,6 +2,10 @@
 cssclasses: [loop-board]
 ---
 
+> [!info] Live Preview only
+> Obsidian does not mount base embeds in reading mode, so the eight lanes below render empty
+> there. Switch this note to Live Preview to see the board.
+
 ![[by-lane.base#backlog]]
 
 ![[by-lane.base#next-up]]
