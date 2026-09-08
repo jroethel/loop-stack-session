@@ -44,5 +44,7 @@ awk -F'\t' '$1=="create/repoA#git" && $9 ~ /uncommitted/{ok=1} END{exit ok?0:3}'
 awk -F'\t' '$5 ~ /\t/{exit 3}' <<<"$out" || fail "a tab survived into a title field"   # sanitization
 [ "$(awk -F'\t' '$1=="create/repoFail#tracker"{print $11}' <<<"$out")" = failed ] || fail "failed tracker source not a failed card"
 [ "$(grep -c 'create/repoFail' <<<"$out")" -eq 1 ] || fail "failed source must be exactly one card, never zero or many"
-awk -F'\t' 'NF!=12{exit 3}' <<<"$out" || fail "a row does not have 12 fields"
-echo "PASS: json parse, columns, B token, negative join, git card, sanitized title, failed source, 12 fields"
+awk -F'\t' 'NF!=13{exit 3}' <<<"$out" || fail "a row does not have 13 fields"
+[ "$(awk -F'\t' '$1=="create/repoA#git"{print $13}' <<<"$out")" = "" ] \
+  || fail "field 13 (marker) must be empty for an ordinary git card"
+echo "PASS: json parse, columns, B token, negative join, git card, sanitized title, failed source, 13 fields"

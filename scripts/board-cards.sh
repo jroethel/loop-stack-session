@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # board-cards.sh - read the Discovery TSV (stdin, 9 fields) and join tracker + git signals into
-# the Card TSV (stdout): one row per card, 12 tab-separated fields, no header. Tracker issues
+# the Card TSV (stdout): one row per card, 13 tab-separated fields, no header. Tracker issues
 # come from "$TRACKER_CMD" list (gh-shaped JSON) run inside each conforming repo; every other
 # repo still gets a git working-tree card, so each discovered repo yields at least one card.
 # No jq: the JSON is read with the repo's brace-depth scan (cf. tracker.sh, gen-mirrors.sh).
@@ -28,10 +28,11 @@ fmt_epoch() {              # epoch -> strftime output; BSD date first, GNU date 
   date -u -r "$1" "$2" 2>/dev/null || date -u -d "@$1" "$2" 2>/dev/null || :
 }
 
-card() {                   # the 12-field row; free text (title, position, note) sanitized here
-  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+card() {                   # the 13-field row; free text (title, position, note) sanitized here;
+                           # field 13 (marker) is a fixed vocabulary, so it skips the clean() guard
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
     "$1" "$2" "$3" "$4" "$(clean "$5")" "$6" "$7" "$8" "$(clean "$9")" "$(clean "${10}")" \
-    "${11}" "${12}"
+    "${11}" "${12}" "${13}"
 }
 
 parse_issues() {           # gh-shaped issue JSON on stdin -> num US title US labels US date US age-days
@@ -114,14 +115,14 @@ while IFS= read -r line; do
         token="I$num"
         case ",$labels," in *,idea,*) token="B$num" ;; esac
         card "$key#$token" "$key" tracker "$col" "$title" "$token" "$(band_of_age "$age")" \
-          "$lwd" "" "" ok "$RENDER_EPOCH"
+          "$lwd" "" "" ok "$RENDER_EPOCH" ""
         tc=$((tc + 1))
       done < <(printf '%s\n' "$json" | parse_issues)
     else
       # a failed source is exactly one card (never zero, never many) and stands in for the repo
       failed=1
       card "$key#tracker" "$key" tracker next-up "$key tracker unavailable" "" 4 "" "" "" \
-        failed "$RENDER_EPOCH"
+        failed "$RENDER_EPOCH" ""
     fi
   fi
   [ "$failed" -eq 0 ] || continue
@@ -145,5 +146,5 @@ while IFS= read -r line; do
   fi
   card "$key#git" "$key" git next-up "$key working tree" "" \
     "$(band_of_age "$(( (RENDER_EPOCH - epoch) / 86400 ))")" \
-    "$(fmt_epoch "$epoch" '+%Y-%m-%d')" "$pos" "$note" "$health" "$RENDER_EPOCH"
+    "$(fmt_epoch "$epoch" '+%Y-%m-%d')" "$pos" "$note" "$health" "$RENDER_EPOCH" ""
 done

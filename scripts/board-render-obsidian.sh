@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# board-render-obsidian.sh - read the Card TSV (stdin, 12 fields, board-cards.sh's contract) and
+# board-render-obsidian.sh - read the Card TSV (stdin, 13 fields, board-cards.sh's contract) and
 # write the board directory under LOOP_BOARD_HOME: one note per card, a _health.md note, and the
 # two .base views plus Board.md (the kanban entry note embedding one filtered view per lane),
 # seeded from the committed templates only when absent. Every note is staged in
@@ -88,9 +88,9 @@ is_card_note() {           # true when the file's frontmatter block carries boar
 input="$(cat)" || fail "cannot read the Card TSV from stdin"
 cards="$(printf '%s\n' "$input" | awk -F'\t' -v us="$US" '
     NF == 0 || $1 ~ /^#/ { next }
-    NF != 12 { printf "row %d carries %d fields, expected 12\n", NR, NF | "cat 1>&2"; exit 3 }
-    { for (i = 1; i <= 12; i++) printf "%s%s", $i, us; printf "\n" }
-  ')" || fail "rejecting the Card TSV: a row does not have exactly 12 fields; no writes made"
+    NF != 13 { printf "row %d carries %d fields, expected 13\n", NR, NF | "cat 1>&2"; exit 3 }
+    { for (i = 1; i <= 13; i++) printf "%s%s", $i, us; printf "\n" }
+  ')" || fail "rejecting the Card TSV: a row does not have exactly 13 fields; no writes made"
 
 # a render that dies mid-staging must not leave stray card notes inside the board home
 trap '[ -e "$home/.staging" ] && rm -rf "$home/.staging" || true' EXIT
@@ -105,7 +105,7 @@ while IFS= read -r row; do
   IFS="$US" read -r -a f <<< "$row"
   card_id="${f[0]:-}"; repo="${f[1]:-}"; source="${f[2]:-}"; column="${f[3]:-}"
   title="${f[4]:-}"; token="${f[5]:-}"; band="${f[6]:-}"; last_work="${f[7]:-}"
-  pos="${f[8]:-}"; behind="${f[9]:-}"; health="${f[10]:-}"; epoch="${f[11]:-}"
+  pos="${f[8]:-}"; behind="${f[9]:-}"; health="${f[10]:-}"; epoch="${f[11]:-}"; marker="${f[12]:-}"
 
   asof="$(fmt_epoch "${epoch:-0}" '+%Y-%m-%dT%H:%M:%SZ')"
   [ -n "$asof" ] || asof="$stamp"
@@ -120,7 +120,8 @@ while IFS= read -r row; do
   name="${card_id//\//-}"; name="${name//#/-}"; name="$name.md"
   keep="$keep$name$NL"
   emoji="$(band_emoji "$band")"
-  h1="$title"; [ -n "$emoji" ] && h1="$emoji $title"
+  h1="$title"; [ -n "$marker" ] && h1="[$marker] $h1"
+  [ -n "$emoji" ] && h1="$emoji $h1"
   {
     printf -- '---\n'
     printf 'board_card: true\n'
@@ -134,6 +135,7 @@ while IFS= read -r row; do
     fm_free 'behind:' "$behind"
     printf 'health: %s\n' "$health"
     printf 'render_asof: %s\n' "$asof"
+    printf 'marker: %s\n' "$marker"   # fixed vocabulary: unquoted, so a Bases filter matches literally
     fm_free 'title:' "$h1"
     printf -- '---\n\n'
     printf '# %s\n\n' "$h1"
