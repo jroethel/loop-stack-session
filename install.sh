@@ -34,9 +34,10 @@ set -u
 [ -n "$_env_ver" ]   && LOOP_STACK_RINGER_VERSION="$_env_ver"
 RINGER_ROOT="${LOOP_STACK_RINGER_ROOT:-$HOME/repos/ringer}"
 RINGER_VERSION="${LOOP_STACK_RINGER_VERSION:-}"
-# Drift note: a write-once host.env can lag a template that a git pull later updated. For each key
-# the template declares (active or commented), note when host.env lacks it entirely (non-fatal).
-for _k in LOOP_STACK_RINGER_ROOT LOOP_STACK_RINGER_VERSION LOOP_STACK_SKILL_STYLE; do
+# Drift note: a write-once host.env can lag a template that a git pull later updated. The key list
+# is read from the template itself (active or commented lines), so a key added there can never be
+# missed here; note when host.env lacks one entirely (non-fatal).
+for _k in $(grep -oE '^#? *[A-Z_]+=' "$HOST_ENV_TEMPLATE" | tr -d '# ='); do
   grep -qE "^#? *$_k=" "$HOST_ENV" || echo "note: config/host.env lacks '$_k' from the template (using built-in default)"
 done
 
