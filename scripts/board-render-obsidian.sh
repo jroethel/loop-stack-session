@@ -183,7 +183,8 @@ done <<< "$cards"
   printf '| done              | Session card closed done or aborted; issue closed within 60 days            |\n'
   printf '\nA marker (went-stale, died-mid-work) prefixes the card title and is filterable as the marker property.\n'
   printf '\nwayfinder:* issues get no card. A git card is suppressed only when its repo is\n'
-  printf 'conforming, clean, and already has a tracker card.\n'
+  printf 'conforming, clean, already has a tracker card, and is not went-stale (a went-stale\n'
+  printf 'repo always keeps its git card so the marker has a carrier).\n'
   if [ "${LOOP_BOARD_CSS:-}" = 1 ]; then
     printf '\n## CSS snippet\n'
     printf 'One-time: enable `loop-board` under Settings > Appearance > CSS snippets.\n'

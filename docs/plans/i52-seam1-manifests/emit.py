@@ -77,8 +77,11 @@ SCOPED = {
     "t2-handoff-log": 'for t in tests/sessions/*.sh tests/loop-setup/*.sh; do bash "$t" || exit 1; done',
     "t4-card-marker": 'for t in tests/board/*.sh; do bash "$t" || exit 1; done',
     "t3-take-stock": "bash tests/sessions/take-stock.sh",
-    "t5-board-wiring": "bash tests/board/cards.sh && bash tests/run.sh",
-    "t9-template-v7": "bash tests/loop-setup/reconcile.sh && bash tests/loop-setup/docs-gitlab.sh && bash tests/run.sh",
+    # full-suite runs inside a fresh worktree must skip tests/repo-state/live.sh: it requires the
+    # gitignored ISSUES.md mirror, absent in any worktree (wave-3 check-bug attribution); the
+    # unskipped full suite runs at the wave gate on the primary checkout, where the mirror exists.
+    "t5-board-wiring": 'bash tests/board/cards.sh && for t in tests/*/*.sh; do case "$t" in */repo-state/live.sh) continue;; esac; bash "$t" || exit 1; done',
+    "t9-template-v7": 'bash tests/loop-setup/reconcile.sh && bash tests/loop-setup/docs-gitlab.sh && for t in tests/*/*.sh; do case "$t" in */repo-state/live.sh) continue;; esac; bash "$t" || exit 1; done',
 }
 TASKNUM = {"t1-session-card": 1, "t2-handoff-log": 2, "t4-card-marker": 4,
            "t3-take-stock": 3, "t5-board-wiring": 5, "t9-template-v7": 9}
