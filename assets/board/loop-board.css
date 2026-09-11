@@ -19,8 +19,10 @@
   gap: 12px;
   min-width: max-content;
 }
-.loop-board .cm-content > .cm-line {
+.loop-board .cm-content > .cm-line,
+.loop-board .cm-content > .cm-embed-block.cm-callout {
   flex: 0 0 0;
+  min-width: 0;
   overflow: hidden;
 }
 
@@ -30,6 +32,15 @@
   align-items: flex-start;
   gap: 12px;
   min-width: max-content;
+}
+
+/* Everything else in the sizer (title, frontmatter, callouts, footer) is
+   not an embed, so it collapses out of the lane row the same way non-embed
+   content collapses in Live Preview above. */
+.loop-board .markdown-preview-sizer > :not(.el-p) {
+  flex: 0 0 0;
+  min-width: 0;
+  overflow: hidden;
 }
 
 /* The board is wider than a readable line; let it use the full pane. */
