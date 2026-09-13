@@ -1,0 +1,22 @@
+{
+  "run_name": "jrit-loop-port",
+  "workdir": "/home/jjrdar/repos/loop-stack-session/docs/drive-logs/B32/ringer/wave-5",
+  "repo": "/home/jjrdar/repos/jrit/jrit-loop",
+  "worktrees": true,
+  "max_parallel": 1,
+  "tasks": [
+    {
+      "key": "u12-cutover",
+      "engine": "claude-zai",
+      "model": "glm-5.2",
+      "task_type": "docs",
+      "timeout_s": 2400,
+      "expect_files": [
+        "/home/jjrdar/repos/loop-stack-session/docs/drive-logs/B32/patches/u12.patch"
+      ],
+      "spec": "You are U12, an implementer on the jrit-loop plugin port. You work alone in an isolated git worktree of /home/jjrdar/repos/jrit/jrit-loop; treat the worktree root as the repo root. Another worker (U10) runs in parallel on evals/ and docs/eval-fixtures-are-engine-neutral.md; touch neither.\n\nDO NOT git commit, push, or add; do NOT touch .git. The orchestrator commits from the patch your check exports; your step 7 commit is the orchestrator's.\nABSOLUTE RULE, from your task's own step 8: you STAGE the decommission and fire NONE of it. Never run the rm -f lines, never run claude plugin install or marketplace add, never touch $HOME/.claude or $HOME/.agents. Writing those commands as TEXT into docs/decommission.md is the deliverable; executing any of them is an immediate fail.\n\nREAD FIRST, read-only:\n1. /home/jjrdar/repos/loop-stack-session/docs/plans/2026-09-13.B32.jrit-loop-plugin-port-plan.md lines 1058-1114 - YOUR task (Task 12), the spec of record, all 8 steps.\n2. The same file, lines 418-432 (Global constraints), 154-168 (D3 - the paragraph your test holds a byte-copy of).\nHOST READS ALLOWED (read-only): $HOME/.claude/skills and $HOME/.agents/skills (to describe the farm), $HOME/.claude/CLAUDE.md (to quote the managed-block markers), find $HOME/repos -maxdepth 3 -path '*/config/repo-state.md' with the line-anchored ^tracker: grep (step 4 Section 5's repo-list resolution; record the resolved list and count in the doc; if the count is not eight, write the discrepancy into the doc's Section 5 for the C3 handoff reconciliation rather than stopping this unit - the STOP the plan names belongs to that handoff).\n\nFILES YOU OWN, exclusively: tests/pre-plugin-detection.sh, docs/decommission.md, ./NOTES. Nothing under skills/ (step 5: a defect found in a skill routes to its owning task via ./NOTES, never fixed here).\n\nHOW TO RUN, exactly (acceptance, from the worktree root):\nbash tests/pre-plugin-detection.sh && bash -c 'grep -q \"rm -f \\$HOME/.claude/skills\" docs/decommission.md && grep -q \"rm -f \\$HOME/.agents/skills\" docs/decommission.md && grep -q \"loop-stack (managed)\" docs/decommission.md && test \"$(grep -n \"claude plugin install\" docs/decommission.md | head -1 | cut -d: -f1)\" -lt \"$(grep -n \"rm -f \\$HOME/.claude/skills\" docs/decommission.md | head -1 | cut -d: -f1)\"' && echo PASS\nRun it first (must FAIL), record the exit code, and again when done (exit 0); both real codes in ./NOTES.\n\nHOUSE STYLE: no em dash U+2014; one sentence per line; the test script uses set -uo pipefail, fail(), a terminal PASS: line, and failures that print WHY.\nIF AMBIGUOUS: ./NOTES under AMBIGUITIES TAKEN, conservative reading, continue.\n./NOTES first line: \"AGENT STATUS unit=u12 branch=worktree verdict=self-pass repairs=0\".\nWHEN THE ACCEPTANCE COMMAND PASSES, STOP IMMEDIATELY AND RETURN.\n",
+      "check": "bash /home/jjrdar/repos/loop-stack-session/docs/drive-logs/B32/manifests/checks/u12.sh",
+      "verified": "detection wiring test green with the D3 byte-copy held in-test, decommission staged install-first with rollback and managed-block sections, farm untouched and plugin uninstalled, acceptance compound exit 0"
+    }
+  ]
+}
