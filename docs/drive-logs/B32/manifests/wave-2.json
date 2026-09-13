@@ -1,0 +1,22 @@
+{
+  "run_name": "jrit-loop-port",
+  "workdir": "/home/jjrdar/repos/loop-stack-session/docs/drive-logs/B32/ringer/wave-2",
+  "repo": "/home/jjrdar/repos/jrit/jrit-loop",
+  "worktrees": true,
+  "max_parallel": 1,
+  "tasks": [
+    {
+      "key": "u03-ci",
+      "engine": "claude-zai",
+      "model": "glm-5.3",
+      "task_type": "code-feature",
+      "timeout_s": 3600,
+      "expect_files": [
+        "/home/jjrdar/repos/loop-stack-session/docs/drive-logs/B32/patches/u03.patch"
+      ],
+      "spec": "You are U03, an implementer on the jrit-loop plugin port. You work alone in an isolated git worktree of /home/jjrdar/repos/jrit/jrit-loop; treat the worktree root you start in as the repo root.\n\nDO NOT git commit, do NOT git push, do NOT run git add yourself, and do NOT touch .git. The orchestrator commits your work on main from the patch your check exports. This overrides your task's step 12 (its commit is performed by the orchestrator with that exact message); every other step is yours.\n\nREAD FIRST, read-only, in this order:\n1. /home/jjrdar/repos/loop-stack-session/docs/plans/2026-09-13.B32.jrit-loop-plugin-port-plan.md lines 685-734 - this is YOUR task (Task 3), in full, and it is the spec of record. Do exactly what its numbered steps say (step 12 excepted, above).\n2. The same file, lines 418-432 - the Global constraints. Every one applies to you.\n3. The same file, lines 203-234 (D5 shared references), 236-280 (D6 stub markers), 282-306 (D7 frontmatter keys), 308-346 (D8 helper budget - note the budget-check existence assertions were AMENDED 2026-09-13: they skip with a \"skip: <path> not yet created\" line while the file does not yet exist and go hard once present; line 719 carries the amended wording), 348-355 (D9 drift check).\n4. The same file, lines 37-65 - the Verified facts.\n\nFILES YOU OWN. You may create or edit ONLY these paths, all relative to the worktree root:\n- ci/structure-check.sh, ci/budget-check.sh, ci/version-drift.sh, ci/secrets-scan.sh, ci/consumer-sweep.sh, ci/clean-room-npx.sh, ci/single-resolution.sh, ci/run-all.sh\n- ci/banned-tokens.txt, ci/reference-allowlist.txt\n- .github/workflows/ci.yml\n- ./NOTES (your scratch report, worktree root only)\nTemporary probe files under skills/ during step 10's fail-first proofs are allowed ONLY if deleted before you finish; the final tree must show no trace of them.\nAny other file you change is a scope violation and fails this unit.\n\nHOST READS ALLOWED (read-only, for step 7 and Check B seeding): ls and jq over ~/.claude/plugins/ to confirm the installed-plugins record's real name and shape, and the Check B extractor pre-run against ~/repos/loop-stack-session/skills/ (read those files, never write them).\n\nHOW TO RUN, exactly. From the worktree root:\nbash ci/run-all.sh && echo PASS\nIt cannot pass before your scripts exist (there is nothing at ci/ yet); when you are done it must exit 0, with skip lines only where a skip is specified (helper SLOC, openai.yaml existence, byte-equality pairs not yet landed, the eleven-directory count). Record the final exit code in ./NOTES.\n\nSTEP 10 IS MANDATORY AND ITS EVIDENCE GOES IN ./NOTES: for each fail-first proof, paste the failing output line (the check naming the probe) and the passing rerun line. The validator re-runs these proofs itself; a proof you skipped will be found.\n\nHOUSE STYLE, non-negotiable: never the em dash character U+2014, plain \"-\" only; one full sentence per line in markdown; scripts use set -uo pipefail, a fail() helper, and end with an explicit PASS: line; checks print WHY they fail, never a bare exit 1.\n\nIF SOMETHING IS AMBIGUOUS: you cannot ask. Record the question in ./NOTES under \"AMBIGUITIES TAKEN\", take the most conservative reading, and continue.\n\n./NOTES holds: what you read, every file you wrote, the step-7 record-file finding (real filename and shape), every allow-list line your Check B pre-run added with its # why, the step-10 proof outputs, the final acceptance exit code, ambiguities, open questions.\n\nWHEN bash ci/run-all.sh EXITS 0 AND ./NOTES IS WRITTEN, STOP IMMEDIATELY AND RETURN. Do not explore unrelated code, do not improve anything else.\n",
+      "check": "bash /home/jjrdar/repos/loop-stack-session/docs/drive-logs/B32/manifests/checks/u03.sh",
+      "verified": "ci/run-all.sh exits 0 in the worktree, all eleven CI artifacts exist with script discipline and seeded data files, structure-check proven non-vacuous by a live planted-token probe, patch exported"
+    }
+  ]
+}
