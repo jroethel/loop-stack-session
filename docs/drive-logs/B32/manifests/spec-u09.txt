@@ -1,0 +1,28 @@
+You are U09, the implementer of the flagship loop-drive re-plumb on the jrit-loop plugin port. You work alone in an isolated git worktree of /home/jjrdar/repos/jrit/jrit-loop; treat the worktree root as the repo root.
+
+DO NOT git commit, push, or add; do NOT touch .git. The orchestrator commits from the patch your check exports; your task's step 23 commit is the orchestrator's, every other step is yours.
+
+READ FIRST, read-only, in this order:
+1. /home/jjrdar/repos/loop-stack-session/docs/plans/2026-09-13.B32.jrit-loop-plugin-port-plan.md lines 939-985 - YOUR task (Task 9), the spec of record. Do exactly what its 22 remaining numbered steps say.
+2. The same file, lines 418-432 (Global constraints), 154-168 (D3), 203-234 (D5), 236-280 (D6 - your ringer and herdr stub instances are at 257-271, verbatim), 308-346 (D8), 357-378 (D10 resume pointer).
+3. The same file, lines 37-65 (Verified facts - your step-1 prerequisite is ALREADY VERIFIED by the orchestrator: the molt ledger carries a 2026-09-13 loop-drive entry, so proceed).
+
+HOST READS ALLOWED (read-only): ~/repos/loop-stack-session/skills/loop-drive/** and ~/repos/loop-stack-session/config/routing/model-benchmarks.md as copy sources (step 2), and ~/repos/loop-stack-session/docs/molt-ledger.md.
+
+FILES YOU OWN, exclusively: skills/loop-drive/SKILL.md, skills/loop-drive/references/{fable-guidelines,model-benchmarks,harness-appendix-claude-code,queue-runner,ringer-substrate,reviewer-conduct-contract,one-minute-test}.md, an APPEND to ci/reference-allowlist.txt (only if truly needed, trailing '# why', never rewrite a line), ./NOTES. The transient references/native-orchestration.md exists only mid-task and MUST be deleted before you finish (step 10). You MUST NOT edit skills/loop-drive/scripts/receipt.sh - it is Task 4's, already landed, and a diff touching it fails this unit.
+
+FACTS FROM THE RUN YOU BUILD ON:
+- ci/structure-check.sh Check H now polices your split for real, with BOTH boundaries: /goal and /loop match only as slash-command invocations (leading boundary added 2026-09-13), so the literal path docs/loop/pointer.md is legal in your core - and required by Check D.
+- Exactly ONE sanctioned pointer sentence naming references/harness-appendix-claude-code.md may exist in the core; zero fails (the zero-pointer branch is live), two fails.
+- The helper's four verbs and exits 4/5/7 are landed and live (Task 4, Gate 0-7 proven); cite them exactly as D8 fixes them, invocation always 'bash scripts/receipt.sh <verb> ...'.
+- ONE DISCLOSURE WORDING PER CONDITION: after inserting the D6 ringer and herdr stub blocks, delete any surviving older sentence that discloses the same absent-tool condition in different words; two candidate disclosure lines for one condition is a defect (this bit loop-plan in wave 3).
+- version-drift's eleven-directory assertion goes HARD when your SKILL.md lands; your acceptance run proves the full gate.
+
+HOW TO RUN, exactly (the acceptance check, from the worktree root, the leading cd dropped because you are already at the root):
+bash ci/structure-check.sh && bash ci/budget-check.sh && bash ci/version-drift.sh && claude plugin validate --strict skills && bash -c 'S=skills/loop-drive/SKILL.md; for m in "## Unit" "## State" "## Next step" "## Recent artifacts" "scripts/receipt.sh" "next-eligible" "handoffs-home"; do grep -qF "$m" "$S" || { echo "MISSING: $m"; exit 1; }; done' && echo PASS
+Run it after step 2 and confirm it FAILS (record the failing line), and again when done (exit 0). Record both real exit codes in ./NOTES.
+
+HOUSE STYLE, CI-enforced: never the em dash U+2014; one full sentence per line in every paragraph you rewrite; frontmatter name and description only.
+IF AMBIGUOUS: ./NOTES under AMBIGUITIES TAKEN, most conservative reading, continue. The portable-core vs appendix split is your judgment call within step 9's explicit boundary: the core names NO harness primitive, the appendix names them all.
+./NOTES first line: "AGENT STATUS unit=u09 branch=worktree verdict=self-pass repairs=0"; then what you read, every step's disposition, the split decisions you made (what moved to the appendix and why), both acceptance exit codes, ambiguities.
+WHEN THE ACCEPTANCE COMMAND PASSES, STOP IMMEDIATELY AND RETURN. Do not improve adjacent skills, do not touch the helper.
