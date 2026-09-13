@@ -1,0 +1,16 @@
+old=#7 new=https://github.com/jroethel/jrit-loop/issues/1
+old=#15 new=https://github.com/jroethel/jrit-loop/issues/2
+old=#18 new=https://github.com/jroethel/jrit-loop/issues/3
+old=#28 new=https://github.com/jroethel/jrit-loop/issues/4
+old=#40 new=https://github.com/jroethel/jrit-loop/issues/5
+old=#48 new=https://github.com/jroethel/jrit-loop/issues/6
+old=#51 new=https://github.com/jroethel/jrit-loop/issues/7
+old=#56 new=https://github.com/jroethel/jrit-loop/issues/8
+old=#45 new=https://github.com/jroethel/jrit-loop/issues/9
+old=#33 new=https://github.com/jroethel/jrit-loop/issues/10
+old=#61 new=https://github.com/jroethel/jrit-loop/issues/11
+old=#62 new=https://github.com/jroethel/jrit-loop/issues/12
+old=#63 new=https://github.com/jroethel/jrit-loop/issues/13
+old=#64 new=https://github.com/jroethel/jrit-loop/issues/14
+old=#36 new=https://github.com/jroethel/jrit-loop/issues/15
+old=#3 new=https://github.com/jroethel/jrit-loop/issues/16
