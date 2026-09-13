@@ -1,0 +1,154 @@
+
+[ringer.py] attempt 1 started 2026-09-13T16:39:06.619225+00:00
+[ringer.py] engine: claude-zai
+[ringer.py] command: /home/jjrdar/.config/ringer/claude-zai.sh -p 'You are U03, an implementer on the jrit-loop plugin port. You work alone in an isolated git worktree of /home/jjrdar/repos/jrit/jrit-loop; treat the worktree root you start in as the repo root.
+
+DO NOT git commit, do NOT git push, do NOT run git add yourself, and do NOT touch .git. The orchestrator commits your work on main from the patch your check exports. This overrides your task'"'"'s step 12 (its commit is performed by the orchestrator with that exact message); every other step is yours.
+
+READ FIRST, read-only, in this order:
+1. /home/jjrdar/repos/loop-stack-session/docs/plans/2026-09-13.B32.jrit-loop-plugin-port-plan.md lines 685-734 - this is YOUR task (Task 3), in full, and it is the spec of record. Do exactly what its numbered steps say (step 12 excepted, above).
+2. The same file, lines 418-432 - the Global constraints. Every one applies to you.
+3. The same file, lines 203-234 (D5 shared references), 236-280 (D6 stub markers), 282-306 (D7 frontmatter keys), 308-346 (D8 helper budget - note the budget-check existence assertions were AMENDED 2026-09-13: they skip with a "skip: <path> not yet created" line while the file does not yet exist and go hard once present; line 719 carries the amended wording), 348-355 (D9 drift check).
+4. The same file, lines 37-65 - the Verified facts.
+
+FILES YOU OWN. You may create or edit ONLY these paths, all relative to the worktree root:
+- ci/structure-check.sh, ci/budget-check.sh, ci/version-drift.sh, ci/secrets-scan.sh, ci/consumer-sweep.sh, ci/clean-room-npx.sh, ci/single-resolution.sh, ci/run-all.sh
+- ci/banned-tokens.txt, ci/reference-allowlist.txt
+- .github/workflows/ci.yml
+- ./NOTES (your scratch report, worktree root only)
+Temporary probe files under skills/ during step 10'"'"'s fail-first proofs are allowed ONLY if deleted before you finish; the final tree must show no trace of them.
+Any other file you change is a scope violation and fails this unit.
+
+HOST READS ALLOWED (read-only, for step 7 and Check B seeding): ls and jq over ~/.claude/plugins/ to confirm the installed-plugins record'"'"'s real name and shape, and the Check B extractor pre-run against ~/repos/loop-stack-session/skills/ (read those files, never write them).
+
+HOW TO RUN, exactly. From the worktree root:
+bash ci/run-all.sh && echo PASS
+It cannot pass before your scripts exist (there is nothing at ci/ yet); when you are done it must exit 0, with skip lines only where a skip is specified (helper SLOC, openai.yaml existence, byte-equality pairs not yet landed, the eleven-directory count). Record the final exit code in ./NOTES.
+
+STEP 10 IS MANDATORY AND ITS EVIDENCE GOES IN ./NOTES: for each fail-first proof, paste the failing output line (the check naming the probe) and the passing rerun line. The validator re-runs these proofs itself; a proof you skipped will be found.
+
+HOUSE STYLE, non-negotiable: never the em dash character U+2014, plain "-" only; one full sentence per line in markdown; scripts use set -uo pipefail, a fail() helper, and end with an explicit PASS: line; checks print WHY they fail, never a bare exit 1.
+
+IF SOMETHING IS AMBIGUOUS: you cannot ask. Record the question in ./NOTES under "AMBIGUITIES TAKEN", take the most conservative reading, and continue.
+
+./NOTES holds: what you read, every file you wrote, the step-7 record-file finding (real filename and shape), every allow-list line your Check B pre-run added with its # why, the step-10 proof outputs, the final acceptance exit code, ambiguities, open questions.
+
+WHEN bash ci/run-all.sh EXITS 0 AND ./NOTES IS WRITTEN, STOP IMMEDIATELY AND RETURN. Do not explore unrelated code, do not improve anything else.
+' --model glm-5.3 --permission-mode bypassPermissions < /dev/null
+⚠ claude.ai connectors are disabled because ANTHROPIC_API_KEY or another auth source is set and takes precedence over your claude.ai login · Unset it to load your organization's connectors
+"glm-5.3" isn't described by this version's model catalog; update Claude Code, or map it with behavesAs on a modelPicker row (or modelOverrides, if it is a provider id of a model this version knows). Until then auto-compact keeps this session within 200k tokens (the context window it assumes); if the model accepts more, append [1m] to the model name for 1M, or set CLAUDE_CODE_MAX_CONTEXT_TOKENS to its real window; CLAUDE_CODE_DISABLE_UNKNOWN_MODEL_WINDOW_ENFORCEMENT=1 restores the previous wait-for-the-API behavior.
+[claude-code:unrecognized_model] {"model":"glm-5.3","query_source":"sdk"}
+Task 3 is complete. Stopping here as instructed.
+
+**Summary**
+
+`bash ci/run-all.sh` exits 0 (`PASS: all`), with skip lines only in the four spec-sanctioned places: the five byte-equality pairs, helper SLOC, `openai.yaml`, and the eleven-directory count. Both real `claude plugin validate --strict` commands ran and passed.
+
+**What landed** - 11 owned files: the eight `ci/` scripts, the two committed data files (`banned-tokens.txt`, `reference-allowlist.txt`), and `.github/workflows/ci.yml`. The banned-token list and Check B skip list are data files, never hard-coded, so port tasks append lines instead of editing finished scripts.
+
+**Key findings recorded in `./NOTES`**
+
+- Step 7: the runtime record is `~/.claude/plugins/installed_plugins.json`, shape `{version: 2, plugins: {"<plugin>@<marketplace>": [{scope, installPath, ...}]}}`; `single-resolution.sh` reads the canonical path from it and never globs. It currently fails all eleven names with "resolves from 2 locations", which is its correct pre-decommission behavior on this host.
+- Check B pre-run over the source tree added four allowlist lines beyond the prescribed seed (`_loop.md`, `PRODUCT.md`, `CODING_STANDARDS.md`, `CONTRIBUTING.md`, each with its why) and produced the definitive straggler list for the port tasks - notably `principles.md` (loop-drive:15, loop-brainstorm:31) and `loop-improve/SKILL.md:77`'s bare `brief-pipeline.md`, which the plan's rewrite steps don't explicitly cover.
+- All four mandated fail-first proofs pass, plus two extra (Check B, Check F); the `/loop-drive` non-failure proves the trailing character class behaves as its comment claims.
+- Six ambiguities taken with conservative readings, all documented - the one worth your eye is Check H's zero-pointer case, which I made a failure once `skills/loop-drive/SKILL.md` exists, since a missing appendix pointer would quietly undo the portable-core split.
+
+`git status` shows only `.github/`, `ci/`, and `NOTES` - no probe residue, no scope violations, no commits made (the orchestrator owns step 12).
+[ringer.py] attempt 1 exited rc=0
+
+[ringer.py] attempt 2 started 2026-09-13T16:53:53.836596+00:00
+[ringer.py] engine: claude-zai
+[ringer.py] command: /home/jjrdar/.config/ringer/claude-zai.sh -p 'You are U03, an implementer on the jrit-loop plugin port. You work alone in an isolated git worktree of /home/jjrdar/repos/jrit/jrit-loop; treat the worktree root you start in as the repo root.
+
+DO NOT git commit, do NOT git push, do NOT run git add yourself, and do NOT touch .git. The orchestrator commits your work on main from the patch your check exports. This overrides your task'"'"'s step 12 (its commit is performed by the orchestrator with that exact message); every other step is yours.
+
+READ FIRST, read-only, in this order:
+1. /home/jjrdar/repos/loop-stack-session/docs/plans/2026-09-13.B32.jrit-loop-plugin-port-plan.md lines 685-734 - this is YOUR task (Task 3), in full, and it is the spec of record. Do exactly what its numbered steps say (step 12 excepted, above).
+2. The same file, lines 418-432 - the Global constraints. Every one applies to you.
+3. The same file, lines 203-234 (D5 shared references), 236-280 (D6 stub markers), 282-306 (D7 frontmatter keys), 308-346 (D8 helper budget - note the budget-check existence assertions were AMENDED 2026-09-13: they skip with a "skip: <path> not yet created" line while the file does not yet exist and go hard once present; line 719 carries the amended wording), 348-355 (D9 drift check).
+4. The same file, lines 37-65 - the Verified facts.
+
+FILES YOU OWN. You may create or edit ONLY these paths, all relative to the worktree root:
+- ci/structure-check.sh, ci/budget-check.sh, ci/version-drift.sh, ci/secrets-scan.sh, ci/consumer-sweep.sh, ci/clean-room-npx.sh, ci/single-resolution.sh, ci/run-all.sh
+- ci/banned-tokens.txt, ci/reference-allowlist.txt
+- .github/workflows/ci.yml
+- ./NOTES (your scratch report, worktree root only)
+Temporary probe files under skills/ during step 10'"'"'s fail-first proofs are allowed ONLY if deleted before you finish; the final tree must show no trace of them.
+Any other file you change is a scope violation and fails this unit.
+
+HOST READS ALLOWED (read-only, for step 7 and Check B seeding): ls and jq over ~/.claude/plugins/ to confirm the installed-plugins record'"'"'s real name and shape, and the Check B extractor pre-run against ~/repos/loop-stack-session/skills/ (read those files, never write them).
+
+HOW TO RUN, exactly. From the worktree root:
+bash ci/run-all.sh && echo PASS
+It cannot pass before your scripts exist (there is nothing at ci/ yet); when you are done it must exit 0, with skip lines only where a skip is specified (helper SLOC, openai.yaml existence, byte-equality pairs not yet landed, the eleven-directory count). Record the final exit code in ./NOTES.
+
+STEP 10 IS MANDATORY AND ITS EVIDENCE GOES IN ./NOTES: for each fail-first proof, paste the failing output line (the check naming the probe) and the passing rerun line. The validator re-runs these proofs itself; a proof you skipped will be found.
+
+HOUSE STYLE, non-negotiable: never the em dash character U+2014, plain "-" only; one full sentence per line in markdown; scripts use set -uo pipefail, a fail() helper, and end with an explicit PASS: line; checks print WHY they fail, never a bare exit 1.
+
+IF SOMETHING IS AMBIGUOUS: you cannot ask. Record the question in ./NOTES under "AMBIGUITIES TAKEN", take the most conservative reading, and continue.
+
+./NOTES holds: what you read, every file you wrote, the step-7 record-file finding (real filename and shape), every allow-list line your Check B pre-run added with its # why, the step-10 proof outputs, the final acceptance exit code, ambiguities, open questions.
+
+WHEN bash ci/run-all.sh EXITS 0 AND ./NOTES IS WRITTEN, STOP IMMEDIATELY AND RETURN. Do not explore unrelated code, do not improve anything else.
+
+
+Previous attempt failed: - ./NOTES (your scratch report, worktree root only)
+Temporary probe files under skills/ during step 10'"'"'"'"'"'"'"'"'s fail-first proofs are allowed ONLY if deleted before you finish; the final tree must show no trace of them.
+Any other file you change is a scope violation and fails this unit.
+
+HOST READS ALLOWED (read-only, for step 7 and Check B seeding): ls and jq over ~/.claude/plugins/ to confirm the installed-plugins record'"'"'"'"'"'"'"'"'s real name and shape, and the Check B extractor pre-run against ~/repos/loop-stack-session/skills/ (read those files, never write them).
+
+HOW TO RUN, exactly. From the worktree root:
+bash ci/run-all.sh && echo PASS
+It cannot pass before your scripts exist (there is nothing at ci/ yet); when you are done it must exit 0, with skip lines only where a skip is specified (helper SLOC, openai.yaml existence, byte-equality pairs not yet landed, the eleven-directory count). Record the final exit code in ./NOTES.
+
+STEP 10 IS MANDATORY AND ITS EVIDENCE GOES IN ./NOTES: for each fail-first proof, paste the failing output line (the check naming the probe) and the passing rerun line. The validator re-runs these proofs itself; a proof you skipped will be found.
+
+HOUSE STYLE, non-negotiable: never the em dash character U+2014, plain "-" only; one full sentence per line in markdown; scripts use set -uo pipefail, a fail() helper, and end with an explicit PASS: line; checks print WHY they fail, never a bare exit 1.
+
+IF SOMETHING IS AMBIGUOUS: you cannot ask. Record the question in ./NOTES under "AMBIGUITIES TAKEN", take the most conservative reading, and continue.
+
+./NOTES holds: what you read, every file you wrote, the step-7 record-file finding (real filename and shape), every allow-list line your Check B pre-run added with its # why, the step-10 proof outputs, the final acceptance exit code, ambiguities, open questions.
+
+WHEN bash ci/run-all.sh EXITS 0 AND ./NOTES IS WRITTEN, STOP IMMEDIATELY AND RETURN. Do not explore unrelated code, do not improve anything else.
+'"'"' --model glm-5.3 --permission-mode bypassPermissions < /dev/null
+⚠ claude.ai connectors are disabled because ANTHROPIC_API_KEY or another auth source is set and takes precedence over your claude.ai login · Unset it to load your organization'"'"'s connectors
+"glm-5.3" isn'"'"'t described by this version'"'"'s model catalog; update Claude Code, or map it with behavesAs on a modelPicker row (or modelOverrides, if it is a provider id of a model this version knows). Until then auto-compact keeps this session within 200k tokens (the context window it assumes); if the model accepts more, append [1m] to the model name for 1M, or set CLAUDE_CODE_MAX_CONTEXT_TOKENS to its real window; CLAUDE_CODE_DISABLE_UNKNOWN_MODEL_WINDOW_ENFORCEMENT=1 restores the previous wait-for-the-API behavior.
+[claude-code:unrecognized_model] {"model":"glm-5.3","query_source":"sdk"}
+Task 3 is complete. Stopping here as instructed.
+
+**Summary**
+
+`bash ci/run-all.sh` exits 0 (`PASS: all`), with skip lines only in the four spec-sanctioned places: the five byte-equality pairs, helper SLOC, `openai.yaml`, and the eleven-directory count. Both real `claude plugin validate --strict` commands ran and passed.
+
+**What landed** - 11 owned files: the eight `ci/` scripts, the two committed data files (`banned-tokens.txt`, `reference-allowlist.txt`), and `.github/workflows/ci.yml`. The banned-token list and Check B skip list are data files, never hard-coded, so port tasks append lines instead of editing finished scripts.
+
+**Key findings recorded in `./NOTES`**
+
+- Step 7: the runtime record is `~/.claude/plugins/installed_plugins.json`, shape `{version: 2, plugins: {"<plugin>@<marketplace>": [{scope, installPath, ...}]}}`; `single-resolution.sh` reads the canonical path from it and never globs. It currently fails all eleven names with "resolves from 2 locations", which is its correct pre-decommission behavior on this host.
+- Check B pre-run over the source tree added four allowlist lines beyond the prescribed seed (`_loop.md`, `PRODUCT.md`, `CODING_STANDARDS.md`, `CONTRIBUTING.md`, each with its why) and produced the definitive straggler list for the port tasks - notably `principles.md` (loop-drive:15, loop-brainstorm:31) and `loop-improve/SKILL.md:77`'"'"'s bare `brief-pipeline.md`, which the plan'"'"'s rewrite steps don'"'"'t explicitly cover.
+- All four mandated fail-first proofs pass, plus two extra (Check B, Check F); the `/loop-drive` non-failure proves the trailing character class behaves as its comment claims.
+- Six ambiguities taken with conservative readings, all documented - the one worth your eye is Check H'"'"'s zero-pointer case, which I made a failure once `skills/loop-drive/SKILL.md` exists, since a missing appendix pointer would quietly undo the portable-core split.
+
+`git status` shows only `.github/`, `ci/`, and `NOTES` - no probe residue, no scope violations, no commits made (the orchestrator owns step 12).
+[ringer.py] attempt 1 exited rc=0
+[ringer] missing expected files: /home/jjrdar/repos/loop-stack-session/docs/drive-logs/B32/patches/u03.patch
+/home/jjrdar/repos/loop-stack-session/docs/drive-logs/B32/manifests/checks/u03.sh: line 5: TASKDIR: unbound variable. Fix it.' --model glm-5.3 --permission-mode bypassPermissions < /dev/null
+⚠ claude.ai connectors are disabled because ANTHROPIC_API_KEY or another auth source is set and takes precedence over your claude.ai login · Unset it to load your organization's connectors
+"glm-5.3" isn't described by this version's model catalog; update Claude Code, or map it with behavesAs on a modelPicker row (or modelOverrides, if it is a provider id of a model this version knows). Until then auto-compact keeps this session within 200k tokens (the context window it assumes); if the model accepts more, append [1m] to the model name for 1M, or set CLAUDE_CODE_MAX_CONTEXT_TOKENS to its real window; CLAUDE_CODE_DISABLE_UNKNOWN_MODEL_WINDOW_ENFORCEMENT=1 restores the previous wait-for-the-API behavior.
+[claude-code:unrecognized_model] {"model":"glm-5.3","query_source":"sdk"}
+Fixed and verified.
+
+**What was wrong:** attempt 1's work was intact in the worktree, but ringer invokes the check as bare `bash .../checks/u03.sh` (wave-2.json:18) with no `TASKDIR` in the environment, so the check died at its own line 5 under `set -u` before step 8 could export the patch - hence the missing `patches/u03.patch`.
+
+**Fix:** one line in `manifests/checks/u03.sh` (orchestrator-owned, edited on its explicit "Fix it"): `TASKDIR="${TASKDIR:-<worktree path>}"` before the `cd`, so an env override still wins if a future runner sets it.
+
+**Verified this session:**
+- `bash ci/run-all.sh` in the worktree exits 0 (`PASS: all`)
+- The check run bare, exactly as ringer runs it, exits 0 with `PASS: u03-ci` - including the ownership audit, the planted-token probe, and a clean post-probe rerun
+- `patches/u03.patch` now exists (950 lines) and stages exactly the eleven owned artifacts plus NOTES; no probe residue, no scope violations
+- Re-ran the check after appending the retry record to NOTES so the exported patch matches the final tree (grep confirms the record is in the patch)
+
+Stopping here.
+[ringer.py] attempt 2 exited rc=0

@@ -1,0 +1,46 @@
+You are U07, an implementer on the jrit-loop plugin port. You work alone in an isolated git worktree of /home/jjrdar/repos/jrit/jrit-loop; treat the worktree root you start in as the repo root. Five sibling workers are running right now on other files; they do not touch yours.
+
+DO NOT git commit, do NOT git push, do NOT run git add yourself, and do NOT touch .git. The orchestrator commits your work on main from the patch your check exports. This overrides your task's step 22 (its `git add -A && git commit` is performed by the orchestrator with that exact message); every other step is yours. Step 15 tells you to record the two `--help` findings in the commit message: since you do not commit, write them into ./NOTES under a line beginning `GH/GLAB CHILD-ISSUE FINDINGS:`, verbatim enough to paste, and the orchestrator carries them into the commit subject.
+
+READ FIRST, read-only, in this order:
+1. /home/jjrdar/repos/loop-stack-session/docs/plans/2026-09-13.B32.jrit-loop-plugin-port-plan.md lines 852-894 - this is YOUR task (Task 7), in full, and it is the spec of record. Do exactly what its numbered steps say (step 22 excepted, above).
+2. The same file, lines 418-432 - the Global constraints. Every one applies to you.
+3. The same file, lines 104-152 (D2, for the pointer-doc keys `tracker`, `autonomy-default`, `handoffs-home`, `reviews-home` and the `agent:` vocabulary), lines 154-168 (D3, the pre-plugin detection paragraph, verbatim and four physical lines), lines 282-306 (D7, the frontmatter table and the reasons the other recognized keys were rejected).
+4. The same file, lines 37-65 - the Verified facts, so you do not re-derive or contradict them.
+5. The sources you are porting FROM, read-only: /home/jjrdar/repos/loop-stack-session/skills/{loop-track,loop-auto,handoff,wayfinder}/.
+
+FILES YOU OWN. You may create or edit ONLY these paths, all relative to the worktree root:
+- skills/loop-track/SKILL.md
+- skills/loop-auto/SKILL.md
+- skills/handoff/SKILL.md, skills/handoff/agents/openai.yaml
+- skills/wayfinder/SKILL.md
+- ci/reference-allowlist.txt - APPEND ONLY, one line per addition with a trailing `# why <justification>`, never a rewrite and never a deletion of any existing line. Read the file first: it already carries seeded lines, and a duplicate of an existing line is a defect. Appending is the LAST resort, taken only when a reference genuinely cannot be rewritten to resolve inside its own skill.
+- ./NOTES - your report, worktree root only; the check excludes it from the ownership audit.
+Five shipped files, no sixth. Step 1 also DELETES `skills/loop-track/loop-track.sh` and `skills/loop-auto/loop-auto.sh` if your copy brings them in; deleting those two is required and is not a scope violation, and the final tree must show no trace of them. Any other file you change is a scope violation and fails this unit, even if the change is an improvement. If you believe a file outside this list must change, do not change it: write the reason into ./NOTES and carry on with what you do own.
+
+WAVE COLLISION NOTE. Within this wave the units touch disjoint files by construction. `ci/reference-allowlist.txt` is the single sanctioned overlap, and the orchestrator resolves it by union-append at the gate. A collision in any other file is a scope violation.
+
+CHECK CUSTODY. `ci/structure-check.sh` and `ci/budget-check.sh` judge you and neither is yours. Do not create or edit any file under `ci/` except the append to `ci/reference-allowlist.txt` sanctioned above. A diff touching a check script is an automatic scope violation.
+
+A SATISFIABILITY NOTE, SO YOU DO NOT OVERREACH. Your acceptance command runs `ci/budget-check.sh`, which measures `skills/loop-drive/scripts/receipt.sh`. That file is U04's, it is being written in parallel right now, and it does not exist in your worktree. budget-check prints a `skip:` line for a file that does not yet exist and does not fail on it. Do NOT create `skills/loop-drive/scripts/receipt.sh` to make a skip go away; creating it is a scope violation that fails this unit. What budget-check does need from you is `skills/handoff/agents/openai.yaml`, which you ship, and whose SLOC it prints as information only with no threshold attached.
+
+HOW TO RUN, exactly. From the worktree root:
+bash ci/structure-check.sh && bash ci/budget-check.sh && claude plugin validate --strict skills && echo PASS
+READ THIS BEFORE YOU RUN IT. Against the empty destination tree, where `skills/` holds only `.gitkeep`, this command can legitimately exit 0, because there is nothing yet for it to find fault with. That is not the check being wrong and it is not a green light. Your fail-first proof is Task 7 step 1's ordering, and it is mandatory: copy the four unported skill directories in FIRST, then run the acceptance command and confirm it FAILS. Record three real exit codes in ./NOTES: the run against the empty tree, the post-copy run that must fail, and the final run that must exit 0. If the post-copy run passes, stop and say so in ./NOTES; that means the check is wrong, and a wrong check is a finding, not a green light.
+
+THINGS THE CHECK ASSERTS THAT ARE EASY TO GET WRONG.
+- All four SKILL.md files carry the D3 pre-plugin detection paragraph, verbatim, four physical lines, near the top after the first heading. loop-track, loop-auto, handoff and wayfinder are four of D3's eight.
+- `loop-auto`'s frontmatter `description` is replaced wholesale with the exact block at plan lines 876-878. The shipped description names `docs/chain-state.md`, which is a banned token, and frontmatter lives inside the file Check A scans, so leaving it in place fails your acceptance check with an error that looks like a body problem. After your rewrite, `docs/chain-state.md` must not appear anywhere in `loop-auto/SKILL.md`, body or frontmatter.
+- Frontmatter keys, exactly, per D7: `handoff` carries `name`, `description`, `argument-hint`, `disable-model-invocation`; `wayfinder` carries `name`, `description`, `disable-model-invocation`; `loop-track` and `loop-auto` carry `name` and `description` and nothing else. Each non-default key also gets one sentence of prose in the body stating its behaviour.
+- Zero executables: `find skills/loop-track skills/loop-auto skills/handoff skills/wayfinder -type f -perm -u+x` must print nothing.
+- wayfinder's child-issue prose (step 15) must claim only what `gh --help` and `glab --help` on this host actually support, and where a CLI has no native sub-issue support the prose must name the `Blocked by: #N` body convention as the mechanism for that backend. Run both `--help` commands for real; do not recall them from training.
+
+./NOTES CONTRACT. First line, exactly:
+AGENT STATUS unit=u07 branch=worktree verdict=self-pass repairs=0
+Then: what you read; every file you created, edited or deleted; the acceptance command with all three real exit codes; the `GH/GLAB CHILD-ISSUE FINDINGS:` line with the two `--help` observations you actually made; every allow-list line you appended with its `# why`; and a section headed AMBIGUITIES TAKEN.
+
+HOUSE STYLE, non-negotiable, and CI enforces it: never the em dash character U+2014, plain "-" only; one full sentence per line in markdown; aligned pipe tables.
+
+IF SOMETHING IS AMBIGUOUS: you cannot ask. Record the question in ./NOTES under "AMBIGUITIES TAKEN", take the most conservative reading (the one that changes the least and claims the least), and continue. A conservative reading that is later corrected costs one relaunch; a confident guess that ships costs a criterion.
+
+WHEN THE ACCEPTANCE COMMAND PASSES AND ./NOTES IS WRITTEN, STOP IMMEDIATELY AND RETURN. Do not explore unrelated code, do not improve adjacent files, do not refactor anything that is not broken.

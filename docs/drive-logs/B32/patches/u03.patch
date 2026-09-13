@@ -1,0 +1,957 @@
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+new file mode 100644
+index 0000000..884a354
+--- /dev/null
++++ b/.github/workflows/ci.yml
+@@ -0,0 +1,36 @@
++# CI for jrit-loop: criteria 1, 2, 4, 7, 9 on every push (criterion 10).
++# ci/secrets-scan.sh is not run here because criterion 9 is covered by
++# gitleaks-action in this job; the script remains the local and full-history
++# (Task 13) engine. ci/clean-room-npx.sh and ci/single-resolution.sh are
++# host-mutating manual checks (Task 14) and never run in CI.
++name: ci
++on:
++  push:
++  pull_request:
++jobs:
++  checks:
++    runs-on: ubuntu-latest
++    steps:
++      - uses: actions/checkout@v4
++        with:
++          fetch-depth: 0
++      - name: Install jq
++        run: sudo apt-get update && sudo apt-get install -y jq
++      - name: Secrets scan
++        uses: gitleaks/gitleaks-action@v2
++        env:
++          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
++      - name: Structure check
++        run: bash ci/structure-check.sh
++      - name: Budget check
++        run: bash ci/budget-check.sh
++      - name: Version drift check
++        run: bash ci/version-drift.sh
++      - name: Consumer sweep
++        run: bash ci/consumer-sweep.sh
++      - name: Install claude CLI
++        run: npm install -g @anthropic-ai/claude-code
++      - name: Validate marketplace manifest
++        run: claude plugin validate --strict .
++      - name: Validate plugin manifest
++        run: claude plugin validate --strict .claude-plugin/plugin.json
+diff --git a/NOTES b/NOTES
+new file mode 100644
+index 0000000..fd0c076
+--- /dev/null
++++ b/NOTES
+@@ -0,0 +1,118 @@
++# Task 3 (U03) - CI: structure, budget, drift, secrets, and consumer checks
++
++Date: 2026-09-13.
++Worktree: docs/drive-logs/B32/ringer/wave-2/u03-ci (isolated worktree of jrit-loop at skeleton commit b811337).
++Spec of record: docs/plans/2026-09-13.B32.jrit-loop-plugin-port-plan.md, Task 3, lines 685-734, with global constraints 418-432, D5-D9, and verified facts 37-65.
++
++## What I read
++
++Plan lines 685-734 (Task 3), 418-432 (global constraints), 203-234 (D5), 236-280 (D6), 282-306 (D7), 308-346 (D8), 348-355 (D9), 37-65 (verified facts), 560-684 (criterion map, deviations, Tasks 1-2), 735-955 (Tasks 4-9, for skip behavior mid-port).
++Host reads: ls and jq over ~/.claude/plugins/ (installed-plugins record), the eleven source skill directories under ~/repos/loop-stack-session/skills/ via the Check B pre-run, ~/repos/loop-stack-session/scripts/clean-room.sh (isolation pattern), config/reviewer-conduct-contract.md and config/routing/model-benchmarks.md (files later tasks ship into skills/).
++`npx --yes skills --help` and `--version` (skills 1.5.26) to correct the clean-room installer flags at write time.
++
++## Files I wrote (all owned by this task)
++
++- ci/banned-tokens.txt
++- ci/reference-allowlist.txt
++- ci/structure-check.sh
++- ci/budget-check.sh
++- ci/version-drift.sh
++- ci/secrets-scan.sh
++- ci/consumer-sweep.sh
++- ci/clean-room-npx.sh
++- ci/single-resolution.sh
++- ci/run-all.sh
++- .github/workflows/ci.yml
++- ./NOTES (this file)
++
++No other path was touched; git status shows only .github/ and ci/ as new, and skills/ still holds only .gitkeep.
++Probe files created during step 10 were all deleted; `ls -la skills/` confirms no residue.
++
++## Step 7: the installed-plugins record file
++
++Real filename: ~/.claude/plugins/installed_plugins.json (confirmed with ls ~/.claude/plugins/ before writing the parse).
++Shape (confirmed with jq .): { "version": 2, "plugins": { "<plugin>@<marketplace>": [ { "scope": "user", "installPath": "<abs path under plugins/cache>", "version": "...", "installedAt": "...", "lastUpdated": "...", "gitCommitSha": "..." } ] } }.
++The record held two entries on this host (drawio@365-skills, ponytail@ponytail); the canonical location for a skill is <installPath>/skills/<name>, read from the record, never globbed.
++ci/single-resolution.sh records this in its header comment.
++Live behavior check: it currently FAILS for all eleven names with "resolves from 2 locations" naming ~/.claude/skills/<n> and ~/.agents/skills/<n>, which is its correct pre-decommission (pre-C3) behavior, since the symlink farm still exists on this host.
++
++## Check B pre-run and the allow-list lines it added
++
++I ran the exact extractor (backticked tokens matching the path regex, docs/ prefixed skipped, allow-listed skipped) over the eleven source skill directories and read every hit.
++The prescribed seed (config/repo-state.md, config/conventions.md, AGENTS.md, CLAUDE.md, README.md, ROADMAP.md, ringer.py, MODEL-NOTES.md, AMENDMENTS-PENDING.md, install.sh, setup.sh, ISSUES.md, BACKLOG.md, WAYFINDER.md) was written first.
++I also scanned the two config files that later tasks ship into skills/ (reviewer-conduct-contract.md, model-benchmarks.md): the contract yields exactly install.sh and setup.sh, both already seeded; model-benchmarks.md yields nothing.
++
++Lines my pre-run ADDED beyond the prescribed seed (each already carries its `# why` in the file):
++
++- _loop.md - why: drive-unit run-state file in the target repo, named in loop-drive prose as a file that already exists there, not a skill-shipped file.
++- PRODUCT.md - why: illustrative example of a decision doc in the audited repo (loop-improve audit playbook), not a reference that must resolve.
++- CODING_STANDARDS.md - why: illustrative example of a standards source in the repo under review (loop-review), not a reference that must resolve.
++- CONTRIBUTING.md - why: illustrative example of a standards source in the repo under review (loop-review), not a reference that must resolve.
++
++Stragglers the pre-run leaves for the port tasks (deliberately NOT allow-listed; each maps to a rewrite the plan already instructs, so a survivor is a real finding):
++
++- skills/loop-brainstorm/SKILL.md:31 and skills/loop-drive/SKILL.md:15 - principles.md (loop-stack provenance pointer; decide: rewrite or allow-list with a why).
++- skills/loop-brainstorm/references/brief-pipeline.md:79 - tracker.sh (Task 5 step 6 rewrites).
++- skills/loop-improve/SKILL.md:77,82 - bare brief-pipeline.md (Task 5 step 10 rewrites line 82; line 77 is an unlisted straggler to prefix with references/).
++- skills/loop-drive/SKILL.md:30,66,93 and references/ringer-substrate.md:57 - config/routing/model-benchmarks.md (Task 9 and D5 rewrite).
++- skills/loop-review/SKILL.md:84,86 and skills/loop-drive/SKILL.md:157,159 - config/reviewer-conduct-contract.md and ./install.sh (D5 replacement block).
++- skills/loop-setup/SKILL.md:27 - config/repo-state.template.md, config/conventions.template.md (Task 8 rewrite).
++- skills/loop-setup/SKILL.md:72 - scripts/gen-mirrors.sh (Task 8 step 11 deletes).
++- skills/loop-track/SKILL.md:48 - graduate-parking.sh (Task 7 straggler; the script is not ported).
++- skills/wayfinder/SKILL.md:78 - config/routing/model-benchmarks.md (Task 7 step 14 rewrites).
++- loop-track.sh and loop-auto.sh resolve in the source tree but become Check B failures the moment Task 7 deletes the files; any surviving mention is a straggler.
++
++## Step 10 proofs (fail first, then pass)
++
++Proof 1, banned token: probe skills/tmp-probe/SKILL.md containing `${CLAUDE_PLUGIN_ROOT}`.
++Failing line: `STRUCTURE FAIL: check A: banned token '${CLAUDE_PLUGIN_ROOT}' appears in shipped files (allowed only in skills/loop-setup/SKILL.md for the docs/chain-state.md deletion naming):` followed by `skills/tmp-probe/SKILL.md:8:Run \`${CLAUDE_PLUGIN_ROOT}/scripts/receipt.sh\` from the skill root.` with exit 1.
++Passing rerun after deletion: `PASS: structure` with exit 0.
++
++Proof 2, version drift: README marker changed to `<!-- jrit-loop-version: 9.9.9 -->`.
++Failing line: `DRIFT FAIL: version drift: README marker says 9.9.9, plugin.json says 0.1.0` with exit 1.
++Passing rerun after revert: `PASS: drift` with exit 0 (marker restored to 0.1.0, confirmed by grep).
++
++Proof 3, executable markdown: chmod +x on skills/tmp-probe/SKILL.md.
++Failing line: `BUDGET FAIL: executable files under skills/ other than skills/loop-drive/scripts/receipt.sh:` naming `skills/tmp-probe/SKILL.md`, with exit 1.
++Passing rerun after revert and deletion: `PASS: budget` with exit 0.
++
++Proof 4, Check H: probe skills/loop-drive/references/tmp-probe.md (not the appendix).
++Failing line with `SendMessage`: `STRUCTURE FAIL: check H: skills/loop-drive/references/tmp-probe.md:1 names SendMessage; harness primitives live only in references/harness-appendix-claude-code.md` with exit 1.
++Passing rerun with the line replaced by `Run /loop-drive to start a unit, or /loop-plan when no plan exists.`: `PASS: structure` with exit 0, which proves the trailing character class ($|[^a-z-]) does exactly what its comment claims: the skill-name forms /loop-drive and /loop-plan do not trip the slash-command ban.
++Both probe file and the loop-drive directory were then deleted; structure-check still `PASS: structure`.
++
++Extra fail-first proofs beyond the mandated four (same probe allowance, same cleanup):
++
++- Check B: probe backticking `references/nope.md` failed with `backticked token 'references/nope.md' does not resolve at skills/tmp-probe/references/nope.md`, naming file and line.
++- Check F: probe frontmatter carrying `license: MIT` failed with `frontmatter key 'license' is not one of name, description, argument-hint, disable-model-invocation`, naming file and line.
++
++## Final acceptance
++
++Command: `bash ci/run-all.sh; echo PASS`.
++Exit code: 0 (recorded from the actual run; final line `PASS: all`, then `PASS` echoed).
++Both real `claude plugin validate --strict` commands ran (claude binary on PATH) and passed: the marketplace manifest and the plugin manifest.
++Skip lines in the passing run, exactly where the spec allows: five byte-equality pairs, helper SLOC, openai.yaml existence, eleven-directory count.
++secrets-scan printed `engine: grep fallback (gitleaks not on PATH)`, as expected on this host.
++
++## Ambiguities taken (conservative reading in each case)
++
++1. Check H pointer count when the portable core exists: the spec explicitly fails on more than one appendix-naming sentence but is silent on zero once skills/loop-drive/SKILL.md exists.
++I made zero a failure too, because a missing pointer quietly undoes the split the check exists to protect; before the SKILL.md exists the check stays vacuous, so no parallel task is blocked.
++2. Check H's scan set when only some loop-drive files exist: I scan whatever exists of SKILL.md plus references/* (minus the appendix), so the check is meaningful the moment any core file lands, not only after Task 9 completes.
++3. single-resolution with multiple installed-plugins record entries resolving for one name: I count the canonical category once if any record path resolves, but fail outright if two or more distinct record paths resolve, since that is two real copies.
++4. `principles.md` and `loop-improve/SKILL.md:77` from the pre-run: I did not allow-list them, because the plan instructs rewrites of their neighborhoods and a survivor should surface as a straggler to the owning task rather than be silently blessed here.
++5. clean-room-npx flag: the plan's `--skill <name>` matched the installer's `--help` exactly (skills 1.5.26: `-s, --skill <skills>`), so no correction was needed; I added `-y` (skip confirmation prompts) because a sandboxed non-TTY run would otherwise hang at the prompt.
++6. budget-check SLOC definition for the manifests: same formula as the helper (non-blank, non-whitespace-comment lines); JSON has no comments, so this is simply non-blank lines, printed as info only.
++
++## Open questions
++
++- None blocking. The straggler list above is the only judgment surface, and every entry routes to a task the plan already scopes.
++- ci/clean-room-npx.sh was never executed end to end by design: it fetches jroethel/jrit-loop anonymously, the repo is private until checkpoint C4, and the script's header comment says exactly this.
++- The GitHub workflow (gitleaks-action, claude CLI install) is unexercised until the repo has a remote and a push; its steps mirror commands verified locally in this session except the action itself.
++
++## Retry 2 record (2026-09-13)
++
++Previous attempt finished the task but exported no patch: the orchestrator's check crashed at line 5 with "TASKDIR: unbound variable" (wave-2.json invokes the check as bare `bash .../checks/u03.sh`, nothing sets TASKDIR), so step 8's export never ran.
++Fix on orchestrator instruction: added `TASKDIR="${TASKDIR:-/home/jjrdar/repos/loop-stack-session/docs/drive-logs/B32/ringer/wave-2/u03-ci}"` in manifests/checks/u03.sh (outside my owned set, edited only because the orchestrator's retry prompt said "Fix it"; env override still wins).
++Verified: `bash .../checks/u03.sh` run bare, as ringer runs it, exits 0 with `PASS: u03-ci`, including the planted-token probe and a clean rerun of run-all.sh.
++Patch now exported: docs/drive-logs/B32/patches/u03.patch (950 lines), staging exactly the eleven owned artifacts plus NOTES; no probe residue (skills/ contains only .gitkeep).
+diff --git a/ci/banned-tokens.txt b/ci/banned-tokens.txt
+new file mode 100644
+index 0000000..65f5174
+--- /dev/null
++++ b/ci/banned-tokens.txt
+@@ -0,0 +1,25 @@
++# ci/banned-tokens.txt - fixed strings Check A forbids anywhere under skills/.
++# One token per line; "#" starts a comment. Read at run time by ci/structure-check.sh;
++# never hard-code this list inside a script.
++# The /skills/-suffixed home forms are banned, not the bare ~/.claude and ~/.agents,
++# because the shipped reviewer-conduct contract legitimately names the bare paths as
++# examples of barred mutations; the /skills/ forms are what a dangling cross-skill
++# reference actually looks like.
++~/.claude/skills/
++~/.agents/skills/
++${CLAUDE_PLUGIN_ROOT}
++/home/
++/Users/
++C:\
++scripts/tracker.sh
++scripts/gen-mirrors.sh
++scripts/graduate-parking.sh
++scripts/lifecycle-lint.sh
++scripts/migrate-tracker.sh
++scripts/session-card.sh
++scripts/handoff-log.sh
++scripts/take-stock.sh
++config/routing/
++config/reviewer-conduct-contract.md
++skills/loop-
++docs/chain-state.md
+diff --git a/ci/budget-check.sh b/ci/budget-check.sh
+new file mode 100644
+index 0000000..a88ab09
+--- /dev/null
++++ b/ci/budget-check.sh
+@@ -0,0 +1,46 @@
++#!/usr/bin/env bash
++# ci/budget-check.sh - the executable sweep and the receipt helper's SLOC budget.
++# Spec of record: plan 2026-09-13 B32, Task 3 step 2 and D8.
++#
++# The budgeted denominator is the helper ALONE. The 200 Jeremy approved on
++# 2026-09-13 was measured against skills/loop-drive/scripts/receipt.sh, and
++# summing the manifests into it would add roughly 25 lines of declarative
++# overhead the approved number never contemplated. The three manifests are
++# asserted present once they exist and their SLOC is printed as information
++# only; they carry no threshold and can never fail this check on size.
++# (Spec edit approved by Jeremy 2026-09-13: while a manifest does not yet exist
++# the check prints 'skip: <path> not yet created' instead of failing, because
++# skills/handoff/agents/openai.yaml is created by parallel Task 7.)
++set -uo pipefail
++cd "$(dirname "$0")/.." || { echo "FAIL: cannot reach the repo root" >&2; exit 1; }
++
++fail() { echo "BUDGET FAIL: $1" >&2; exit 1; }
++
++# --- 1. zero executables under skills/ except the receipt helper ---------------
++stray=$(find skills -type f -perm -u+x ! -path 'skills/loop-drive/scripts/receipt.sh' -print)
++[ -z "$stray" ] || fail "executable files under skills/ other than skills/loop-drive/scripts/receipt.sh:
++$stray
++Every invocation form is 'bash <script>', so nothing else may carry the execute bit."
++
++sloc() { grep -cvE '^[[:space:]]*(#|$)' "$1"; }
++
++# --- 2. the helper's SLOC against the amended budget --------------------------
++HELPER=skills/loop-drive/scripts/receipt.sh
++if [ -f "$HELPER" ]; then
++  n=$(sloc "$HELPER")
++  echo "helper SLOC: $n (budget 200)"
++  [ "$n" -lt 200 ] || fail "helper SLOC is $n, at or over the amended budget of 200 (D8, Jeremy 2026-09-13). Do not raise the threshold: escalate to human checkpoint C5."
++else
++  echo "skip: helper SLOC (skills/loop-drive/scripts/receipt.sh not yet created)"
++fi
++
++# --- 3. the three manifests: present-and-informative, never thresholded -------
++for p in .claude-plugin/plugin.json .claude-plugin/marketplace.json skills/handoff/agents/openai.yaml; do
++  if [ -f "$p" ]; then
++    echo "info: $p SLOC: $(sloc "$p")"
++  else
++    echo "skip: $p not yet created"
++  fi
++done
++
++echo "PASS: budget"
+diff --git a/ci/clean-room-npx.sh b/ci/clean-room-npx.sh
+new file mode 100644
+index 0000000..a793a13
+--- /dev/null
++++ b/ci/clean-room-npx.sh
+@@ -0,0 +1,110 @@
++#!/usr/bin/env bash
++# ci/clean-room-npx.sh - prove the PUBLIC npx install path in a throwaway HOME.
++#
++# RUN THIS ONLY AT TASK 14, AFTER HUMAN CHECKPOINT C4 (the repo going public).
++# It proves the public install path and must never be run against a private
++# remote: it fetches jroethel/jrit-loop anonymously from inside a throwaway HOME
++# with no credentials, so a private remote returns not-found rather than a
++# meaningful failure. If you are running it before C4, the red you get is this
++# script running early, not a defect.
++#
++# Isolation pattern modelled on loop-stack's scripts/clean-room.sh: a mktemp -d
++# sandbox, HOME exported into it, an rm -rf trap on exit, and the real HOME is
++# never touched.
++#
++# Installer flags verified 2026-09-13 against 'npx skills --help' (skills 1.5.26):
++#   -s, --skill <skills>   specify skill names to install
++#   -y                     skip confirmation prompts (needed for non-interactive runs)
++set -uo pipefail
++REPO="$(cd "$(dirname "$0")/.." && pwd)" || { echo "FAIL: cannot reach the repo root" >&2; exit 1; }
++
++fail() { echo "CLEAN-ROOM-NPX FAIL: $1" >&2; exit 1; }
++
++NAMES="handoff loop-auto loop-brainstorm loop-drive loop-improve loop-molt loop-plan loop-review loop-setup loop-track wayfinder"
++
++SANDBOX="$(mktemp -d)" || fail "mktemp -d failed"
++trap 'rm -rf "$SANDBOX"' EXIT
++export HOME="$SANDBOX/home"
++mkdir -p "$HOME" || fail "could not create the sandbox HOME"
++
++# Resolve and print the exact skills package version, on a machine-readable line,
++# because Task 14 pins this value into the README's npx route.
++SKILLS_VERSION="$(npx --yes skills --version 2>/dev/null)" || fail "could not resolve the skills package version"
++echo "skills-package-version: $SKILLS_VERSION"
++
++# The Check B skip list applies to installed copies exactly as it does to the
++# source tree: an allow-listed token names something outside the skill by design.
++declare -A ALLOWED=()
++while IFS= read -r line; do
++  tok=${line%%#*}
++  tok=${tok//[[:space:]]/}
++  [ -n "$tok" ] && ALLOWED[$tok]=1
++done < "$REPO/ci/reference-allowlist.txt"
++
++# Extractor mirroring check B in ci/structure-check.sh: every backticked span
++# shaped like a relative file path, printed as "<file><TAB><line><TAB><token>".
++extract_backtick_tokens() {
++  local f span ln tok
++  find "$1" -name '*.md' -type f | sort | while IFS= read -r f; do
++    grep -noE '`[^`]+`' "$f" 2>/dev/null | while IFS=: read -r ln span; do
++      tok=${span//\`/}
++      if [[ $tok =~ ^[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*\.(md|sh|yaml|yml|json|toml)$ ]]; then
++        printf '%s\t%s\t%s\n' "$f" "$ln" "$tok"
++      fi
++    done
++  done
++}
++
++for name in $NAMES; do
++  npx --yes skills add jroethel/jrit-loop --skill "$name" -y \
++    || fail "npx skills add jroethel/jrit-loop --skill $name did not exit 0"
++  inst=""
++  for cand in "$HOME/.claude/skills/$name" "$HOME/.agents/skills/$name"; do
++    if [ -e "$cand" ]; then
++      inst="$cand"
++      break
++    fi
++  done
++  [ -n "$inst" ] || fail "installed copy of $name not found under the sandbox HOME ($HOME/.claude/skills/$name or $HOME/.agents/skills/$name)"
++
++  # Every backticked file token in the installed copy must resolve inside it.
++  b_fail=""
++  while IFS=$'\t' read -r f ln tok; do
++    [ -n "$f" ] || continue
++    case $tok in docs/*) continue ;; esac
++    [ -n "${ALLOWED[$tok]:-}" ] && continue
++    if [ ! -e "$inst/$tok" ]; then
++      b_fail="$b_fail
++  $f:$ln: backticked token '$tok' does not resolve inside the installed skill at $inst/$tok"
++    fi
++  done < <(extract_backtick_tokens "$inst")
++  [ -z "$b_fail" ] || fail "installed $name has dangling reads (criterion 3):$b_fail"
++
++  if [ "$name" = "loop-drive" ]; then
++    [ -f "$inst/scripts/receipt.sh" ] || fail "installed loop-drive lacks scripts/receipt.sh; the helper did not survive the npx copy"
++    out="$(bash "$inst/scripts/receipt.sh" 2>&1)"
++    rc=$?
++    [ "$rc" -ne 0 ] || fail "bash scripts/receipt.sh with no arguments exited 0; it must print usage and exit non-zero"
++    case "$out" in
++      *usage* | *Usage*) : ;;
++      *) fail "bash scripts/receipt.sh with no arguments printed no usage line; output was: $out" ;;
++    esac
++    # Informational only, no assertion: the invocation form is 'bash scripts/receipt.sh'
++    # precisely so the execute bit cannot break anything, but the answer is worth knowing.
++    if [ -x "$inst/scripts/receipt.sh" ]; then
++      echo "info: execute bit survived the npx copy for loop-drive/scripts/receipt.sh"
++    else
++      echo "info: execute bit did not survive the npx copy (harmless: the fixed invocation form is 'bash scripts/receipt.sh')"
++    fi
++  fi
++  echo "ok: $name installed and every backticked token resolves"
++done
++
++# The placeholder is legitimate from Task 2 through Task 13 and becomes a defect
++# only here, at Task 14, which is why this assertion lives in this script rather
++# than in ci/version-drift.sh.
++if grep -qF '<VERSION>' "$REPO/README.md"; then
++  fail "README.md still contains the <VERSION> placeholder; pin the real skills package version ($SKILLS_VERSION) into the npx route"
++fi
++
++echo "PASS: clean-room"
+diff --git a/ci/consumer-sweep.sh b/ci/consumer-sweep.sh
+new file mode 100644
+index 0000000..fdf2c9e
+--- /dev/null
++++ b/ci/consumer-sweep.sh
+@@ -0,0 +1,13 @@
++#!/usr/bin/env bash
++# ci/consumer-sweep.sh - no session-history or consumer-generated artifacts ship
++# in jrit-loop (criterion 11; run at Task 13 before the public flip).
++set -uo pipefail
++cd "$(dirname "$0")/.." || { echo "FAIL: cannot reach the repo root" >&2; exit 1; }
++
++fail() { echo "CONSUMER-SWEEP FAIL: $1" >&2; exit 1; }
++
++strays=$(find . -path ./.git -prune -o \( -name conversation-archive.md -o -name learning_guide.html -o -name molt-ledger.md -o -path './docs/sessions/*' -o -path './docs/handoffs/*' -o -path './logs/*' -o -path './.scratch/*' -o -path './docs/reviews/*' \) -print)
++[ -z "$strays" ] || fail "consumer-generated session-history artifacts must not ship:
++$strays"
++
++echo "PASS: consumer-sweep"
+diff --git a/ci/reference-allowlist.txt b/ci/reference-allowlist.txt
+new file mode 100644
+index 0000000..a45b884
+--- /dev/null
++++ b/ci/reference-allowlist.txt
+@@ -0,0 +1,21 @@
++# ci/reference-allowlist.txt - file tokens Check B skips, one token per line,
++# each with a trailing "# why" justification. Append-only: port tasks add lines
++# here with their own why; never rewrite or delete another task's line.
++config/repo-state.md # why: target-repo state map of the pre-plugin layout, named in ported prose as a file the user's repo may carry, not a skill-shipped file
++config/conventions.md # why: target-repo conventions doc of the pre-plugin layout, named in ported prose, not a skill-shipped file
++AGENTS.md # why: target-repo instructions file loop-setup writes a managed section into, named in prose, not a skill-shipped file
++CLAUDE.md # why: target-repo instructions file loop-setup writes the @AGENTS.md import into, named in prose, not a skill-shipped file
++README.md # why: target-repo readme named in ported prose, not a skill-shipped file
++ROADMAP.md # why: target-repo roadmap named in ported prose, not a skill-shipped file
++ringer.py # why: external tool file in the ringer repo, named in loop-drive prose and its ringer stub probe, not a skill-shipped file
++MODEL-NOTES.md # why: dated model-log file inside the ringer repo (external tool), named in loop-drive prose, not a skill-shipped file
++AMENDMENTS-PENDING.md # why: amendment-queue file inside the ringer repo (external tool), named in loop-drive prose, not a skill-shipped file
++install.sh # why: named backticked in the shipped reviewer-conduct contract as examples of barred commands, not as references to files that must resolve
++setup.sh # why: named backticked in the shipped reviewer-conduct contract as examples of barred commands, not as references to files that must resolve
++ISSUES.md # why: deletion target named in loop-setup's migration prose, not a reference to a file that must resolve
++BACKLOG.md # why: deletion target named in loop-setup's migration prose, not a reference to a file that must resolve
++WAYFINDER.md # why: deletion target named in loop-setup's migration prose, not a reference to a file that must resolve
++_loop.md # why: drive-unit run-state file in the target repo, named in loop-drive prose as a file that already exists there, not a skill-shipped file (added by Task 3's Check B pre-run)
++PRODUCT.md # why: illustrative example of a decision doc in the audited repo (loop-improve audit playbook), not a reference that must resolve (added by Task 3's Check B pre-run)
++CODING_STANDARDS.md # why: illustrative example of a standards source in the repo under review (loop-review), not a reference that must resolve (added by Task 3's Check B pre-run)
++CONTRIBUTING.md # why: illustrative example of a standards source in the repo under review (loop-review), not a reference that must resolve (added by Task 3's Check B pre-run)
+diff --git a/ci/run-all.sh b/ci/run-all.sh
+new file mode 100644
+index 0000000..8d79883
+--- /dev/null
++++ b/ci/run-all.sh
+@@ -0,0 +1,28 @@
++#!/usr/bin/env bash
++# ci/run-all.sh - the single dev gate: the five read-only checks, then plugin
++# validation when the claude binary is present (criterion 10).
++#
++# It does NOT run ci/clean-room-npx.sh or ci/single-resolution.sh: both are
++# host-mutating (a throwaway HOME with real network installs; the host's
++# installed-plugins record) and are manual, Task-14 checks by design.
++set -uo pipefail
++cd "$(dirname "$0")/.." || { echo "FAIL: cannot reach the repo root" >&2; exit 1; }
++
++fail() { echo "RUN-ALL FAIL: $1" >&2; exit 1; }
++
++for s in ci/structure-check.sh ci/budget-check.sh ci/version-drift.sh ci/secrets-scan.sh ci/consumer-sweep.sh; do
++  echo "== $s"
++  bash "$s" || fail "$s exited non-zero"
++done
++
++if command -v claude >/dev/null 2>&1; then
++  echo "== claude plugin validate --strict . (marketplace manifest)"
++  claude plugin validate --strict . || fail "claude plugin validate --strict . failed"
++  echo "== claude plugin validate --strict .claude-plugin/plugin.json (plugin manifest and components)"
++  claude plugin validate --strict .claude-plugin/plugin.json || fail "claude plugin validate --strict .claude-plugin/plugin.json failed"
++else
++  echo "skip: claude plugin validate --strict . (claude binary not on PATH)"
++  echo "skip: claude plugin validate --strict .claude-plugin/plugin.json (claude binary not on PATH)"
++fi
++
++echo "PASS: all"
+diff --git a/ci/secrets-scan.sh b/ci/secrets-scan.sh
+new file mode 100644
+index 0000000..13fdca4
+--- /dev/null
++++ b/ci/secrets-scan.sh
+@@ -0,0 +1,46 @@
++#!/usr/bin/env bash
++# ci/secrets-scan.sh - secret scan over the working tree, and over full history
++# when --full-history is passed as the first argument (criterion 9; Task 13 runs
++# the full-history pass before the public flip).
++#
++# Engine: gitleaks when it is on PATH, else a fixed-pattern grep fallback. Which
++# engine ran is always printed, so a fallback run is never mistaken for a
++# gitleaks run.
++set -uo pipefail
++cd "$(dirname "$0")/.." || { echo "FAIL: cannot reach the repo root" >&2; exit 1; }
++
++fail() { echo "SECRETS FAIL: $1" >&2; exit 1; }
++
++PATTERNS=(
++  'gh[pousr]_[A-Za-z0-9]{20,}'
++  'glpat-[A-Za-z0-9_-]{20,}'
++  'sk-[A-Za-z0-9]{20,}'
++  'AKIA[0-9A-Z]{16}'
++  '-----BEGIN [A-Z ]*PRIVATE KEY-----'
++  'xox[baprs]-[A-Za-z0-9-]{10,}'
++)
++
++pattern_args=()
++for p in "${PATTERNS[@]}"; do pattern_args+=(-e "$p"); done
++
++if command -v gitleaks >/dev/null 2>&1; then
++  echo "engine: gitleaks"
++  gitleaks detect --source . --redact --exit-code 1 \
++    || fail "gitleaks found secrets in the working tree (see the report above)"
++  if [ "${1:-}" = "--full-history" ]; then
++    gitleaks detect --source . --redact --log-opts="--all" --exit-code 1 \
++      || fail "gitleaks found secrets in the full history (see the report above)"
++  fi
++else
++  echo "engine: grep fallback (gitleaks not on PATH)"
++  hits=$(grep -rInE --exclude-dir=.git "${pattern_args[@]}" . || true)
++  [ -z "$hits" ] || fail "secret-shaped hits in the working tree:
++$hits"
++  if [ "${1:-}" = "--full-history" ]; then
++    hh=$(git log -p --all | grep -nE "${pattern_args[@]}" || true)
++    [ -z "$hh" ] || fail "secret-shaped hits in the full history:
++$hh"
++  fi
++fi
++
++echo "PASS: secrets"
+diff --git a/ci/single-resolution.sh b/ci/single-resolution.sh
+new file mode 100644
+index 0000000..627a42e
+--- /dev/null
++++ b/ci/single-resolution.sh
+@@ -0,0 +1,81 @@
++#!/usr/bin/env bash
++# ci/single-resolution.sh - after decommission (human checkpoint C3), each of the
++# eleven skill names must resolve from EXACTLY ONE location (criterion 12).
++# Run once per host that carried the symlink farm, at Task 14.
++#
++# Host record verified at write time, 2026-09-13, with 'ls ~/.claude/plugins/'
++# and 'jq': the plugin runtime's installed-plugins record is
++#   ~/.claude/plugins/installed_plugins.json
++# and its shape is
++#   { "version": 2,
++#     "plugins": {
++#       "<plugin>@<marketplace>": [
++#         { "scope": "user", "installPath": "<abs path under plugins/cache>",
++#           "version": "...", "installedAt": "...", "lastUpdated": "...",
++#           "gitCommitSha": "..." } ] } }
++# The canonical installed location for skill <n> is <installPath>/skills/<n>,
++# taken from that record.
++#
++# This check counts COPIES, not collisions, and the distinction is the whole
++# check. A globbed 'find ~/.claude/plugins/ -name <n>' counts a legitimately
++# installed plugin two or three times over, because the same plugin exists under
++# marketplaces/ as a cloned source tree and under cache/ as a resolved version
++# tree; a correct install would report 3 and fail. The marketplaces/ and cache/
++# trees are therefore excluded by construction - the installed path is read from
++# the runtime's record, never globbed - while ~/.claude/skills and
++# ~/.agents/skills are checked directly because that is where the symlink farm
++# lived.
++set -uo pipefail
++
++fail() { echo "SINGLE-RESOLUTION FAIL: $1" >&2; exit 1; }
++
++command -v jq >/dev/null 2>&1 || fail "jq is required by ci/single-resolution.sh and is not on PATH"
++
++RECORD="$HOME/.claude/plugins/installed_plugins.json"
++
++NAMES="handoff loop-auto loop-brainstorm loop-drive loop-improve loop-molt loop-plan loop-review loop-setup loop-track wayfinder"
++
++if [ ! -f "$RECORD" ]; then
++  echo "info: no installed-plugins record at $RECORD; the canonical installed location resolves for no name"
++fi
++
++bad=""
++for n in $NAMES; do
++  count=0
++  locs=""
++  if [ -e "$HOME/.claude/skills/$n" ]; then
++    count=$((count + 1))
++    locs="$locs $HOME/.claude/skills/$n"
++  fi
++  if [ -e "$HOME/.agents/skills/$n" ]; then
++    count=$((count + 1))
++    locs="$locs $HOME/.agents/skills/$n"
++  fi
++  canon_found=0
++  canon_locs=""
++  if [ -f "$RECORD" ]; then
++    while IFS= read -r p; do
++      [ -n "$p" ] || continue
++      if [ -e "$p" ]; then
++        canon_found=1
++        canon_locs="$canon_locs $p"
++      fi
++    done < <(jq -r --arg n "$n" \
++      '(.plugins // {}) | to_entries | map(.value | map(.installPath // empty)) | flatten | map(. + "/skills/" + $n) | .[]' \
++      "$RECORD" 2>/dev/null)
++  fi
++  if [ "$canon_found" -eq 1 ]; then
++    count=$((count + 1))
++    locs="$locs$canon_locs"
++  fi
++  if [ "$count" -ne 1 ]; then
++    bad="$bad
++  $n resolves from $count locations (expected exactly 1):$locs"
++  else
++    echo "ok: $n resolves from exactly 1 location"
++  fi
++done
++
++[ -z "$bad" ] || fail "these skill names do not resolve from exactly one location:$bad"
++
++echo "PASS: single-resolution"
+diff --git a/ci/structure-check.sh b/ci/structure-check.sh
+new file mode 100644
+index 0000000..0f849ef
+--- /dev/null
++++ b/ci/structure-check.sh
+@@ -0,0 +1,297 @@
++#!/usr/bin/env bash
++# ci/structure-check.sh - the eight structural checks over the shipped tree.
++# Spec of record: plan 2026-09-13 B32, Task 3 step 1, checks A through H, in order.
++# Each check prints its own ok: line; the script prints PASS: structure at the end.
++#
++# Neither the banned-token list (Check A) nor the skip list (Check B) is hard-coded
++# here. Both live in committed data files read at run time: ci/banned-tokens.txt and
++# ci/reference-allowlist.txt. The reason is deadlock: a port task that discovers a
++# legitimate new reference would otherwise have to edit a check script owned by a
++# finished task, so the list is data with append-only access and this script is code
++# with one owner.
++set -uo pipefail
++cd "$(dirname "$0")/.." || { echo "FAIL: cannot reach the repo root" >&2; exit 1; }
++
++fail() { echo "STRUCTURE FAIL: $1" >&2; exit 1; }
++ok() { printf 'ok: %s\n' "$1"; }
++
++# ---------------------------------------------------------------------------
++# Check A: banned tokens in shipped files.
++# Every fixed string in ci/banned-tokens.txt must appear nowhere under skills/.
++#
++# One exclusion, never a glob: the docs/chain-state.md ban does not apply to
++# skills/loop-setup/SKILL.md, because loop-setup's migration section must name
++# docs/chain-state.md in order to delete it, and a skill that cannot name the file
++# it deletes cannot document the deletion. Every other skill must still not
++# mention it.
++# ---------------------------------------------------------------------------
++check_a() {
++  local token hits
++  while IFS= read -r token; do
++    [ -n "$token" ] || continue
++    if [ "$token" = "docs/chain-state.md" ]; then
++      hits=$(grep -rInF "$token" skills/ 2>/dev/null | grep -v '^skills/loop-setup/SKILL\.md:' || true)
++    else
++      hits=$(grep -rInF "$token" skills/ 2>/dev/null || true)
++    fi
++    [ -z "$hits" ] || fail "check A: banned token '$token' appears in shipped files (allowed only in skills/loop-setup/SKILL.md for the docs/chain-state.md deletion naming):
++$hits"
++  done < <(sed 's/#.*$//' ci/banned-tokens.txt | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | grep -v '^$')
++  ok "A - no banned tokens under skills/"
++}
++
++# ---------------------------------------------------------------------------
++# Check B: reference resolution.
++# Every backticked token shaped like a relative file path in every skills/**/*.md
++# must resolve at skills/<owning-skill>/<token>, unless it starts with docs/ or is
++# allow-listed in ci/reference-allowlist.txt.
++# ---------------------------------------------------------------------------
++load_allowlist() {
++  local line tok
++  while IFS= read -r line; do
++    tok=${line%%#*}
++    tok=${tok//[[:space:]]/}
++    [ -n "$tok" ] && ALLOWED[$tok]=1
++  done < ci/reference-allowlist.txt
++}
++
++extract_backtick_tokens() {
++  # prints "<file><TAB><line><TAB><token>" for every backticked span in every
++  # skills/**/*.md that is shaped like a relative file path.
++  local f span ln tok
++  find skills -name '*.md' -type f | sort | while IFS= read -r f; do
++    grep -noE '`[^`]+`' "$f" 2>/dev/null | while IFS=: read -r ln span; do
++      tok=${span//\`/}
++      if [[ $tok =~ ^[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*\.(md|sh|yaml|yml|json|toml)$ ]]; then
++        printf '%s\t%s\t%s\n' "$f" "$ln" "$tok"
++      fi
++    done
++  done
++}
++
++check_b() {
++  local f ln tok skill b_fail=""
++  while IFS=$'\t' read -r f ln tok; do
++    [ -n "$f" ] || continue
++    case $tok in docs/*) continue ;; esac
++    [ -n "${ALLOWED[$tok]:-}" ] && continue
++    skill=${f#skills/}
++    skill=${skill%%/*}
++    if [ ! -e "skills/$skill/$tok" ]; then
++      b_fail="$b_fail
++  $f:$ln: backticked token '$tok' does not resolve at skills/$skill/$tok"
++    fi
++  done < <(extract_backtick_tokens)
++  [ -z "$b_fail" ] || fail "check B: backticked references that do not resolve inside their owning skill (fix the reference, or append the token with a '# why' to ci/reference-allowlist.txt if it legitimately names something outside the skill):$b_fail"
++  ok "B - every backticked file reference resolves inside its owning skill"
++}
++
++# ---------------------------------------------------------------------------
++# Check C: byte equality of the five duplicated reference pairs.
++# A pair whose files do not both exist yet is skipped, so the check is meaningful
++# the moment a pair lands and vacuous before.
++# ---------------------------------------------------------------------------
++check_c() {
++  local pair_ok=""
++  pair() {
++    local a="skills/$1" b="skills/$2"
++    if [ ! -f "$a" ] || [ ! -f "$b" ]; then
++      printf 'skip: byte-equality pair not yet landed (%s vs %s)\n' "$1" "$2"
++      return 0
++    fi
++    cmp -s "$a" "$b" || fail "check C: $1 and $2 are not byte-identical; edit the canonical copy and re-copy, never hand-edit a duplicate"
++    pair_ok="$pair_ok $1=$2"
++  }
++  pair loop-review/references/reviewer-conduct-contract.md loop-drive/references/reviewer-conduct-contract.md
++  pair loop-brainstorm/references/brief-pipeline.md loop-improve/references/brief-pipeline.md
++  pair loop-brainstorm/references/brief-pipeline.md loop-molt/references/brief-pipeline.md
++  pair loop-brainstorm/references/tracker-scan.md loop-improve/references/tracker-scan.md
++  pair loop-brainstorm/references/one-minute-test.md loop-drive/references/one-minute-test.md
++  ok "C - duplicated references byte-identical:$pair_ok"
++}
++
++# ---------------------------------------------------------------------------
++# Check D: the pre-plugin detection sentence, in the eight skills that need it.
++# ---------------------------------------------------------------------------
++check_d() {
++  local name f
++  for name in loop-auto loop-brainstorm loop-drive loop-improve loop-plan loop-track handoff wayfinder; do
++    f="skills/$name/SKILL.md"
++    [ -f "$f" ] || continue
++    grep -qF '**Pre-plugin repo check.**' "$f" \
++      || fail "check D: $f lacks the literal '**Pre-plugin repo check.**' detection sentence"
++    grep -qF 'docs/loop/pointer.md' "$f" \
++      || fail "check D: $f names no docs/loop/pointer.md; the detection sentence must point there"
++  done
++  ok "D - pre-plugin detection sentence present where required"
++}
++
++# ---------------------------------------------------------------------------
++# Check E: the four stub wording markers in the three stub-carrying skills.
++# ---------------------------------------------------------------------------
++check_e() {
++  local name f marker
++  for name in loop-drive loop-plan loop-brainstorm; do
++    f="skills/$name/SKILL.md"
++    [ -f "$f" ] || continue
++    for marker in '**Probe.**' '**Present:**' '**Absent:**' '**Disclose:**'; do
++      grep -qF "$marker" "$f" \
++        || fail "check E: $f lacks the stub marker '$marker'; all four Probe/Present/Absent/Disclose markers are required"
++    done
++  done
++  ok "E - stub wording markers present where required"
++}
++
++# ---------------------------------------------------------------------------
++# Check F: frontmatter shape of every skills/*/SKILL.md.
++# ---------------------------------------------------------------------------
++check_f() {
++  local f first line n key seen_name seen_desc closed
++  shopt -s nullglob
++  for f in skills/*/SKILL.md; do
++    IFS= read -r first < "$f" || first=""
++    [ "$first" = "---" ] || fail "check F: $f does not open with a '---' frontmatter fence"
++    seen_name=0
++    seen_desc=0
++    closed=0
++    n=0
++    while IFS= read -r line; do
++      n=$((n + 1))
++      [ "$n" -eq 1 ] && continue
++      if [ "$line" = "---" ]; then
++        closed=1
++        break
++      fi
++      if [[ $line =~ ^([A-Za-z0-9-]+): ]]; then
++        key=${BASH_REMATCH[1]}
++        case $key in
++          name) seen_name=1 ;;
++          description) seen_desc=1 ;;
++          argument-hint | disable-model-invocation) ;;
++          *) fail "check F: $f line $n: frontmatter key '$key' is not one of name, description, argument-hint, disable-model-invocation" ;;
++        esac
++      fi
++    done < "$f"
++    [ "$closed" -eq 1 ] || fail "check F: $f frontmatter block is never closed by a second '---'"
++    [ "$seen_name" -eq 1 ] || fail "check F: $f frontmatter carries no name: line"
++    [ "$seen_desc" -eq 1 ] || fail "check F: $f frontmatter carries no description: line"
++    if grep -qE '^fork:' "$f"; then
++      fail "check F: $f contains a '^fork:' line; a bare fork key does not exist (the real key is context: fork, and jrit-loop never uses it)"
++    fi
++  done
++  shopt -u nullglob
++  ok "F - SKILL.md frontmatter keys are all recognized"
++}
++
++# ---------------------------------------------------------------------------
++# Check G: no symlinks, no em dash in shipped markdown.
++# ---------------------------------------------------------------------------
++check_g() {
++  local f em hit
++  local symlinks
++  symlinks=$(find skills -type l -print 2>/dev/null)
++  [ -z "$symlinks" ] || fail "check G: symlinks under skills/ are forbidden (nothing in jrit-loop is symlinked):
++$symlinks"
++  em=$(printf '\xe2\x80\x94')
++  while IFS= read -r f; do
++    if hit=$(grep -nF "$em" "$f"); then
++      fail "check G: $f contains the em dash character U+2014; house style is plain '-' only:
++$hit"
++    fi
++  done < <(find skills -name '*.md' -type f | sort)
++  ok "G - no symlinks and no em dashes in shipped markdown"
++}
++
++# ---------------------------------------------------------------------------
++# Check H: loop-drive's portable core names no harness primitive.
++# Scans skills/loop-drive/SKILL.md and skills/loop-drive/references/* except
++# harness-appendix-claude-code.md, and fails on the literal SendMessage, the
++# backticked `Agent`, and the slash commands /goal and /loop.
++#
++# The slash patterns carry trailing character classes, ($|[^a-z-]): without them
++# /loop-drive and /loop-plan would false-positive on every skill-name mention,
++# and the ban is on the slash COMMANDS, not on the skill names that happen to
++# share a prefix.
++#
++# Exactly one sanctioned pointer sentence may name the appendix, so the core can
++# say where the harness detail went without restating it; more than one such
++# sentence fails, naming both.
++# ---------------------------------------------------------------------------
++slash_command_hit() {
++  # slash_command_hit <line> <command>: true when <line> contains <command> at
++  # end-of-line or followed by a character outside [a-z-].
++  local rest=$1 after offset
++  local word=$2
++  local pfx
++  while [[ $rest == *"$word"* ]]; do
++    pfx=${rest%%"$word"*}
++    offset=$(( ${#pfx} + ${#word} ))
++    rest=${rest:$offset}
++    after=${rest:0:1}
++    if [ -z "$after" ] || [[ ! $after =~ ^[a-z-]$ ]]; then
++      return 0
++    fi
++  done
++  return 1
++}
++
++check_h() {
++  local f line ln_no ptr_count c pointers
++  local h_files=()
++  shopt -s nullglob
++  [ -f skills/loop-drive/SKILL.md ] && h_files+=(skills/loop-drive/SKILL.md)
++  local rf
++  for rf in skills/loop-drive/references/*; do
++    [ -f "$rf" ] || continue
++    [ "$(basename "$rf")" = "harness-appendix-claude-code.md" ] && continue
++    h_files+=("$rf")
++  done
++  if [ ${#h_files[@]} -gt 0 ]; then
++    for f in "${h_files[@]}"; do
++      ln_no=0
++      while IFS= read -r line || [ -n "$line" ]; do
++        ln_no=$((ln_no + 1))
++        if [[ $line == *SendMessage* ]]; then
++          fail "check H: $f:$ln_no names SendMessage; harness primitives live only in references/harness-appendix-claude-code.md"
++        fi
++        if [[ $line == *'`Agent`'* ]]; then
++          fail "check H: $f:$ln_no names the backticked '\`Agent\`' tool; harness primitives live only in references/harness-appendix-claude-code.md"
++        fi
++        if slash_command_hit "$line" "/goal"; then
++          fail "check H: $f:$ln_no invokes the /goal slash command; user-invoked slash commands cannot be invoked from skill prose (see the appendix instead)"
++        fi
++        if slash_command_hit "$line" "/loop"; then
++          fail "check H: $f:$ln_no invokes the /loop slash command; user-invoked slash commands cannot be invoked from skill prose (see the appendix instead)"
++        fi
++      done < "$f"
++    done
++    ptr_count=0
++    pointers=""
++    for f in "${h_files[@]}"; do
++      c=$(grep -cF 'harness-appendix-claude-code.md' "$f" || true)
++      ptr_count=$((ptr_count + c))
++      pointers="$pointers$(grep -nF 'harness-appendix-claude-code.md' "$f" 2>/dev/null | sed "s|^|$f:|")"
++    done
++    if [ "$ptr_count" -gt 1 ]; then
++      fail "check H: the portable core names the appendix $ptr_count times; exactly one sanctioned pointer sentence is allowed:
++$pointers"
++    fi
++    if [ -f skills/loop-drive/SKILL.md ] && [ "$ptr_count" -eq 0 ]; then
++      fail "check H: skills/loop-drive/SKILL.md exists but its core never points to references/harness-appendix-claude-code.md; the split's contract is that the core says where the harness detail went"
++    fi
++  fi
++  shopt -u nullglob
++  ok "H - loop-drive portable core names no harness primitive, with at most one appendix pointer"
++}
++
++declare -A ALLOWED=()
++load_allowlist
++check_a
++check_b
++check_c
++check_d
++check_e
++check_f
++check_g
++check_h
++echo "PASS: structure"
+diff --git a/ci/version-drift.sh b/ci/version-drift.sh
+new file mode 100644
+index 0000000..1f8cf33
+--- /dev/null
++++ b/ci/version-drift.sh
+@@ -0,0 +1,64 @@
++#!/usr/bin/env bash
++# ci/version-drift.sh - the five drift assertions of D9 (criterion 7).
++# plugin.json's version is the single source; the README marker is the second
++# copy that actually drifts, because it is the surface that tells a stranger
++# what they are installing.
++#
++# Deliberately NOT asserted here: the README's npx version pin. Task 2 leaves
++# it as the placeholder <VERSION> until Task 14 measures the real one, and
++# asserting it in a per-push check would make Tasks 3 through 13 unpassable.
++set -uo pipefail
++cd "$(dirname "$0")/.." || { echo "FAIL: cannot reach the repo root" >&2; exit 1; }
++
++fail() { echo "DRIFT FAIL: $1" >&2; exit 1; }
++
++command -v jq >/dev/null 2>&1 || fail "jq is required by ci/version-drift.sh and is not on PATH"
++
++# --- 1. LICENSE at the root ----------------------------------------------------
++[ -f LICENSE ] || fail "LICENSE is missing at the repo root (criterion 7)"
++
++# --- 2. plugin.json carries a semver version -----------------------------------
++jq -e '.version | test("^[0-9]+\\.[0-9]+\\.[0-9]+$")' .claude-plugin/plugin.json >/dev/null 2>&1 \
++  || fail ".claude-plugin/plugin.json: .version is missing or not semver X.Y.Z (got: $(jq -r '.version' .claude-plugin/plugin.json 2>/dev/null))"
++name=$(jq -r '.name' .claude-plugin/plugin.json)
++pv=$(jq -r '.version' .claude-plugin/plugin.json)
++echo "ok: plugin.json $name version $pv is semver"
++
++# --- 3. marketplace.json: exactly one entry, matching name, source "./" --------
++mcount=$(jq '.plugins | length' .claude-plugin/marketplace.json 2>/dev/null)
++[ "$mcount" = "1" ] || fail ".claude-plugin/marketplace.json carries $mcount plugins[] entries; exactly one is allowed"
++m_name=$(jq -r '.plugins[0].name' .claude-plugin/marketplace.json)
++m_src=$(jq -r '.plugins[0].source' .claude-plugin/marketplace.json)
++[ "$m_name" = "$name" ] || fail "marketplace.json entry name '$m_name' does not equal plugin.json name '$name'"
++[ "$m_src" = "./" ] || fail "marketplace.json entry source is '$m_src'; the self-marketplace contract requires \"./\""
++echo "ok: marketplace.json has one entry, name $m_name, source ./"
++
++# --- 4. README version marker equals plugin.json version -----------------------
++marker_count=$(grep -cE '^<!-- jrit-loop-version: (.+) -->$' README.md)
++[ "$marker_count" = "1" ] || fail "README.md carries $marker_count lines matching '^<!-- jrit-loop-version: ... -->$'; exactly one is allowed"
++readme_v=$(grep -E '^<!-- jrit-loop-version: (.+) -->$' README.md | head -1 | sed -E 's/^<!-- jrit-loop-version: (.+) -->$/\1/')
++[ "$readme_v" = "$pv" ] || fail "version drift: README marker says $readme_v, plugin.json says $pv"
++echo "ok: README marker equals plugin.json version ($readme_v)"
++
++# --- 5. skills/ holds exactly eleven directories, each with a SKILL.md ---------
++shopt -s nullglob
++dirs=()
++for d in skills/*/; do
++  dirs+=("$d")
++done
++count=${#dirs[@]}
++if [ "$count" -lt 11 ]; then
++  echo "skip: eleven-directory assertion ($count of 11 skill directories exist; hard once Task 9 lands)"
++else
++  [ "$count" -eq 11 ] || fail "skills/ holds $count directories; exactly eleven skills ship"
++fi
++missing=""
++for d in "${dirs[@]}"; do
++  [ -f "${d}SKILL.md" ] || missing="$missing
++  ${d} has no SKILL.md"
++done
++[ -z "$missing" ] || fail "skill directories without a SKILL.md:$missing"
++shopt -u nullglob
++echo "ok: every skill directory present has a SKILL.md"
++
++echo "PASS: drift"

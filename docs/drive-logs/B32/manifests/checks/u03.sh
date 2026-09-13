@@ -2,6 +2,7 @@
 # Check for U03 (CI checks). Authored by the orchestrator; the worker does not own this file.
 set -uo pipefail
 fail() { echo "CHECK FAIL: $*" >&2; exit 1; }
+TASKDIR="${TASKDIR:-/home/jjrdar/repos/loop-stack-session/docs/drive-logs/B32/ringer/wave-2/u03-ci}"
 cd "$TASKDIR" || fail "no worktree at $TASKDIR"
 
 # 1. Ownership audit over the final tree: only ci/**, .github/**, NOTES may differ from base.
