@@ -1,0 +1,288 @@
+diff --git a/NOTES b/NOTES
+new file mode 100644
+index 0000000..6fdd6f2
+--- /dev/null
++++ b/NOTES
+@@ -0,0 +1,173 @@
++AGENT STATUS unit=U03b branch=worktree verdict=self-pass repairs=0
++
++# What changed (only the two owned scripts)
++
++ci/structure-check.sh, Check H: slash_command_hit now requires BOTH boundaries.
++The old helper walked the line by truncating it after each candidate match, so an occurrence landing at position 0 of a truncated remainder had no visible preceding character and a leading boundary could not be evaluated there at all.
++It is now a single grep -E with the leading class (^|[^A-Za-z0-9./]) and the trailing class ($|[^a-z-]) built into one pattern, which sees the true preceding character of every occurrence.
++The Check H why-comment was rewritten to the amended plan line 714 wording: without the trailing class /loop-drive and /loop-plan would false-positive on every skill-name mention; without the leading boundary the path docs/loop/pointer.md that Check D itself requires would false-positive (leading boundary added 2026-09-13, resolving the proven Check D conflict at the wave-2 gate); the ban is on slash-command invocations, not on skill names or paths that share the substring.
++
++ci/structure-check.sh, Check G: the em dash sweep was widened from `find skills -name '*.md'` to `find skills docs README.md -name '*.md' -type f`, i.e. skills/**/*.md, README.md, and docs/**/*.md, and nothing else.
++NOTES and anything outside those roots are not swept.
++
++ci/single-resolution.sh: new multi-record failure branch, below.
++
++# Baseline: run-all on the clean tree (before probes)
++
++$ bash ci/run-all.sh
++== ci/structure-check.sh
++ok: A - no banned tokens under skills/
++ok: B - every backticked file reference resolves inside its owning skill
++skip: byte-equality pair not yet landed (loop-review/references/reviewer-conduct-contract.md vs loop-drive/references/reviewer-conduct-contract.md)
++skip: byte-equality pair not yet landed (loop-brainstorm/references/brief-pipeline.md vs loop-improve/references/brief-pipeline.md)
++skip: byte-equality pair not yet landed (loop-brainstorm/references/brief-pipeline.md vs loop-molt/references/brief-pipeline.md)
++skip: byte-equality pair not yet landed (loop-brainstorm/references/tracker-scan.md vs loop-improve/references/tracker-scan.md)
++skip: byte-equality pair not yet landed (loop-brainstorm/references/one-minute-test.md vs loop-drive/references/one-minute-test.md)
++ok: C - duplicated references byte-identical:
++ok: D - pre-plugin detection sentence present where required
++ok: E - stub wording markers present where required
++ok: F - SKILL.md frontmatter keys are all recognized
++ok: G - no symlinks and no em dashes in shipped markdown
++ok: H - loop-drive portable core names no harness primitive, with at most one appendix pointer
++PASS: structure
++== ci/budget-check.sh
++skip: helper SLOC (skills/loop-drive/scripts/receipt.sh not yet created)
++info: .claude-plugin/plugin.json SLOC: 9
++info: .claude-plugin/marketplace.json SLOC: 12
++skip: skills/handoff/agents/openai.yaml not yet created
++PASS: budget
++== ci/version-drift.sh
++ok: plugin.json jrit-loop version 0.1.0 is semver
++ok: marketplace.json has one entry, name jrit-loop, source ./
++ok: README marker equals plugin.json version (0.1.0)
++skip: eleven-directory assertion (0 of 11 skill directories exist; hard once Task 9 lands)
++ok: every skill directory present has a SKILL.md
++PASS: drift
++== ci/secrets-scan.sh
++engine: grep fallback (gitleaks not on PATH)
++PASS: secrets
++== ci/consumer-sweep.sh
++PASS: consumer-sweep
++== claude plugin validate --strict . (marketplace manifest)
++Validating marketplace manifest: /home/jjrdar/repos/loop-stack-session/docs/drive-logs/B32/ringer/wave-2b/u03b-fixes/.claude-plugin/marketplace.json
++
++✔ Validation passed
++== claude plugin validate --strict .claude-plugin/plugin.json (plugin manifest and components)
++Validating plugin manifest: /home/jjrdar/repos/loop-stack-session/docs/drive-logs/B32/ringer/wave-2b/u03b-fixes/.claude-plugin/plugin.json
++
++✔ Validation passed
++PASS: all
++RUN-ALL EXIT: 0
++
++# Probe A: Check H leading boundary
++
++Note: this early tree has no skills/loop-drive yet (skills/ holds only .gitkeep), so the probe created skills/loop-drive/references/ itself and deleted the whole skills/loop-drive tree at the end, restoring the clean tree.
++
++A1. skills/loop-drive/references/tmp-probe.md containing "The pointer doc is docs/loop/pointer.md." - must PASS:
++
++$ printf 'The pointer doc is docs/loop/pointer.md.\n' > skills/loop-drive/references/tmp-probe.md && bash ci/structure-check.sh
++ok: A - no banned tokens under skills/
++ok: B - every backticked file reference resolves inside its owning skill
++skip: byte-equality pair not yet landed (loop-review/references/reviewer-conduct-contract.md vs loop-drive/references/reviewer-conduct-contract.md)
++skip: byte-equality pair not yet landed (loop-brainstorm/references/brief-pipeline.md vs loop-improve/references/brief-pipeline.md)
++skip: byte-equality pair not yet landed (loop-brainstorm/references/brief-pipeline.md vs loop-molt/references/brief-pipeline.md)
++skip: byte-equality pair not yet landed (loop-brainstorm/references/tracker-scan.md vs loop-improve/references/tracker-scan.md)
++skip: byte-equality pair not yet landed (loop-brainstorm/references/one-minute-test.md vs loop-drive/references/one-minute-test.md)
++ok: C - duplicated references byte-identical:
++ok: D - pre-plugin detection sentence present where required
++ok: E - stub wording markers present where required
++ok: F - SKILL.md frontmatter keys are all recognized
++ok: G - no symlinks and no em dashes in shipped markdown
++ok: H - loop-drive portable core names no harness primitive, with at most one appendix pointer
++PASS: structure
++PROBE-A1 EXIT: 0
++
++A2. same file containing "Run /loop to resume." - must FAIL naming the file:
++
++$ printf 'Run /loop to resume.\n' > skills/loop-drive/references/tmp-probe.md && bash ci/structure-check.sh
++STRUCTURE FAIL: check H: skills/loop-drive/references/tmp-probe.md:1 invokes the /loop slash command; user-invoked slash commands cannot be invoked from skill prose (see the appendix instead)
++PROBE-A2 EXIT: 1
++
++(ok lines A through G printed before the FAIL line, identical to A1; elided here, full output was on screen at run time.)
++
++A3. same file containing "Run /goal next." - must FAIL:
++
++$ printf 'Run /goal next.\n' > skills/loop-drive/references/tmp-probe.md && bash ci/structure-check.sh
++STRUCTURE FAIL: check H: skills/loop-drive/references/tmp-probe.md:1 invokes the /goal slash command; user-invoked slash commands cannot be invoked from skill prose (see the appendix instead)
++PROBE-A3 EXIT: 1
++
++A4. probe deleted (rm -rf skills/loop-drive):
++
++$ rm -rf skills/loop-drive && bash ci/structure-check.sh
++PASS: structure
++PROBE-A4 (probe deleted) EXIT: 0
++
++# Probe B: Check G widened scope
++
++B1. docs/tmp-probe.md containing one em dash character (U+2014) - must FAIL.
++(The em dash on the output line below is the probe's own captured character inside the check's real output, quoted verbatim as this NOTES requires; it is data, not prose.):
++
++$ printf '\xe2\x80\x94\n' > docs/tmp-probe.md && bash ci/structure-check.sh
++STRUCTURE FAIL: check G: docs/tmp-probe.md contains the em dash character U+2014; house style is plain '-' only:
++1:—
++PROBE-B1 EXIT: 1
++
++B2. probe deleted:
++
++$ rm docs/tmp-probe.md && bash ci/structure-check.sh
++PASS: structure
++PROBE-B2 (probe deleted) EXIT: 0
++
++# single-resolution multi-record branch: diff read aloud
++
++Which lines add the branch (new-line numbering in the working file):
++
++ci/single-resolution.sh:54-64 - the record-reading loop now accumulates every EXISTING canonical path, newline-separated, into canon_paths (replacing the old canon_found/canon_locs pair that collapsed any number of hits into a single flag).
++ci/single-resolution.sh:65-73 - the new distinct-count block: four comment lines stating why DISTINCT is counted (the record naming the same installPath twice is still one copy; two distinct resolved paths are two real copies, and collapsing them hid exactly the duplication this check exists to catch), then canon_paths=$(printf '%s' "$canon_paths" | sort -u) and canon_n=$(printf '%s\n' "$canon_paths" | grep -c '').
++ci/single-resolution.sh:74-77 - the multi-record failure branch: `if [ "$canon_n" -gt 1 ]; then fail ...` with an immediate fail, not an accumulation into bad.
++ci/single-resolution.sh:78-81 - the one-case kept as before: canon_n -eq 1 increments count by one and appends the single path to locs; canon_n -eq 0 leaves count untouched, so the zero and one cases behave exactly as before the fix.
++
++What the failure message prints:
++
++SINGLE-RESOLUTION FAIL: <name> resolves from <N> distinct canonical installed locations; two real installed copies are two locations, not one:
++  <path 1>
++  <path 2>
++[...one indented line per distinct resolved path, sorted]
++
++Executed proof against a throwaway HOME (mktemp -d; the real host record was never read):
++
++$ HOME=$FAKE bash ci/single-resolution.sh   # record lists two distinct installPaths, both containing skills/handoff
++SINGLE-RESOLUTION FAIL: handoff resolves from 2 distinct canonical installed locations; two real installed copies are two locations, not one:
++  /tmp/tmp.RCZnz0tNnf/cache/pluginA/skills/handoff
++  /tmp/tmp.RCZnz0tNnf/cache/pluginB/skills/handoff
++SR MULTI EXIT: 1
++
++$ HOME=$FAKE bash ci/single-resolution.sh   # record lists the SAME installPath twice under two keys
++ok: handoff resolves from exactly 1 location
++SINGLE-RESOLUTION FAIL: these skill names do not resolve from exactly one location:
++  loop-auto resolves from 0 locations (expected exactly 1):
++  [...the other nine unpopulated names, existing zero-case behavior unchanged...]
++SR DEDUP EXIT: 1
++
++The dedupe run shows the duplicate-same-path case counting as one copy (handoff ok), with the remaining failures being only the ten names the fake record never populated, which is the pre-existing zero-location behavior.
++
++# Final verification
++
++$ bash ci/run-all.sh   # after all probes deleted
++PASS: all
++FINAL RUN-ALL EXIT: 0
++
++git status --porcelain after everything:
++ M ci/single-resolution.sh
++ M ci/structure-check.sh
++(plus this NOTES file, untracked, owned by this unit; no probe files remain.)
++
++grep for U+2014 across ci/structure-check.sh and ci/single-resolution.sh: no matches (exit 1).
++
++# AMBIGUITIES TAKEN
++
++1. "Do not sweep NOTES or untracked files" in fix 3 was read as: the sweep set is exactly the three globs (skills/**/*.md, README.md, docs/**/*.md) and nothing outside them; a file inside those globs is swept whether or not git tracks it, because Probe B itself requires an untracked docs/tmp-probe.md to FAIL the check.
++2. The multi-record branch fails immediately via fail() rather than accumulating into the trailing bad list, matching the instruction "fail naming the name and every resolved path"; the zero and one cases keep the existing accumulate-then-fail behavior.
++3. "More than one distinct canonical record path" is counted after deduplication (sort -u): two record entries naming the same existing installPath are one location, verified by the dedupe run above.
++4. The leading boundary treats "letter" as both cases (class [^A-Za-z0-9./]), which is strictly the safer reading; the plan's trailing class remains lowercase-only exactly as before.
++5. The Check H boundary walker was replaced wholesale with one grep -E rather than patched in place: the truncating walk made a correct leading-boundary check impossible for matches at truncated positions, so the in-place patch would have been a second bug.
+diff --git a/ci/single-resolution.sh b/ci/single-resolution.sh
+index 627a42e..c83b0fe 100644
+--- a/ci/single-resolution.sh
++++ b/ci/single-resolution.sh
+@@ -51,22 +51,33 @@ for n in $NAMES; do
+     count=$((count + 1))
+     locs="$locs $HOME/.agents/skills/$n"
+   fi
+-  canon_found=0
+-  canon_locs=""
++  canon_paths=""
+   if [ -f "$RECORD" ]; then
+     while IFS= read -r p; do
+       [ -n "$p" ] || continue
+       if [ -e "$p" ]; then
+-        canon_found=1
+-        canon_locs="$canon_locs $p"
++        canon_paths="${canon_paths}${p}"$'\n'
+       fi
+     done < <(jq -r --arg n "$n" \
+       '(.plugins // {}) | to_entries | map(.value | map(.installPath // empty)) | flatten | map(. + "/skills/" + $n) | .[]' \
+       "$RECORD" 2>/dev/null)
+   fi
+-  if [ "$canon_found" -eq 1 ]; then
++  # Count DISTINCT canonical paths: the record can name the same installPath
++  # more than once (that is still one copy), but two distinct resolved paths
++  # are two real installed copies, and collapsing them to one hid exactly the
++  # duplication this check exists to catch.
++  canon_n=0
++  if [ -n "$canon_paths" ]; then
++    canon_paths=$(printf '%s' "$canon_paths" | sort -u)
++    canon_n=$(printf '%s\n' "$canon_paths" | grep -c '')
++  fi
++  if [ "$canon_n" -gt 1 ]; then
++    fail "$n resolves from $canon_n distinct canonical installed locations; two real installed copies are two locations, not one:
++$(printf '%s\n' "$canon_paths" | sed 's/^/  /')"
++  fi
++  if [ "$canon_n" -eq 1 ]; then
+     count=$((count + 1))
+-    locs="$locs$canon_locs"
++    locs="$locs $canon_paths"
+   fi
+   if [ "$count" -ne 1 ]; then
+     bad="$bad
+diff --git a/ci/structure-check.sh b/ci/structure-check.sh
+index 0f849ef..b70c61f 100644
+--- a/ci/structure-check.sh
++++ b/ci/structure-check.sh
+@@ -193,12 +193,15 @@ check_g() {
+   [ -z "$symlinks" ] || fail "check G: symlinks under skills/ are forbidden (nothing in jrit-loop is symlinked):
+ $symlinks"
+   em=$(printf '\xe2\x80\x94')
++  # The sweep is all shipped markdown and only that: skills/**/*.md,
++  # README.md, and docs/**/*.md. Nothing outside those roots (e.g. NOTES) is
++  # house-style surface.
+   while IFS= read -r f; do
+     if hit=$(grep -nF "$em" "$f"); then
+       fail "check G: $f contains the em dash character U+2014; house style is plain '-' only:
+ $hit"
+     fi
+-  done < <(find skills -name '*.md' -type f | sort)
++  done < <(find skills docs README.md -name '*.md' -type f 2>/dev/null | sort)
+   ok "G - no symlinks and no em dashes in shipped markdown"
+ }
+ 
+@@ -208,31 +211,24 @@ $hit"
+ # harness-appendix-claude-code.md, and fails on the literal SendMessage, the
+ # backticked `Agent`, and the slash commands /goal and /loop.
+ #
+-# The slash patterns carry trailing character classes, ($|[^a-z-]): without them
+-# /loop-drive and /loop-plan would false-positive on every skill-name mention,
+-# and the ban is on the slash COMMANDS, not on the skill names that happen to
+-# share a prefix.
++# The slash patterns carry BOTH boundaries: a trailing class, ($|[^a-z-]), and
++# a leading class, (^|[^A-Za-z0-9./]). Without the trailing class /loop-drive
++# and /loop-plan would false-positive on every skill-name mention; without the
++# leading boundary the path docs/loop/pointer.md that Check D itself requires
++# would false-positive (leading boundary added 2026-09-13, resolving the proven
++# Check D conflict at the wave-2 gate). The ban is on slash-command
++# invocations, not on skill names or paths that share the substring.
+ #
+ # Exactly one sanctioned pointer sentence may name the appendix, so the core can
+ # say where the harness detail went without restating it; more than one such
+ # sentence fails, naming both.
+ # ---------------------------------------------------------------------------
+ slash_command_hit() {
+-  # slash_command_hit <line> <command>: true when <line> contains <command> at
+-  # end-of-line or followed by a character outside [a-z-].
+-  local rest=$1 after offset
+-  local word=$2
+-  local pfx
+-  while [[ $rest == *"$word"* ]]; do
+-    pfx=${rest%%"$word"*}
+-    offset=$(( ${#pfx} + ${#word} ))
+-    rest=${rest:$offset}
+-    after=${rest:0:1}
+-    if [ -z "$after" ] || [[ ! $after =~ ^[a-z-]$ ]]; then
+-      return 0
+-    fi
+-  done
+-  return 1
++  # slash_command_hit <line> <command>: true when <line> contains <command>
++  # bounded on BOTH sides - the character before the slash, when one exists,
++  # is not a letter, digit, '.', or '/', and the command sits at end-of-line
++  # or is followed by a character outside [a-z-].
++  printf '%s\n' "$1" | grep -qE '(^|[^A-Za-z0-9./])'"$2"'($|[^a-z-])'
+ }
+ 
+ check_h() {

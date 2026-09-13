@@ -27,3 +27,13 @@ Template fixed for all future checks: `TASKDIR="${TASKDIR:-$PWD}"`.
 
 - All future checks self-locate with the TASKDIR default; check-bug annotated in MODEL-NOTES so the scoreboard is not poisoned.
 - U03's straggler list (principles.md, bare brief-pipeline.md) already baked into U05's wave-3 spec.
+
+## U03b addendum (scoped fixes, same gate)
+
+| Unit | Implementer | Acceptance | Validator form | Repairs |
+| --- | --- | --- | --- | --- |
+| U03b | glm-5.3, code-fix, pass attempt 1 | orchestrator-authored check with behavioral probes both directions | executed adversarial check + orchestrator diff-read | 0 |
+
+Merged as `179395d`; `run-all` on main exit 0; `b32-w3-base` retagged to include the fixes and force-pushed.
+Check H now passes the literal `docs/loop/pointer.md` and still fails `Run /loop to resume.` and `Run /goal next.` (proven live by the check); Check G sweeps all shipped markdown; single-resolution carries the multi-record failure branch.
+Jeremy approved the leading-boundary amendment; plan line 714 rewritten in place (single line, no range shift).

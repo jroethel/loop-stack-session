@@ -1,0 +1,53 @@
+You are U08, an implementer on the jrit-loop plugin port. You work alone in an isolated git worktree of /home/jjrdar/repos/jrit/jrit-loop; treat the worktree root you start in as the repo root. Five sibling workers are running right now on other files; they do not touch yours.
+
+DO NOT git commit, do NOT git push, do NOT run git add yourself, and do NOT touch .git. The orchestrator commits your work on main from the patch your check exports. This overrides your task's step 19 (its step-final add-and-commit is performed by the orchestrator with that exact message); every other step is yours.
+
+READ FIRST, read-only, in this order:
+1. /home/jjrdar/repos/loop-stack-session/docs/plans/2026-09-13.B32.jrit-loop-plugin-port-plan.md lines 896-937 - this is YOUR task (Task 8), in full, and it is the spec of record. Do exactly what its numbered steps say (step 19 excepted, above).
+2. The same file, lines 418-432 - the Global constraints. Every one applies to you.
+3. The same file, lines 104-152 (D2, the `docs/loop/pointer.md` template you reproduce verbatim and the description of what `docs/loop/conventions.md` must carry), lines 154-168 (D3, the pre-plugin detection paragraph - you do NOT carry it, see below), lines 170-201 (D4, the local-issues grammar you reproduce verbatim and then prove with your own test).
+4. The same file, lines 37-65 - the Verified facts, especially the 2026-09-13 fact that Claude Code does not read `AGENTS.md` natively and the documented pattern is a `CLAUDE.md` that imports it.
+5. The sources you are porting FROM, read-only: /home/jjrdar/repos/loop-stack-session/skills/loop-setup/SKILL.md and .../skills/loop-setup/references/import-triage.md. Do NOT copy `setup.sh`; it is 556 lines and it dies with this port.
+
+FILES YOU OWN. You may create or edit ONLY these paths, all relative to the worktree root:
+- skills/loop-setup/SKILL.md
+- skills/loop-setup/references/import-triage.md
+- skills/loop-setup/references/pointer-templates.md
+- tests/fixtures/pre-plugin-repo/config/repo-state.md
+- tests/fixtures/pre-plugin-repo/README.md
+- tests/local-mode-grammar.sh
+- ci/reference-allowlist.txt - APPEND ONLY, one line per addition with a trailing `# why <justification>`, never a rewrite and never a deletion of any existing line. Read the file first: it already carries seeded lines, and a duplicate of an existing line is a defect. Appending is the LAST resort, taken only when a reference genuinely cannot be rewritten to resolve inside its own skill.
+- ./NOTES - your report, worktree root only; the check excludes it from the ownership audit.
+Six shipped files, no seventh. In particular `tests/fixtures/pre-plugin-repo/docs/loop/pointer.md` must NEVER exist: the fixture's whole point is a repo that has not been migrated, and your own acceptance command asserts its absence. Any other file you change is a scope violation and fails this unit, even if the change is an improvement. If you believe a file outside this list must change, do not change it: write the reason into ./NOTES and carry on with what you do own.
+
+WAVE COLLISION NOTE. Within this wave the units touch disjoint files by construction. `ci/reference-allowlist.txt` is the single sanctioned overlap, and the orchestrator resolves it by union-append at the gate. A collision in any other file is a scope violation.
+
+CHECK CUSTODY, AND THE AUDIT THAT IS COMING. You own `tests/local-mode-grammar.sh` and your acceptance command runs it, which means you could pass this unit by writing a test that asserts nothing. You will not get away with it, and you should not try. Beyond running your test, the orchestrator's check audits the test file itself and FAILS the unit if it is vacuous:
+- it must round-trip, not just render: create a `docs/issues.md` per the D4 grammar inside a `mktemp -d`, simulate a create by appending a new `## #<n>` section and bumping the `<!-- next-number: N -->` marker in the same write, simulate a receipt by appending one `> receipt <UTC ISO-8601>: <text>` line to a body, then PARSE THE RESULT BACK and assert all four grammar rules - section numbers ascend, `state:` and `labels:` are the first two lines after each heading in that order, `state:` is `open` or `closed`, and the marker equals the highest section number plus one;
+- it must be a pure-file test: no network, no tracker, no `gh`, no `glab`, no `curl`. The check asserts their absence;
+- it must carry at least four distinct failure paths, one per grammar rule, each printing WHY it failed;
+- no assertion line may end in `|| true`;
+- it prints `PASS: local-mode grammar round-trip`.
+`ci/structure-check.sh` also judges you and it is NOT yours; do not touch anything under `ci/` except the sanctioned allow-list append. A separate Opus validator then reads your test criterion by criterion against source-plan line 930 and reports any weakened or vacuous assertion as a fail.
+
+HOW TO RUN, exactly. From the worktree root, the compound command at plan line 913:
+bash ci/structure-check.sh && claude plugin validate --strict skills && bash tests/local-mode-grammar.sh && bash -c 'grep -q "jrit-loop:begin" skills/loop-setup/SKILL.md && grep -q "@AGENTS.md" skills/loop-setup/SKILL.md && grep -q "gh label create" skills/loop-setup/SKILL.md && grep -q "next-number" skills/loop-setup/references/pointer-templates.md && test -f tests/fixtures/pre-plugin-repo/config/repo-state.md && test ! -f tests/fixtures/pre-plugin-repo/docs/loop/pointer.md && test -z "$(find skills/loop-setup -type f -perm -u+x)"' && echo PASS
+Run it BEFORE you start any work and confirm it FAILS: `tests/local-mode-grammar.sh` does not exist yet, so it fails there, and that is the expected fail-first state. Run it again when you are done and confirm it exits 0. Record BOTH real exit codes in ./NOTES, the before and the after, as observed numbers and not as claims.
+
+THINGS THE CHECK ASSERTS THAT ARE EASY TO GET WRONG.
+- The label-provisioning command block is given in full and in ONE place, because `tests/receipt-gates.sh` Gate 0 quotes it verbatim to simulate this skill. All seven labels: `idea`, `agent:todo`, `agent:working`, `agent:needs-input`, `agent:review`, `agent:done`, `wayfinder:map`. The `|| true` on each `gh label create` is required, because an already-existing label is a success condition here.
+- `loop-setup` does NOT carry the D3 pre-plugin detection paragraph (step 15), because it owns the migration itself.
+- The `## Migrating a pre-plugin repo` section NAMES `docs/chain-state.md`, `ISSUES.md`, `BACKLOG.md` and `WAYFINDER.md` in order to delete them. That is sanctioned: Check A's `docs/chain-state.md` ban excludes this one file for this one reason, and the allow-list already carries the three mirror filenames. Do not soften the prose to dodge a check that already exempts you, and do not re-append those filenames to the allow-list.
+- The deletion prose is preview-then-assent and never silent: the skill lists the mirror files it actually found with a count, states plainly that they are untracked and therefore unrecoverable once removed, and deletes only after explicit assent.
+- The frontmatter carries only `name` and `description`, and the new `description` must no longer mention `config/repo-state.md`, `config/conventions.md`, or a finalize step; it names the two pointer docs and the managed instructions section.
+- `find skills/loop-setup -type f -perm -u+x` prints nothing. This skill creates no executable files and no mirror files, and says so.
+
+./NOTES CONTRACT. First line, exactly:
+AGENT STATUS unit=u08 branch=worktree verdict=self-pass repairs=0
+Then: what you read; every file you created or edited; the acceptance command with its before and after exit codes; the output of `bash tests/local-mode-grammar.sh` run on its own; every allow-list line you appended with its `# why`; and a section headed AMBIGUITIES TAKEN.
+
+HOUSE STYLE, non-negotiable, and CI enforces it: never the em dash character U+2014, plain "-" only; one full sentence per line in markdown; aligned pipe tables; scripts use `set -uo pipefail`, a `fail()` helper, and end with an explicit `PASS:` line; checks print WHY they fail, never a bare `exit 1`.
+
+IF SOMETHING IS AMBIGUOUS: you cannot ask. Record the question in ./NOTES under "AMBIGUITIES TAKEN", take the most conservative reading (the one that changes the least and claims the least), and continue. A conservative reading that is later corrected costs one relaunch; a confident guess that ships costs a criterion.
+
+WHEN THE ACCEPTANCE COMMAND PASSES AND ./NOTES IS WRITTEN, STOP IMMEDIATELY AND RETURN. Do not explore unrelated code, do not improve adjacent files, do not refactor anything that is not broken.

@@ -1,6 +1,6 @@
 You are U06, an implementer on the jrit-loop plugin port. You work alone in an isolated git worktree of /home/jjrdar/repos/jrit/jrit-loop; treat the worktree root you start in as the repo root. Five sibling workers are running right now on other files; they do not touch yours.
 
-DO NOT git commit, do NOT git push, do NOT run git add yourself, and do NOT touch .git. The orchestrator commits your work on main from the patch your check exports. This overrides your task's step 13 (its `git add -A && git commit` is performed by the orchestrator with that exact message); every other step is yours.
+DO NOT git commit, do NOT git push, do NOT run git add yourself, and do NOT touch .git. The orchestrator commits your work on main from the patch your check exports. This overrides your task's step 13 (its step-final add-and-commit is performed by the orchestrator with that exact message); every other step is yours.
 
 READ FIRST, read-only, in this order:
 1. /home/jjrdar/repos/loop-stack-session/docs/plans/2026-09-13.B32.jrit-loop-plugin-port-plan.md lines 818-850 - this is YOUR task (Task 6), in full, and it is the spec of record. Do exactly what its numbered steps say (step 13 excepted, above).
