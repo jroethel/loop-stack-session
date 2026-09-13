@@ -11,3 +11,5 @@ BACKLOG.md
 WAYFINDER.md
 config/host.env
 *.swp
+docs/drive-logs/B32/ringer/*/u*/
+docs/drive-logs/B32/worktrees/

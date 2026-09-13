@@ -1,0 +1,1111 @@
+diff --git a/NOTES b/NOTES
+new file mode 100644
+index 0000000..ce6b6a7
+--- /dev/null
++++ b/NOTES
+@@ -0,0 +1,76 @@
++AGENT STATUS unit=u05 branch=worktree verdict=self-pass repairs=0
++
++## What I read
++
++- Plan 2026-09-13.B32 lines 780-816 (Task 5, spec of record), 418-432 (global constraints), 104-168 (D2, D3), 203-234 (D5), 236-280 (D6), 37-65 (verified facts).
++- Sources, read-only: loop-stack-session skills/loop-brainstorm (SKILL.md + 3 references), loop-improve (SKILL.md + audit-playbook.md), loop-molt (SKILL.md + protocol.md).
++- ci/structure-check.sh, ci/banned-tokens.txt, ci/reference-allowlist.txt (read-only; only the sanctioned append was permitted, and none was needed).
++
++## Files created or edited (eleven, exactly the ownership list)
++
++- skills/loop-brainstorm/SKILL.md - D3 paragraph after the first heading; principles.md straggler; tracker prose; CLAUDE.md pointer to the D5 sentence; rubix-autorun source to pointer.md plus D6 stub verbatim; graduate-parking prose.
++- skills/loop-brainstorm/references/brief-pipeline.md - canonical; graduation bullets 78, 79, 81 rewritten (steps 6 and the straggler-adjacent line 79).
++- skills/loop-brainstorm/references/tracker-scan.md - canonical; tracker prose; local-mode body-read clause aligned to local-issues-file.
++- skills/loop-brainstorm/references/one-minute-test.md - copied, unchanged (byte-identical to source, no banned token; step 17).
++- skills/loop-improve/SKILL.md - D3 paragraph; tracker prose and intra-skill tracker-scan path (step 9); brief-pipeline paths, graduate prose, close prose (step 10); bare `brief-pipeline.md` at source line 77 straggler.
++- skills/loop-improve/references/audit-playbook.md - line 7 provenance de-pathed (step 11).
++- skills/loop-improve/references/brief-pipeline.md - cp from canonical (step 16).
++- skills/loop-improve/references/tracker-scan.md - cp from canonical (step 16).
++- skills/loop-molt/SKILL.md - line 51 cross-skill path to references/brief-pipeline.md (step 13); no D3 paragraph (step 15, verified absent).
++- skills/loop-molt/references/protocol.md - lines 3-4 provenance de-pathed (step 14).
++- skills/loop-molt/references/brief-pipeline.md - cp from canonical (step 16).
++- ci/reference-allowlist.txt - NOT appended; zero additions (see below).
++- Copies were made last, after every canonical edit; cmp in check C confirms byte equality.
++
++## Acceptance command and the three real exit codes
++
++Command: bash ci/structure-check.sh && claude plugin validate --strict skills && echo PASS
++
++1. Empty tree (skills/ held only .gitkeep): structure-check exit 0, validate exit 0.
++   The vacuous pass the mandate predicted; recorded, not treated as green.
++2. Post-copy, pre-edit (step 1 fail-first): structure-check exit 1.
++   check A failed on banned token `~/.claude/skills/` with three hits (molt SKILL.md:51, improve SKILL.md:60 and :72).
++   The check fails fast at A, so the check-B stragglers were not exercised in this run; they were confirmed by my own pre-edit sweep and both fixed by prose rewrite.
++3. Final (post-edit, post-cp): structure-check exit 0, validate exit 0, PASS echoed; combined exit 0.
++   Checks A-H all ok; C asserts the three byte-equality pairs for my files; D finds the paragraph in brainstorm and improve only.
++
++## Straggler resolutions (both by prose rewrite, the preferred route; no allowlist lines appended)
++
++- `principles.md` at source loop-brainstorm/SKILL.md:31.
++  Before: "The principle IDs are from loop-stack `principles.md`; short glosses appear inline."
++  After: "The principle IDs are from loop-stack's numbered standing principles; short glosses appear inline."
++  Names no file, so nothing to resolve and nothing to allow-list.
++- Bare `brief-pipeline.md` at source loop-improve/SKILL.md:77 (and the same bare form at line 82, covered by step 10's mandate).
++  Before (77): "(bullet shape per the shared graduation contract in `brief-pipeline.md`)"
++  After (77): "(bullet shape per the shared graduation contract in `references/brief-pipeline.md`)"
++  Before (82): "per the shared graduation contract in `brief-pipeline.md` (its single home)"
++  After (82): "per the shared graduation contract in `references/brief-pipeline.md` (its single home)"
++  Both now resolve inside the skill.
++
++## Allowlist lines appended
++
++None.
++Every remaining non-resolving backticked token in my files is either docs/* (check B skips) or already allow-listed (config/repo-state.md, config/conventions.md, CLAUDE.md, AGENTS.md, PRODUCT.md).
++Both stragglers were fixable by rewrite, which the instructions prefer over an allow-list entry.
++
++## AMBIGUITIES TAKEN
++
++- Rubix-unavailable bullet (brainstorm, source line 193).
++  The mandate covered only line 190's key source and the verbatim stub insert, but the untouched bullet carried a second, differently-worded disclosure string ("the optional Rubix review is unavailable (rubix-review not installed)...") alongside the stub's frozen Disclose line.
++  Taken: rewrote the bullet to "take the **Absent** branch above - never a hard failure" so exactly one disclosure string exists; the stub itself is byte-verbatim (cmp-checked against the plan text).
++- tracker-scan.md local-mode body read (source line 10).
++  `docs/issues/NNN-*.md` is a pre-plugin mirror-file pattern that contradicts D2 (local mode reads the `local-issues-file:` file; no mirror files exist).
++  Taken: step 7's "same direct-tracker prose as step 2" was read to cover it; the clause now reads "the `local-issues-file:` file in local mode".
++- brief-pipeline.md line 79 truncation rule.
++  The rule "graduate-parking.sh truncates the title at the first dot" names the deleted script.
++  Taken: rule kept, script dropped - "the title is truncated at the first dot, so a leading filename self-truncates" - because step 6 mandates rewriting lines 78-79 and check B flags the backticked `tracker.sh` there.
++- D5 sentence placement (brainstorm line 171).
++  Taken: kept the lead-in "following the user's markdown house style." and put the exact D5 sentence verbatim on its own following line.
++- gh-only create wording.
++  Steps 5/6 quote a `gh issue create` command with no glab variant, while the close rewrites get explicit gh-or-glab wording.
++  Taken: used the quoted prose as-given in all three create sites; no glab variant invented.
++- brief-pipeline.md self-description still says "shared by loop-brainstorm and loop-improve" while loop-molt now also ships a byte-equal copy (D5 sanctions the third copy).
++  Taken: left as source text; correcting it would touch an unmandated line in a triple-byte-equal file.
++  Flagging for the orchestrator in case the wording should say all three.
++- audit-playbook.md line 3 still opens "> Source: the improve skill by shadcn, MIT, version 1.0.0, vendored 2026-08-08."
++  It names no path, so step 11 (line 7 only) was applied and line 3 was left alone.
+diff --git a/skills/loop-brainstorm/SKILL.md b/skills/loop-brainstorm/SKILL.md
+new file mode 100644
+index 0000000..e000e85
+--- /dev/null
++++ b/skills/loop-brainstorm/SKILL.md
+@@ -0,0 +1,220 @@
++---
++name: loop-brainstorm
++description: >
++  Use before any creative work: a new feature, component, project, behavior change, or a
++  half-formed idea the user wants to think through - before any plan, PRD, code, or scaffolding
++  exists. Use even when the idea seems simple or already fully specified, and especially when the
++  user's message is an idea dump that lists tools, subscriptions, or assets, bundles several
++  ideas with "oh and it could also...", or names an implementation ("probably a cron job").
++  Also triggers on brainstorm, think through, kick around, "help me shape this", or sharing a
++  raw idea and asking what to do with it.
++---
++
++# loop-brainstorm: idea to loop-ready brief
++
++**Pre-plugin repo check.** Before anything else, look for `config/repo-state.md` in this repo.
++If it exists and `docs/loop/pointer.md` does not, stop.
++Say plainly that this repo is still on the pre-plugin loop-stack layout, name the file you found, and offer to run the loop-setup skill's migration before continuing.
++Never proceed silently on a pre-plugin repo.
++
++You are a brainstorming partner, not a planner.
++The deliverable is an idea brief: the outcome wanted, how anyone will know it worked, and where the seams are.
++How to build it is deliberately absent; that belongs to the next stage.
++
++The pipeline position:
++
++```
++/loop-brainstorm ──> idea brief
++  (One-Minute Test front door)
++                     └─ /loop-plan ──> plan (+ optional Rubix review)
++                                       └─ /loop-drive (routes + drives)
++```
++
++Loop work downstream lives or dies on qualities that are set here or lost here:
++success criteria a script could check (P1, P6), seams that decompose into independently checkable
++pieces (P13), and assumptions surfaced before one wrong guess survives every layer (P5).
++The principle IDs are from loop-stack's numbered standing principles; short glosses appear inline.
++
++<HARD-GATE>
++Do not write code, scaffold anything, design architecture, create any file other than the brief,
++or invoke any planning or implementation skill until the user has approved the written brief.
++This applies to every idea regardless of perceived simplicity.
++</HARD-GATE>
++
++## Anti-pattern: "this idea is too simple / already clear"
++
++Every idea goes through this process.
++"Simple" ideas are where unexamined assumptions cost the most, because nobody re-checks them.
++A long, detailed message is not a finished spec; it is an inventory dump, and inventory implies
++options the user expects you to surface (see the asset sweep below).
++The brief can be short - a few sentences per section for truly simple ideas - but you must write
++it and get approval.
++
++## Checklist
++
++Create a task for each item and complete them in order:
++
++0. **Front-door triage (One-Minute Test)** - route the idea before spending; exit on CHAT / DON'T BOTHER
++1. **Explore context** - files, docs, recent commits; never ask what context already answers
++2. **Run the three scope probes, then the domain-modeling probe (E)** - before any detailed questions
++3. **Ask clarifying questions** - in AskUserQuestion frontier rounds
++4. **Propose 2-3 approaches** - trade-offs and your recommendation
++5. **Present the brief section by section** - approval per chunk
++6. **Write the brief file** - `docs/briefs/YYYY-MM-DD.<tokens>.<topic>-brief.md` in the target project
++7. **Self-review** - the checks under Self-review below, fixed inline
++8. **User reviews the brief** - and gets offered the commit
++9. **Hand off** - name the next stage exactly as pinned under Terminal state, then stop
++
++## Step 0 - Front-door triage (One-Minute Test)`[gate:DEFAULT]`
++
++Before any shaping spend, run the One-Minute Test on the idea as the chain's first question (`references/one-minute-test.md`, read it before scoring - the worked examples are what keep the verdict honest).
++Route by the shape of the work:
++
++- **CHAT** or **DON'T BOTHER**: stop here. Say so plainly and name the driving reason (answer it in one exchange, or it does not earn the setup). Do not shape a brief; hand over the CHAT prompt or the manual checklist and stop.
++- **ONE AGENT** or **AGENT TEAM**: this idea is worth shaping - proceed to Step 1.
++
++The verdict auto-announces and proceeds under autonomy; a DON'T BOTHER that reverses a user's stated intent is the one case to surface rather than silently exit.
++
++## Step 1 - Explore context
++
++Files, docs, recent commits, and anything the idea references.
++Existing tools and repos found here feed the asset sweep below (reuse candidates count as assets
++even when the user forgot to mention them).
++Never ask a question that context already answers.
++
++Scan the tracker too, for the open Issues and Backlog lanes: read the tracker mode from `docs/loop/pointer.md`, then list open issues with `gh issue list --state open --limit 1000 --json number,title,labels` (github) or `glab issue list --all --output json` (gitlab); in `local` mode read the file named by the `local-issues-file:` key.
++Read `references/tracker-scan.md` in full and follow it before proceeding - do not
++summarize it from memory. A match surfaces before Step 2 - say what matched (`covered by #N` /
++`related: #N`) and ask whether to keep brainstorming as new, converge into the existing issue, or
++stop here. No match proceeds silently into Step 2.
++
++## Step 2 - Scope probes, then domain modeling
++
++Run these before clarifying questions, most expensive mistake first. Each catches a failure that would otherwise survive every downstream layer:
++
++- **Trenchcoat check** - is this several independent ideas wearing one coat? Name the seams, agree which piece to brainstorm first, park the rest in the brief's Parking lot.
++- **Meta-tooling probe** - if the idea is tooling, infrastructure, or a loop for running loops, ask once "what end artifact does this unblock, and when would it ship?" (goes in the brief's End artifact section). An idea that cannot name its first real deliverable is parked, not built.
++- **Asset sweep** - list every asset the user mentioned (tools, models, plans, subscriptions, devices, data) and map each to the option it implies; every mapping lands in the brief as chosen or explicitly declined. Missing an implied option is a named failure mode for this user.
++- **Glossary challenge (domain modeling, E)** - define every domain term the idea turns on in one plain sentence a non-expert could repeat back. A term that needs hand-waving or a circular reference is fuzzy: sharpen it, or flag it under Known vs guessed as believed-unchecked, never a silent assumption.
++- **Scenario stress-test (optional)** - only when a domain term is load-bearing (a success criterion or seam depends on what it means): walk two or three edge scenarios that stretch the definitions; where the glossary bends becomes an Open question for planning.
++
++## Step 3 - Clarifying questions in rounds`[gate:ASK]`
++
++Map the open decisions as a design tree: every decision branches into the decisions that hang
++off it.
++Work the tree in rounds.
++The **frontier** is every question whose prerequisites are already settled - the ones you can
++ask now without guessing at answers you haven't heard yet.
++Ask the whole frontier in one round, numbered, each with your recommended answer, then wait for
++the user's answers before recomputing.
++A question whose answer depends on another question still open in this round belongs to a later
++round, not this one.
++
++Present each round through the AskUserQuestion tool, up to 4 questions per call (chunk a larger
++frontier into consecutive calls, dependency-safe order):
++
++- Each question carries 2-4 concrete options, your recommended answer listed first.
++- One decision per question: an option's label and description answer only the question asked;
++  a scope narrowing (or any second decision) never rides inside an option's description - it gets
++  its own question, and under autonomy scope narrowing is ASK-class, never auto-taken.
++- An open-ended question becomes your 2-3 most plausible candidate answers as options; "Other"
++  covers a verbose answer.
++- If an "Other" response contains a question, concern, or counter rather than an answer, address
++  it in prose and re-ask that single question before recomputing the frontier.
++
++The importance order still shapes the tree:
++
++1. **Outcome.** Restate the request as the outcome needed, not the action named.
++   The named implementation ("probably a cron job") is a hypothesis and an invitation to
++   counter-propose; test the presupposition before honoring it.
++2. **Done looks like.** What can the user do when this is finished?
++   Exact run or usage commands are part of done, always.
++3. **Success criteria.** Push each criterion toward something a script could check.
++4. **Seams.** Where does the idea split into independently checkable pieces?
++
++Outcome is usually the root: round 1 is often that question alone (plus any scope-probe question
++still open), and done/criteria/seams batch into round 2 once it settles.
++
++Finding facts is your job, never the user's.
++When a frontier question needs a fact from the environment (filesystem, docs, tools), dispatch a
++sub-agent to find it instead of asking.
++Don't block on it: a running exploration is an unsettled prerequisite, so only the questions
++downstream of it wait - ask the rest of the frontier now.
++The decisions are the user's; put each to them and wait.
++
++The frontier stays capped at brief-shaped questions.
++Questions you do NOT ask here: architecture, components, schedulers, data flow, file formats,
++library choices.
++This ban governs what you ask the user, not what you think or research - architecture
++exploration is a required input to Step 4 (see the Approaches section of the shared
++convergence reference).
++If one surfaces on the frontier anyway, it becomes a one-line entry under the brief's Open
++questions for planning, never a round entry.
++
++**Reading the user** (distilled from the user's manuals; update when they change):
++
++- Pushback phrased as a polite question ("maybe I'm missing something...") is confidence.
++  Engage the substance; do not reassure.
++- A reported symptom is ground truth; a stated cause or implementation is a hypothesis.
++- Precision is domain-dependent: aesthetics tolerate ambiguity, data and money get exact
++  questions.
++- Mid-flight terseness and typos are noise, not new requirements; read through, ask only when
++  genuinely ambiguous.
++- **Cascade rule:** every new thread that surfaces mid-brainstorm ("oh and it could also...")
++  goes to the Parking lot in writing, confirmed in one line ("parked: X"), and never widens the
++  current scope.
++
++## Step 4 - Approaches
++
++Propose 2-3 genuinely different approaches with trade-offs, lead with your recommendation, and record the rationale in the brief.
++The full approaches guidance - the trade-offs, and the chosen/alternatives/rationale that all go in the brief - is the first section of the shared convergence reference.
++Read `references/brief-pipeline.md` in full and follow it before proceeding - do not summarize it from memory.
++
++## Steps 5-6 - The brief`[gate:DEFAULT]`
++
++Present the brief section by section, scaled to complexity, checking in after each chunk.
++Then write it to `docs/briefs/YYYY-MM-DD.<tokens>.<topic>-brief.md`, following the user's markdown house style.
++Follow the user's global markdown style instructions already loaded in this session's context, when any exist.
++When the work belongs to a logged tracker item, include its token segment(s) (e.g. .I6 for issue 6, .B4 for backlog item 4, .R1 for roadmap item 1, .W3 for wayfinder ticket 3); when the item is not yet logged, omit the token segments entirely and insert them when the item is created.
++The brief's default section shape, the checkability tagging rule, and the "what the brief is not" test are the shared convergence reference's middle section.
++Read `references/brief-pipeline.md` in full and follow it before proceeding - do not summarize it from memory.
++
++## Step 7 - Self-review
++
++Look at the written brief with fresh eyes and fix inline - placeholder scan, internal consistency, the "survives an implementation swap" architecture scan, ambiguity check, and tag audit.
++The full self-review checklist is the shared convergence reference's self-review section.
++Read `references/brief-pipeline.md` in full and follow it before proceeding - do not summarize it from memory.
++
++## Step 8 - User review gate`[gate:DEFAULT]`
++
++Tell the user where the brief was written, invite review and changes before planning, and offer the commit; never commit without the offer being accepted.
++The review-gate and commit-offer flow - the invitation, waiting for the response, and re-running self-review on requested changes - is the shared convergence reference's final section.
++Read `references/brief-pipeline.md` in full and follow it before proceeding - do not summarize it from memory.
++
++Before the hand-off to /loop-plan, offer a Rubix pass on the finished brief, soft-checked the same way as loop-plan Step 6:
++
++**Probe.** Check whether a skill named `rubix-review` is available in this session.
++**Present:** offer the optional two-lens Rubix review of the drafted artifact, gated by the `rubix-autorun:` key in `docs/loop/pointer.md` (`ask` when the key is absent).
++**Absent:** continue without it.
++**Disclose:** say in one line "the optional Rubix review skill is not installed in this session; continuing without it."
++
++- Read `rubix-autorun` from `docs/loop/pointer.md` (default `ask` when absent).
++- **If the rubix-review skill is available:** `ask` -> offer a Rubix review of the brief once; `on` -> invoke it without asking; `off` -> skip silently.
++  On acceptance/auto, invoke the rubix-review skill on the brief file, present its findings, and fold accepted ones into the brief before the hand-off.
++- **If the rubix-review skill is not available:** take the **Absent** branch above - never a hard failure.
++
++The offer rides this gate; it adds no new gate tag of its own.
++
++On an accepted commit, graduate the brief's Parking lot: parse the brief's `## Parking lot` section, preview the parked-item count and each derived title, and on assent open one `idea`-labelled issue per bullet with `gh issue create --label idea --title <first sentence, period-free> --body <the bullet plus its restart context and a link to the brief>`.
++The full graduation contract (preview/assent, bullet-shape/title-truncation rule, verbose announce, reverse, autonomy journaling) is the shared convergence reference's Graduation section - `references/brief-pipeline.md`, its single home; do not restate it here.
++This graduation is a DEFAULT step in prose, not a new gate tag.
++
++## Step 9 - Terminal state (pinned)`[gate:DEFAULT]`
++
++Close by naming the approved brief's path and both routes onward: **/loop-plan** for the executor-agnostic implementation plan (the default next stage), or **/loop-drive** for a human-paced run-book (its human-paced output mode).
++
++loop-brainstorm names the next stage but never invokes /loop-plan or /loop-drive itself; they
++consume plans, not briefs.
++It never invokes an implementation skill.
++The only file it creates is the brief.
++
+diff --git a/skills/loop-brainstorm/references/brief-pipeline.md b/skills/loop-brainstorm/references/brief-pipeline.md
+new file mode 100644
+index 0000000..1e56a95
+--- /dev/null
++++ b/skills/loop-brainstorm/references/brief-pipeline.md
+@@ -0,0 +1,84 @@
++# The shared brief pipeline (convergence half)
++
++This reference holds the convergence half shared by loop-brainstorm and loop-improve.
++The calling skill carries its own divergence half - explore, scope probes, and clarifying questions, or audit-and-select - and points here once a single idea or finding is chosen to converge.
++Read it in full and follow it before proceeding - do not summarize it from memory.
++It runs from approaches through the user review gate and the commit offer, and holds the shared graduation contract.
++The shared graduation contract lives here (single home); each calling skill keeps only its own terminal step and any skill-specific close (loop-improve's supersede-close is improve-only and stays in loop-improve).
++
++## Approaches
++
++Architecture thinking and outward research are required inputs to this step; the purity rules below govern what lands in the brief, never what you investigate.
++Before proposing, name each candidate's enabling assumptions about the outside world - ecosystem, tooling, platform capabilities - and buy a fresh observation for any that is decision-bearing and possibly stale.
++A negative about the external ecosystem ("no plugin exists", "X isn't supported") cannot kill or park a candidate until checked against the current ecosystem this session, dated; local absence is never evidence of world absence.
++Score research inputs by transferable mechanism, not topic overlap.
++
++Propose 2-3 genuinely different approaches with trade-offs, lead with your recommendation, and say why.
++The chosen approach, the alternatives, the rationale, and the dated ecosystem facts it rests on all go in the brief; decisions without recorded rationale get relitigated.
++
++## The brief
++
++Present it section by section, scaled to complexity, checking in after each chunk.
++Then write it to `docs/briefs/YYYY-MM-DD.<tokens>.<topic>-brief.md` (one sentence per line, plain dashes, aligned table pipes).
++When the work belongs to a logged tracker item, include its token segment(s) (e.g. .I6 for issue 6, .B4 for backlog item 4, .R1 for roadmap item 1, .W3 for wayfinder ticket 3); when the item is not yet logged, omit the token segments entirely and insert them when the item is created.
++
++The sections below are the brief's default shape.
++Scale each to the idea - one sentence is fine for a simple one - and use your judgment to drop a section that genuinely does not apply, saying in the brief what you dropped and why.
++
++| Section                    | Contents                                                                    |
++|----------------------------|-----------------------------------------------------------------------------|
++| Outcome                    | The need restated as outcome, not the action named; presupposition verdict  |
++| End artifact               | The concrete thing this unblocks; for infra, the first real deliverable     |
++| Done looks like            | What the user can do when finished, including the exact run/usage commands  |
++| Assets and options         | Every asset mentioned, mapped to its implied option, chosen or declined     |
++| Approach                   | The chosen one, the 2-3 considered, and the rationale at decision time      |
++| Success criteria           | Each tagged `[executed-check]` or `[judgment]` (see tagging rule below)     |
++| Seams                      | Independently checkable pieces in blast-radius order, or "atomic" stated    |
++| Known vs guessed           | Three bins: verified / believed-unchecked / guessed, with what breaks if a  |
++|                            | guess is wrong                                                              |
++| Parking lot                | Every parked thread, verbatim enough to restart later                       |
++| Out of scope               | What this deliberately is not                                               |
++| Open questions for planning| Implementation questions that surfaced, one line each, unanswered           |
++
++**Checkability tagging rule.**
++Tag a criterion `[executed-check]` only if you can name the command shape that would verify it (exit 0, a rendered file, a fetched citation).
++For a `[judgment]` criterion, attempt one reformulation toward checkable - "feels fast" becomes "the digest renders in under 2 seconds on the sample vault" - and keep the judgment tag only if the reformulation genuinely loses the intent.
++Downstream, /loop-plan routes every `[judgment]` tag to a human checkpoint (never a worker task), and the One-Minute Test front-door checkability question and /loop-drive's step 1 halt condition consume the tags directly (P6: work enters a swarm only when checking is cheaper than producing).
++
++**What the brief is not.**
++Outside the Approach and Known vs guessed sections, the brief contains no components, no data flow, no schedulers, no file formats, no library names, no phased build roadmap.
++If any of those appears elsewhere in your draft, move it to Open questions for planning as a single line and delete the prose.
++Approach and Known vs guessed may name plugins, platforms, and mechanisms when decision-bearing - that is which-shape-and-why, the grain those sections exist to record.
++What stays banned even there: speccing the innards of the chosen shape.
++The test for every other section: every sentence should survive the implementation being swapped out entirely.
++
++## Self-review
++
++Look at the written brief with fresh eyes and fix inline:
++
++1. **Placeholder scan** - any TBD, vague requirement, or empty REQUIRED section.
++2. **Internal consistency** - do sections contradict each other?
++3. **Architecture scan** - run the "survives an implementation swap" test on every sentence outside Approach and Known vs guessed; inside them, check the grain instead (which-shape-and-why stays, innards-spec moves to Open questions for planning).
++4. **Ambiguity check** - could any criterion be read two ways? Pick one, make it explicit.
++5. **Tag audit** - is every success criterion tagged, and every `[judgment]` tag the survivor of an attempted reformulation?
++
++## User review gate and commit offer
++
++Tell the user where the brief was written, invite review and changes before it goes to planning, and offer the commit; the phrasing is yours.
++Wait for the response.
++Changes requested means edit and re-run the self-review.
++Offer the commit; never commit without the offer being accepted.
++
++## Graduation (shared contract)
++
++On an accepted commit, graduate the brief's Parking lot into backlog issues.
++This contract is shared by loop-brainstorm and loop-improve and lives only here; each caller invokes it from its own terminal step.
++
++- **Preview first.** Announce the parked-item count and each item's derived title, and ask for assent before creating anything.
++- **Invoke on assent.** Parse the brief's `## Parking lot` section and open one `idea`-labeled issue per parked item with `gh issue create --label idea --title <first sentence, period-free> --body <the bullet plus its restart context and a link to the brief>`, the body following the graduated-item template in `config/conventions.md`.
++- **Parking-lot bullet shape.** Each parked item is one bullet whose first sentence is the derived issue title and MUST be period-free and filename-free: the title is truncated at the first dot, so a leading filename self-truncates. A `Restart context:` continuation line carries what a later session needs to pick the item back up.
++- **Verbose announce.** Each created issue is announced with its number and title.
++- **Reverse.** Undo a graduated issue with `gh issue close <num>` or `glab issue close <num>` per the declared tracker mode.
++- **Autonomy.** An autonomous run auto-takes graduation once the review-gate commit is accepted, but journals every created issue number for the end-of-chain review rather than firing silently.
++
++The terminal state (naming the next stage) is the calling skill's own step - return to the calling SKILL.md after graduation resolves.
+diff --git a/skills/loop-brainstorm/references/one-minute-test.md b/skills/loop-brainstorm/references/one-minute-test.md
+new file mode 100644
+index 0000000..7a8029b
+--- /dev/null
++++ b/skills/loop-brainstorm/references/one-minute-test.md
+@@ -0,0 +1,45 @@
++# The One-Minute Test
++
++Source: Nate B. Jones (Unlock AI), https://unlock-ai.natebjones.com/guides/the-one-minute-test
++
++Most AI mistakes are routing mistakes.
++Sort the task before starting, and pick the lightest tool that can do the work while leaving a result you can inspect.
++The test routes a job to one of four verdicts. It is a fast check on the shape of the work, not a magic classifier.
++
++## Four routes
++
++- **CHAT** - narrow answer work: the source fits in the prompt, the task is answer-only, and you can review the result directly. The clean option when the job is small enough for one exchange.
++- **ONE AGENT** - one clear goal that needs a tool/folder/app action and can still be checked by one person. One goal, one loop, a visible result.
++- **AGENT TEAM** - work too large for one pass that splits cleanly across sources or roles, where outputs check against citations, tests, or acceptance rules.
++- **DON'T BOTHER** - AI could technically help, but setup is not earned, the final judgment is not cheap to check, or the work is too sensitive for casual automation. A legitimate, frequent verdict, not a failure.
++
++## Seven questions
++
++1. **Size** - how much source material has to stay in view? If it fits in one prompt, start with chat; many documents or threads make a team more plausible.
++2. **Independence** - can useful parts proceed in parallel? Reading a pile of documents splits well; most coding changes do not (each depends on the current repo state). If every worker needs the same full context and constant sync, one agent is better.
++3. **Separation** - does any step need a fresh mind? A draft benefits from a critic who did not write it. Separation is not parallelism, but it can justify a team when the check is explicit.
++4. **Checkability** - is checking cheaper than producing? A citation, test suite, acceptance rule, or calendar-conflict check makes AI work safer. Taste-only work fails this test.
++5. **Judgment** - how much is judgment doing? Low-judgment work (collect forms, find renewal dates, summarize notes) routes to agents; high-judgment work stays with a person or is narrowed until the AI part is support work.
++6. **Access & consequence** - what access does it need and what does a mistake cost? A pasted note differs from private files; a calendar action differs from money risk. Tool access earns its keep only when the done state is clear.
++7. **Payoff vs setup** - does frequency and value earn the setup cost? Daily/weekly jobs get more room; rare low-value chores usually do not.
++
++Score the plan as a whole - most plans lean clearly toward one route even when a sub-task doesn't fit. Note any part that obviously needs a different route rather than forcing everything into one bucket.
++
++## Worked examples (the verdicts that keep it honest)
++
++These look agent-shaped but aren't agent-worth - the reason each routes to DON'T BOTHER is the useful part:
++
++- **Tax-folder organization** has files, missing-item checks, and obvious busywork, but the task is rare, sensitive, and still needs careful human review - not enough repeated payoff to justify a casual automation path through tax documents.
++- **Product naming** makes generation cheap, not judgment cheap: more agents create a larger pile of fluent options but do not make the final call cheaper. Judging the winner is the actual work.
++- **New-dishwasher research** looks splittable across reviews, prices, models, and delivery windows, but for a rare, low-value purchase with weak checkability and mixed judgment, a swarm adds coordination cost before it adds leverage. Use search, ask chat for a comparison, then choose.
++
++## What happens next (verdict -> artifact)
++
++The verdict matters only if it changes what you do next:
++
++- **CHAT** -> a narrow, pasteable prompt: task + source material together, ask for one output plus assumptions and anything to verify. Review the answer before it goes anywhere.
++- **ONE AGENT** -> a run card: goal (one sentence), done state (the inspectable artifact), tools (only what the run needs), cap (one pass / time limit / stop condition), check (source, rule, test, or human review).
++- **AGENT TEAM** -> a small named team: roles (e.g. reader that cites, synth that combines, reviewer that checks gaps) plus a human gate before anything ships or changes.
++- **DON'T BOTHER** -> a short manual checklist, plus a trigger for when to revisit (e.g. "rerun this if it becomes a weekly job").
++
++Pick the lightest tool that leaves an inspectable result.
+diff --git a/skills/loop-brainstorm/references/tracker-scan.md b/skills/loop-brainstorm/references/tracker-scan.md
+new file mode 100644
+index 0000000..c0c14c1
+--- /dev/null
++++ b/skills/loop-brainstorm/references/tracker-scan.md
+@@ -0,0 +1,12 @@
++# Tracker scan
++
++Shared step for loop-brainstorm and loop-improve: check the thing in hand (a fresh idea, an audit
++finding) against what is already tracked before spending further effort shaping it.
++
++Read the tracker mode from `docs/loop/pointer.md`, then list open issues with `gh issue list --state open --limit 1000 --json number,title,labels` (github) or `glab issue list --all --output json` (gitlab) for the open Issues and Backlog lanes; in `local` mode read the file named by the `local-issues-file:` key.
++
++Match by judgment; when a title is ambiguous, read the body (`gh issue view N` in github mode, `glab issue view N` in gitlab mode, the `local-issues-file:` file in local mode) before deciding.
++
++A match is either the same work (covered) or the same area with a different ask (related, not a
++duplicate). No match: proceed as new. How each skill renders and acts on a match is its own step
++- this reference owns only the scan mechanism.
+diff --git a/skills/loop-improve/SKILL.md b/skills/loop-improve/SKILL.md
+new file mode 100644
+index 0000000..88f132d
+--- /dev/null
++++ b/skills/loop-improve/SKILL.md
+@@ -0,0 +1,99 @@
++---
++name: loop-improve
++description: >
++  Audit this repo for improvements and converge the ones worth doing into a single approved brief.
++  Surveys the codebase as a senior advisor, scans the Issues and Backlog lanes for overlap, and
++  presents a vetted findings table; the user selects the findings worth briefing (default: the top
++  3-5 by leverage) and they converge into ONE brief for /loop-plan. Read-only on source code -
++  it never fixes, refactors, or scaffolds. Triggers on "audit this repo for improvements",
++  "what should I improve", "improvement brief", and loop-improve.
++---
++
++# loop-improve: audit to one approved brief
++
++**Pre-plugin repo check.** Before anything else, look for `config/repo-state.md` in this repo.
++If it exists and `docs/loop/pointer.md` does not, stop.
++Say plainly that this repo is still on the pre-plugin loop-stack layout, name the file you found, and offer to run the loop-setup skill's migration before continuing.
++Never proceed silently on a pre-plugin repo.
++
++You are a senior advisor, not an implementer.
++You survey the repo for improvement opportunities, match them against what is already tracked, and converge the findings the user picks into one brief for /loop-plan.
++How to build it is deliberately absent; that belongs to /loop-plan.
++
++The pipeline position:
++
++```
++/loop-improve ──> findings table ──> ONE brief
++                                     └─ /loop-plan ──> plan
++```
++
++<HARD-GATE>
++loop-improve is read-only on source code: it audits and reports, it never edits, fixes, refactors, or scaffolds anything.
++The only file it writes is the brief.
++It creates no issue and closes none without assent, and it invokes no planning or implementation skill until the brief is approved.
++This applies regardless of how obvious the fix looks.
++</HARD-GATE>
++
++## Step 1 - Resolve effort and focus
++
++Parse the invocation for an optional focus argument and an effort keyword.
++A focus argument scopes the audit to one category (example: `/loop-improve security` audits only security); when absent, all categories run.
++The one reserved focus is `--focus harness-drift`: it delegates the whole audit to /loop-molt, which owns the harness-drift-audit protocol; loop-improve keeps no copy of that method.
++The effort knob is quick/standard/deep, default standard, and sets audit depth and coverage per the vendored playbook's effort table.
++
++## Step 2 - Audit (read-only)
++
++Run the vendored playbook's categories, depth set by the effort knob from Step 1.
++The audit reads code and never writes it.
++Every finding row requires file:line evidence - no vibes-only rows and no speculation dressed as a finding.
++The playbook is `references/audit-playbook.md` in this skill; read the relevant category sections and the Finding format before reporting.
++
++### Findings table contract
++
++Present findings as an aligned markdown pipe table with exactly these columns, in this order:
++
++| # | Finding | Category | Impact | Effort | Risk | Confidence | Tracker |
++|---|---|---|---|---|---|---|---|
++| 1 | _short title drawn from the file:line evidence_ | Security | _one-line impact_ | M | LOW | HIGH | covered by #42 |
++
++Every row carries file:line evidence, an impact one-liner, an effort estimate (S / M / L), a risk note, and a confidence level.
++The Tracker column renders one of `covered by #N`, `related: #N`, or `-`, set in Step 3.
++`covered by #N` means the issue's ask and the finding's fix are the same work; `related: #N` means same area, different ask.
++
++## Step 3 - Scan the tracker
++
++Read the tracker mode from `docs/loop/pointer.md`, then list open issues with `gh issue list --state open --limit 1000 --json number,title,labels` (github) or `glab issue list --all --output json` (gitlab) for the open Issues and Backlog lanes; in `local` mode read the file named by the `local-issues-file:` key.
++Read `references/tracker-scan.md` in full and follow it before proceeding - do not summarize it from memory.
++Render each match against the findings table contract above: `covered by #N`, `related: #N`, or `-` for no match.
++
++## Step 4 - Present findings and select`[gate:ASK]`
++
++Present the findings table, ordered by leverage (impact / effort, discounted by confidence and fix-risk).
++Then the user selects which findings to converge, via AskUserQuestion with multiSelect: the default suggestion is the top 3-5 by leverage plus anything they flag, and a single finding is a fine selection when only one is worth doing.
++All selected findings converge into the ONE brief - selection sets the brief's scope, never its file count.
++Covered findings (Tracker shows `covered by #N`) stay selectable - converging one may be the cleaner path than the open issue.
++
++## Step 5 - Converge through the shared brief pipeline`[gate:DEFAULT]`
++
++Read `references/brief-pipeline.md` in full and follow it before proceeding - do not summarize it from memory.
++Follow the shared reference from approaches through the user review gate and the commit offer, then return to Step 6 here.
++The shared reference now holds the graduation contract (its single home); loop-improve's Step 6 invokes it and adds only its own supersede-close, and Step 7 is loop-improve's terminal.
++
++The selected findings are the brief's seams, in blast-radius order, and each carries its file:line evidence into the brief's success criteria.
++While authoring the brief, write each unselected finding that is NOT covered by an existing open issue into the brief's `## Parking lot` section, one bullet per finding (bullet shape per the shared graduation contract in `references/brief-pipeline.md`).
++Record `Supersedes: #N` in the brief for each selected finding that was covered by issue #N.
++
++## Step 6 - Leftover graduation and supersede-close`[gate:DEFAULT]`
++
++After the Step 5 commit is accepted, graduate the brief's `## Parking lot` per the shared graduation contract in `references/brief-pipeline.md` (its single home): preview the parked-item count and derived titles, take assent, then parse the section and open one `idea`-labeled issue per bullet with `gh issue create --label idea --title <first sentence, period-free> --body <the bullet plus its restart context and a link to the brief>`. The parking-lot bullet shape is specified there.
++
++The supersede-close is loop-improve's own (not part of the shared contract):
++Unselected findings that ARE covered by an existing open issue are never graduated; they appear only as a Tracker-column annotation in the findings table.
++For each selected finding that was covered, offer `gh issue close <num>` or `glab issue close <num>` per the declared tracker mode for its issue (assented, announced); declining leaves the issue open with the `Supersedes: #N` link still recorded in the brief.
++Closing at brief time rather than merge time is the deliberate, brief-mandated choice: the brief already declares the supersedes, so leaving the issue open would only mislead later readers.
++
++## Step 7 - Terminal state`[gate:DEFAULT]`
++
++Name the approved brief's path and hand it to /loop-plan.
++loop-improve's terminal is /loop-plan only; it never invokes /loop-drive or an implementation skill.
++The only file it creates is the brief.
+diff --git a/skills/loop-improve/references/audit-playbook.md b/skills/loop-improve/references/audit-playbook.md
+new file mode 100644
+index 0000000..617683f
+--- /dev/null
++++ b/skills/loop-improve/references/audit-playbook.md
+@@ -0,0 +1,178 @@
++# Audit Playbook
++
++> Source: the improve skill by shadcn, MIT, version 1.0.0, vendored 2026-08-08.
++
++<!--
++Vendoring provenance and license.
++Vendored from the upstream improve skill, lightly adapted (plans-directory machinery recast to brief/backlog terms, em dashes to plain dashes).
++The upstream ships no LICENSE file or source URL; its license is declared in its SKILL.md frontmatter: license: MIT, metadata author: shadcn, version: "1.0.0".
++The MIT permission notice is reproduced below with the declared author as the copyright holder (year not stated upstream).
++
++MIT License
++
++Copyright (c) shadcn
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in all
++copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
++SOFTWARE.
++-->
++
++
++What to look for, per category. Each audit pass gets the relevant section plus the **Finding format** at the bottom; adapt depth to repo size.
++
++A finding is only a finding with evidence. "Probably has N+1 queries somewhere" is not a finding; `orders/api.ts:142 issues one query per order item inside a loop` is.
++
++---
++
++## 1. Correctness / Bugs
++
++The highest-trust category - real bugs found by reading, not speculation.
++
++- Error handling: swallowed exceptions, empty catch blocks, missing error states on critical paths.
++- Async hazards: unawaited promises, races on shared state, missing cancellation/cleanup (stale React closures, listeners never removed).
++- Null/undefined flows: non-null assertions on nullable values, optional chaining hiding a must-exist value, unchecked array indexing.
++- Boundary conditions: off-by-one, empty-collection handling, timezone/locale assumptions, integer overflow.
++- State machines: impossible states representable in types, status enums with unhandled branches.
++- Concurrency: check-then-act on shared resources, missing transactions around multi-write ops, idempotency of retried ops (webhooks, queues).
++- Type escape hatches: `any` / `as` / `@ts-ignore` clusters - each is a place the compiler was overruled.
++- Resource leaks: unclosed handles/connections/subscriptions; missing `finally`.
++
++## 2. Security
++
++Review only what code evidence directly supports; frame findings as defensive maintenance (code pattern, production impact, remediation) at the level of code/config changes and tests - no runnable misuse strings or step-by-step exploit detail.
++
++**Handling rule:** never copy a secret value into a finding or the brief - the brief gets committed. Reference the `file:line` and credential type only ("Stripe live key at `config.ts:12`"), and the fix sketch always includes rotation, not just removal (a committed secret is burned even after deletion).
++
++**By-design is not a finding:** standard platform conventions (honoring `https_proxy`/`NO_PROXY`, reading `~/.netrc`, a local dev tool shelling out to configured package managers) and tradeoffs recorded in an ADR are settled. Flag only when the *implementation* adds risk beyond the convention or the documented decision - and note that a **stale ADR is itself a finding**: if the code drifted from the decision doc, report the drift rather than using the doc to suppress it.
++
++- Credential hygiene: hardcoded keys/tokens/passwords, credentials in committed `.env` files, credentials logged or persisted; name only type and location, then recommend removal, rotation, and a safer path.
++- Data crossing into interpreters or privileged APIs: SQL/command injection, XSS sinks fed by user content, dynamic execution with runtime input, path traversal from request data. Describe the safer API or validation boundary.
++- Access control: endpoints/actions lacking server-side identity checks, authz enforced only client-side, object access by ID without ownership/tenant checks (IDOR), missing CSRF on state-changing routes.
++- Input contracts: API boundaries trusting request bodies without schema validation, uploads without type/size/storage constraints, broad object assignment from request data (mass assignment).
++- Dependency posture: run the ecosystem audit (`npm audit`, `pip-audit`, `cargo audit`) read-only; report only critical/high advisories affecting reachable runtime or build/distribution paths.
++- Production configuration: overly broad CORS with credentials, missing hardening headers (CSP) on sensitive surfaces, cookies missing `HttpOnly`/`Secure`/`SameSite`, debug/verbose behavior in production.
++- Data minimization: PII or sensitive data in logs, stack traces returned to clients, internal error details in API responses.
++
++## 3. Performance
++
++Algorithmic and architectural wins, not micro-optimizations.
++
++- N+1 patterns: query/fetch per item inside loops or per list-row render; missing batching/dataloader.
++- Wrong complexity: nested scans over the same collection, repeated `find`/`filter` in hot loops where a keyed Map belongs.
++- Caching gaps: identical expensive computations/fetches repeated per request/render, missing memoization at clear boundaries, no HTTP/data-layer caching on stable data.
++- Payload size: over-fetching (select *, full objects where IDs suffice), missing pagination on unbounded lists, large JSON shipped to clients.
++- Frontend: heavyweight deps for trivial use, missing code-splitting on rare routes, unoptimized images/fonts, client-side fetching for render-time data, render waterfalls (defer to framework conventions).
++- Backend: synchronous work that belongs in a queue, missing indexes implied by query patterns (flag for verification, don't claim without schema evidence), connection-per-request where pooling exists.
++- Build/CI: missing caching, redundant pipeline steps, test suites that could parallelize.
++
++## 4. Test Coverage
++
++The goal is not a percentage - it's *which untested code is dangerous*.
++
++- Map critical paths (money, auth, data mutation, the feature the repo exists for); check which have zero or trivial coverage.
++- High-churn modules (git log) with no tests = top refactor risk; flag as "characterization tests first" candidates.
++- Existing test quality: assertions that assert nothing, heavy mocking that tests the mocks, unread snapshots, flaky patterns (real timers/network, order dependence).
++- Missing layers: unit-only with no integration coverage on API boundaries, or slow E2E for what a unit test would catch.
++- Verification infrastructure: is there a one-command way to know the codebase works? If not, that's finding #1 and a prerequisite for any risky change.
++
++## 5. Tech Debt & Architecture
++
++- Duplication: the same logic re-implemented in 3+ places; divergent copies that drifted.
++- Layering violations: UI importing data-layer internals, circular dependencies, "utils" junk drawers with high fan-in.
++- Dead code: unexported-and-unused modules, fully-rolled-out flags still branching, unexplained commented-out blocks, unimported manifest deps.
++- God objects/modules: files an order of magnitude larger than the repo median that everything touches; double-digit-parameter functions or deep nesting.
++- Inconsistent patterns: three ways of doing fetching/error-handling/styling in one repo - pick the winner and brief the consolidation.
++- Abstraction mismatches: premature abstractions with a single implementation, or missing abstractions where one change always touches N files in lockstep.
++
++## 6. Dependencies & Migrations
++
++- Major-version lag on core framework/runtime where staying behind has real cost (EOL, security-fix cutoffs, ecosystem incompatibility).
++- Deprecated APIs with announced removal timelines.
++- Abandoned dependencies (no release in years, archived) on critical paths.
++- Duplicate dependencies solving the same problem (two date libs, two HTTP clients).
++- Lockfile/manifest drift, version-pinning inconsistencies across a monorepo.
++- Per migration candidate, estimate blast radius (files touched) - it drives effort and whether to recommend it at all.
++
++## 7. DX & Tooling
++
++- Missing or broken: typecheck script, lint config, formatter, pre-commit hooks, editorconfig.
++- Slow feedback loops: dev-server/test startup in minutes, no watch mode, CI without caching.
++- Onboarding friction: wrong/incomplete README setup, undocumented required env vars, no `.env.example`.
++- Missing `CLAUDE.md`/`AGENTS.md` where agents work downstream - recommend one as a briefable finding.
++- Error messages/logging: unstructured service logs, missing request IDs/correlation, debugging that requires code changes.
++
++## 8. Docs
++
++Lowest default priority - only flag where absence has a concrete cost:
++
++- Public API surface (published packages) without reference docs.
++- Architectural decisions nobody can reconstruct (why X over Y) for actively-contested areas.
++- Stale docs that are actively wrong (worse than missing) - setup instructions, examples that no longer compile.
++
++## 9. Direction - features & where to take this next
++
++Forward-looking: not what's broken, but what this codebase wants to become.
++**Grounding rule:** every suggestion must cite evidence from the repo itself - a suggestion that could apply to any project in the category ("add dark mode", "add AI") is noise, not a finding. Grounded signal sources:
++
++- **Unfinished intent**: TODO/FIXME clusters on one theme, flags never rolled out, stubbed/half-built modules, commented-out feature code, abandoned mid-feature work in git history.
++- **Stated-but-undelivered**: README/docs/roadmap promises with no code, no-op CLI flags/config, issue templates for features that don't exist. A PRD or `PRODUCT.md` naming users/use-cases/direction the code hasn't caught up to is the strongest grounding signal - prefer it over inferred intent, and never propose what a decision doc already rejected (note the contradiction instead).
++- **Surface asymmetries**: one-directional pairs (export without import, create without bulk-create, webhooks out but not in), entities with CRUD minus one, a public API internal code hand-rolled around.
++- **The adjacent possible**: capabilities the architecture makes disproportionately cheap - a plugin system one interface away, a public API one route file from the service layer, an integration the data model already supports.
++- **Friction worth productizing**: things users evidently do by hand around the project (visible in docs, examples, issues) that it could absorb.
++
++Direction findings use the standard format with two adaptations: **Impact** is product/user value (who wants this and why now), and **Confidence** reflects how grounded the evidence is - not certainty it's the right call. Strategy belongs to the maintainer; effort estimates here are coarser (say so). A selected direction finding briefs as a design/spike outcome (prototype, define the API, list open questions), not a build-everything brief.
++
++---
++
++## Effort levels
++
++Audit depth follows the **effort level** (default `standard`; the `/loop-improve` invocation sets it with a `quick` or `deep` keyword, or scopes it with a focus argument like `security`):
++
++| | `quick` | `standard` (default) | `deep` |
++|---|---|---|---|
++| Coverage | Recon hotspots only - highest-churn, highest-criticality code | Hotspot-weighted, key packages | Whole repo, every package |
++| Breadth | "medium" | "very thorough" for correctness + security, "medium" rest | "very thorough" everywhere |
++| Categories | correctness, security, tests | all nine | all nine |
++| Findings | top ~6, HIGH-confidence only | full table | full table incl. LOW-confidence investigation items |
++
++Whatever the level, say in the brief what was *not* audited. On a large monorepo even `deep` scopes to packages, not the root.
++
++---
++
++## Finding format
++
++Every finding, from every category, comes back in this shape:
++
++```markdown
++### [CATEGORY-NN] Short imperative title
++
++- **Evidence**: `path/file.ts:123` - one-sentence description of what's there. (Repeat per location; 2-5 strongest, note "and ~N similar sites" if widespread.)
++- **Impact**: What goes wrong / what's being paid. Concrete: "every order-list render issues 1+N queries", not "suboptimal".
++- **Effort**: S (hours) / M (a day-ish) / L (multi-day) - for the *fix*, including tests.
++- **Risk**: What the fix could break; LOW/MED/HIGH plus one line why.
++- **Confidence**: HIGH (read the code, certain) / MED (strong signal, needs verification) / LOW (smell, needs investigation). A LOW-confidence finding selected for briefing is briefed as investigation scope, not build scope.
++- **Fix sketch**: 1-3 sentences. Just enough to judge effort honestly.
++```
++
++## Prioritization rubric
++
++Order findings by **leverage = impact / effort, discounted by confidence and fix-risk**. Tiebreakers:
++
++1. Anything that unblocks other findings (verification baseline, characterization tests) floats up.
++2. Security findings with HIGH confidence float above equivalent-leverage non-security findings.
++3. Prefer findings whose fix has a clean verification story - executor models succeed at those.
++4. "Not worth doing" is a valid verdict; record it with one line of reasoning so the user knows it was considered.
+diff --git a/skills/loop-improve/references/brief-pipeline.md b/skills/loop-improve/references/brief-pipeline.md
+new file mode 100644
+index 0000000..1e56a95
+--- /dev/null
++++ b/skills/loop-improve/references/brief-pipeline.md
+@@ -0,0 +1,84 @@
++# The shared brief pipeline (convergence half)
++
++This reference holds the convergence half shared by loop-brainstorm and loop-improve.
++The calling skill carries its own divergence half - explore, scope probes, and clarifying questions, or audit-and-select - and points here once a single idea or finding is chosen to converge.
++Read it in full and follow it before proceeding - do not summarize it from memory.
++It runs from approaches through the user review gate and the commit offer, and holds the shared graduation contract.
++The shared graduation contract lives here (single home); each calling skill keeps only its own terminal step and any skill-specific close (loop-improve's supersede-close is improve-only and stays in loop-improve).
++
++## Approaches
++
++Architecture thinking and outward research are required inputs to this step; the purity rules below govern what lands in the brief, never what you investigate.
++Before proposing, name each candidate's enabling assumptions about the outside world - ecosystem, tooling, platform capabilities - and buy a fresh observation for any that is decision-bearing and possibly stale.
++A negative about the external ecosystem ("no plugin exists", "X isn't supported") cannot kill or park a candidate until checked against the current ecosystem this session, dated; local absence is never evidence of world absence.
++Score research inputs by transferable mechanism, not topic overlap.
++
++Propose 2-3 genuinely different approaches with trade-offs, lead with your recommendation, and say why.
++The chosen approach, the alternatives, the rationale, and the dated ecosystem facts it rests on all go in the brief; decisions without recorded rationale get relitigated.
++
++## The brief
++
++Present it section by section, scaled to complexity, checking in after each chunk.
++Then write it to `docs/briefs/YYYY-MM-DD.<tokens>.<topic>-brief.md` (one sentence per line, plain dashes, aligned table pipes).
++When the work belongs to a logged tracker item, include its token segment(s) (e.g. .I6 for issue 6, .B4 for backlog item 4, .R1 for roadmap item 1, .W3 for wayfinder ticket 3); when the item is not yet logged, omit the token segments entirely and insert them when the item is created.
++
++The sections below are the brief's default shape.
++Scale each to the idea - one sentence is fine for a simple one - and use your judgment to drop a section that genuinely does not apply, saying in the brief what you dropped and why.
++
++| Section                    | Contents                                                                    |
++|----------------------------|-----------------------------------------------------------------------------|
++| Outcome                    | The need restated as outcome, not the action named; presupposition verdict  |
++| End artifact               | The concrete thing this unblocks; for infra, the first real deliverable     |
++| Done looks like            | What the user can do when finished, including the exact run/usage commands  |
++| Assets and options         | Every asset mentioned, mapped to its implied option, chosen or declined     |
++| Approach                   | The chosen one, the 2-3 considered, and the rationale at decision time      |
++| Success criteria           | Each tagged `[executed-check]` or `[judgment]` (see tagging rule below)     |
++| Seams                      | Independently checkable pieces in blast-radius order, or "atomic" stated    |
++| Known vs guessed           | Three bins: verified / believed-unchecked / guessed, with what breaks if a  |
++|                            | guess is wrong                                                              |
++| Parking lot                | Every parked thread, verbatim enough to restart later                       |
++| Out of scope               | What this deliberately is not                                               |
++| Open questions for planning| Implementation questions that surfaced, one line each, unanswered           |
++
++**Checkability tagging rule.**
++Tag a criterion `[executed-check]` only if you can name the command shape that would verify it (exit 0, a rendered file, a fetched citation).
++For a `[judgment]` criterion, attempt one reformulation toward checkable - "feels fast" becomes "the digest renders in under 2 seconds on the sample vault" - and keep the judgment tag only if the reformulation genuinely loses the intent.
++Downstream, /loop-plan routes every `[judgment]` tag to a human checkpoint (never a worker task), and the One-Minute Test front-door checkability question and /loop-drive's step 1 halt condition consume the tags directly (P6: work enters a swarm only when checking is cheaper than producing).
++
++**What the brief is not.**
++Outside the Approach and Known vs guessed sections, the brief contains no components, no data flow, no schedulers, no file formats, no library names, no phased build roadmap.
++If any of those appears elsewhere in your draft, move it to Open questions for planning as a single line and delete the prose.
++Approach and Known vs guessed may name plugins, platforms, and mechanisms when decision-bearing - that is which-shape-and-why, the grain those sections exist to record.
++What stays banned even there: speccing the innards of the chosen shape.
++The test for every other section: every sentence should survive the implementation being swapped out entirely.
++
++## Self-review
++
++Look at the written brief with fresh eyes and fix inline:
++
++1. **Placeholder scan** - any TBD, vague requirement, or empty REQUIRED section.
++2. **Internal consistency** - do sections contradict each other?
++3. **Architecture scan** - run the "survives an implementation swap" test on every sentence outside Approach and Known vs guessed; inside them, check the grain instead (which-shape-and-why stays, innards-spec moves to Open questions for planning).
++4. **Ambiguity check** - could any criterion be read two ways? Pick one, make it explicit.
++5. **Tag audit** - is every success criterion tagged, and every `[judgment]` tag the survivor of an attempted reformulation?
++
++## User review gate and commit offer
++
++Tell the user where the brief was written, invite review and changes before it goes to planning, and offer the commit; the phrasing is yours.
++Wait for the response.
++Changes requested means edit and re-run the self-review.
++Offer the commit; never commit without the offer being accepted.
++
++## Graduation (shared contract)
++
++On an accepted commit, graduate the brief's Parking lot into backlog issues.
++This contract is shared by loop-brainstorm and loop-improve and lives only here; each caller invokes it from its own terminal step.
++
++- **Preview first.** Announce the parked-item count and each item's derived title, and ask for assent before creating anything.
++- **Invoke on assent.** Parse the brief's `## Parking lot` section and open one `idea`-labeled issue per parked item with `gh issue create --label idea --title <first sentence, period-free> --body <the bullet plus its restart context and a link to the brief>`, the body following the graduated-item template in `config/conventions.md`.
++- **Parking-lot bullet shape.** Each parked item is one bullet whose first sentence is the derived issue title and MUST be period-free and filename-free: the title is truncated at the first dot, so a leading filename self-truncates. A `Restart context:` continuation line carries what a later session needs to pick the item back up.
++- **Verbose announce.** Each created issue is announced with its number and title.
++- **Reverse.** Undo a graduated issue with `gh issue close <num>` or `glab issue close <num>` per the declared tracker mode.
++- **Autonomy.** An autonomous run auto-takes graduation once the review-gate commit is accepted, but journals every created issue number for the end-of-chain review rather than firing silently.
++
++The terminal state (naming the next stage) is the calling skill's own step - return to the calling SKILL.md after graduation resolves.
+diff --git a/skills/loop-improve/references/tracker-scan.md b/skills/loop-improve/references/tracker-scan.md
+new file mode 100644
+index 0000000..c0c14c1
+--- /dev/null
++++ b/skills/loop-improve/references/tracker-scan.md
+@@ -0,0 +1,12 @@
++# Tracker scan
++
++Shared step for loop-brainstorm and loop-improve: check the thing in hand (a fresh idea, an audit
++finding) against what is already tracked before spending further effort shaping it.
++
++Read the tracker mode from `docs/loop/pointer.md`, then list open issues with `gh issue list --state open --limit 1000 --json number,title,labels` (github) or `glab issue list --all --output json` (gitlab) for the open Issues and Backlog lanes; in `local` mode read the file named by the `local-issues-file:` key.
++
++Match by judgment; when a title is ambiguous, read the body (`gh issue view N` in github mode, `glab issue view N` in gitlab mode, the `local-issues-file:` file in local mode) before deciding.
++
++A match is either the same work (covered) or the same area with a different ask (related, not a
++duplicate). No match: proceed as new. How each skill renders and acts on a match is its own step
++- this reference owns only the scan mechanism.
+diff --git a/skills/loop-molt/SKILL.md b/skills/loop-molt/SKILL.md
+new file mode 100644
+index 0000000..6454008
+--- /dev/null
++++ b/skills/loop-molt/SKILL.md
+@@ -0,0 +1,56 @@
++---
++name: loop-molt
++description: >
++  Audit any instruction-prose artifact - a SKILL.md, a CLAUDE.md block, an operating manual, a
++  run-book - against a dated snapshot of what the harness now does natively, so plumbing gets
++  deleted and policy survives. Classifies each block into four bins - plumbing, policy, premise,
++  choreography - emits deletions plus a drift ledger line, and converges structural findings into a brief.
++  Triggers on "molt", "harness drift", "audit this skill against the harness", "re-evaluate this
++  prose against what the harness now does", and /loop-molt.
++---
++
++# loop-molt: audit instruction prose against the live harness
++
++Skills, manuals, and CLAUDE.md blocks rot silently: nothing fails when the harness absorbs a
++mechanic, so the prose that describes it just becomes dead weight. Molt is the audit that catches
++that drift - the third in the family next to /loop-improve (audits the product) and P10's evolve
++move (audits the run logs). This skill runs on any prose-shaped artifact; loop-stack self-audit is
++just the dogfood case.
++
++The reference doc is `references/protocol.md` (vendored, canonical). Read it in full before
++auditing - this SKILL.md is the thin wrapper, the protocol is the method.
++
++## The one-line test
++
++Per block of prose: **"would the harness or a current frontier model do this unprompted, today?"**
++Not "is this correct?" - correct-but-native is still deletable. Prose describing HOW to do
++mechanics is suspect; prose describing WHAT MUST BE TRUE is policy.
++
++## The four bins
++
++Every block sorts into one of four bins - **plumbing, policy, premise, choreography** - defined,
++with their actions and the policy membership test, in `references/protocol.md` (step 3). This
++SKILL.md never restates those definitions; the reference is their single home.
++
++## Steps
++
++Full procedure and rationale live in `references/protocol.md`; the pointers below are the running order, not a second copy.
++
++0. **Refresh ground truth** - never audit against remembered capability; thin refresh (changelog + one live probe of a load-bearing claim) per artifact, deep refresh (full research pull) for a whole-stack recalibration. Date-stamp the snapshot - it is the evidence base and its expiry.
++1. **Constraint register FIRST**`[gate:ASK]` - before classifying anything, ask the owner which design choices are deliberate standing constraints (portability, provider mix, cost, compliance) versus historical accident. Mandatory and ASK-class: never classify a premise as expired without it (a constraint misread as stale nearly flipped three recommendations); deliberate constraints are kept AND labeled so the next audit does not re-litigate them.
++2. **Inventory** - break the artifact into blocks (each instruction, gate, step, or embedded claim is one unit); for a skill family, inventory duplication too (a narrative in N places counts once, then N-1 deletions).
++3. **Classify** - sort every block into the four bins using the reference's definitions and policy-membership test; an expired premise is rewritten in place (never a bolted-on correction), a deliberate constraint kept and labeled.
++4. **Test by subtraction** - delete the block, run the artifact's existing checks plus one real task, keep the deletion only if nothing degrades; a checkless artifact gets a check first (weaker fallback: compare one real task to a pre-deletion run).
++5. **Emit the drift ledger line** - append one entry to `docs/molt-ledger.md` (`## YYYY-MM-DD - <artifact path>`: date, harness snapshot, blocks deleted by bin, blocks kept as policy, constraints re-confirmed); on a first audit of a principles-less artifact, also emit its derived invariants as a starter principles sheet.
++
++## Workflow: inline vs. brief
++
++- **Small findings** (block deletions, single-file rewrites) apply inline via the subtraction test
++  with a `docs/molt-ledger.md` line, same session.
++- **Structural findings** (skill merges, gates-to-hooks, re-homing) converge through the shared
++  pipeline at `references/brief-pipeline.md` into a brief and ride
++  the normal chain: /loop-plan -> /loop-drive -> /loop-review. No audit content is
++  duplicated - loop-improve reaches this same audit via `--focus harness-drift`.
++
++The artifact is harness-agnostic: this SKILL.md is the only Claude-Code-specific wrapper; the
++protocol is portable prose that any agent can run.
+diff --git a/skills/loop-molt/references/brief-pipeline.md b/skills/loop-molt/references/brief-pipeline.md
+new file mode 100644
+index 0000000..1e56a95
+--- /dev/null
++++ b/skills/loop-molt/references/brief-pipeline.md
+@@ -0,0 +1,84 @@
++# The shared brief pipeline (convergence half)
++
++This reference holds the convergence half shared by loop-brainstorm and loop-improve.
++The calling skill carries its own divergence half - explore, scope probes, and clarifying questions, or audit-and-select - and points here once a single idea or finding is chosen to converge.
++Read it in full and follow it before proceeding - do not summarize it from memory.
++It runs from approaches through the user review gate and the commit offer, and holds the shared graduation contract.
++The shared graduation contract lives here (single home); each calling skill keeps only its own terminal step and any skill-specific close (loop-improve's supersede-close is improve-only and stays in loop-improve).
++
++## Approaches
++
++Architecture thinking and outward research are required inputs to this step; the purity rules below govern what lands in the brief, never what you investigate.
++Before proposing, name each candidate's enabling assumptions about the outside world - ecosystem, tooling, platform capabilities - and buy a fresh observation for any that is decision-bearing and possibly stale.
++A negative about the external ecosystem ("no plugin exists", "X isn't supported") cannot kill or park a candidate until checked against the current ecosystem this session, dated; local absence is never evidence of world absence.
++Score research inputs by transferable mechanism, not topic overlap.
++
++Propose 2-3 genuinely different approaches with trade-offs, lead with your recommendation, and say why.
++The chosen approach, the alternatives, the rationale, and the dated ecosystem facts it rests on all go in the brief; decisions without recorded rationale get relitigated.
++
++## The brief
++
++Present it section by section, scaled to complexity, checking in after each chunk.
++Then write it to `docs/briefs/YYYY-MM-DD.<tokens>.<topic>-brief.md` (one sentence per line, plain dashes, aligned table pipes).
++When the work belongs to a logged tracker item, include its token segment(s) (e.g. .I6 for issue 6, .B4 for backlog item 4, .R1 for roadmap item 1, .W3 for wayfinder ticket 3); when the item is not yet logged, omit the token segments entirely and insert them when the item is created.
++
++The sections below are the brief's default shape.
++Scale each to the idea - one sentence is fine for a simple one - and use your judgment to drop a section that genuinely does not apply, saying in the brief what you dropped and why.
++
++| Section                    | Contents                                                                    |
++|----------------------------|-----------------------------------------------------------------------------|
++| Outcome                    | The need restated as outcome, not the action named; presupposition verdict  |
++| End artifact               | The concrete thing this unblocks; for infra, the first real deliverable     |
++| Done looks like            | What the user can do when finished, including the exact run/usage commands  |
++| Assets and options         | Every asset mentioned, mapped to its implied option, chosen or declined     |
++| Approach                   | The chosen one, the 2-3 considered, and the rationale at decision time      |
++| Success criteria           | Each tagged `[executed-check]` or `[judgment]` (see tagging rule below)     |
++| Seams                      | Independently checkable pieces in blast-radius order, or "atomic" stated    |
++| Known vs guessed           | Three bins: verified / believed-unchecked / guessed, with what breaks if a  |
++|                            | guess is wrong                                                              |
++| Parking lot                | Every parked thread, verbatim enough to restart later                       |
++| Out of scope               | What this deliberately is not                                               |
++| Open questions for planning| Implementation questions that surfaced, one line each, unanswered           |
++
++**Checkability tagging rule.**
++Tag a criterion `[executed-check]` only if you can name the command shape that would verify it (exit 0, a rendered file, a fetched citation).
++For a `[judgment]` criterion, attempt one reformulation toward checkable - "feels fast" becomes "the digest renders in under 2 seconds on the sample vault" - and keep the judgment tag only if the reformulation genuinely loses the intent.
++Downstream, /loop-plan routes every `[judgment]` tag to a human checkpoint (never a worker task), and the One-Minute Test front-door checkability question and /loop-drive's step 1 halt condition consume the tags directly (P6: work enters a swarm only when checking is cheaper than producing).
++
++**What the brief is not.**
++Outside the Approach and Known vs guessed sections, the brief contains no components, no data flow, no schedulers, no file formats, no library names, no phased build roadmap.
++If any of those appears elsewhere in your draft, move it to Open questions for planning as a single line and delete the prose.
++Approach and Known vs guessed may name plugins, platforms, and mechanisms when decision-bearing - that is which-shape-and-why, the grain those sections exist to record.
++What stays banned even there: speccing the innards of the chosen shape.
++The test for every other section: every sentence should survive the implementation being swapped out entirely.
++
++## Self-review
++
++Look at the written brief with fresh eyes and fix inline:
++
++1. **Placeholder scan** - any TBD, vague requirement, or empty REQUIRED section.
++2. **Internal consistency** - do sections contradict each other?
++3. **Architecture scan** - run the "survives an implementation swap" test on every sentence outside Approach and Known vs guessed; inside them, check the grain instead (which-shape-and-why stays, innards-spec moves to Open questions for planning).
++4. **Ambiguity check** - could any criterion be read two ways? Pick one, make it explicit.
++5. **Tag audit** - is every success criterion tagged, and every `[judgment]` tag the survivor of an attempted reformulation?
++
++## User review gate and commit offer
++
++Tell the user where the brief was written, invite review and changes before it goes to planning, and offer the commit; the phrasing is yours.
++Wait for the response.
++Changes requested means edit and re-run the self-review.
++Offer the commit; never commit without the offer being accepted.
++
++## Graduation (shared contract)
++
++On an accepted commit, graduate the brief's Parking lot into backlog issues.
++This contract is shared by loop-brainstorm and loop-improve and lives only here; each caller invokes it from its own terminal step.
++
++- **Preview first.** Announce the parked-item count and each item's derived title, and ask for assent before creating anything.
++- **Invoke on assent.** Parse the brief's `## Parking lot` section and open one `idea`-labeled issue per parked item with `gh issue create --label idea --title <first sentence, period-free> --body <the bullet plus its restart context and a link to the brief>`, the body following the graduated-item template in `config/conventions.md`.
++- **Parking-lot bullet shape.** Each parked item is one bullet whose first sentence is the derived issue title and MUST be period-free and filename-free: the title is truncated at the first dot, so a leading filename self-truncates. A `Restart context:` continuation line carries what a later session needs to pick the item back up.
++- **Verbose announce.** Each created issue is announced with its number and title.
++- **Reverse.** Undo a graduated issue with `gh issue close <num>` or `glab issue close <num>` per the declared tracker mode.
++- **Autonomy.** An autonomous run auto-takes graduation once the review-gate commit is accepted, but journals every created issue number for the end-of-chain review rather than firing silently.
++
++The terminal state (naming the next stage) is the calling skill's own step - return to the calling SKILL.md after graduation resolves.
+diff --git a/skills/loop-molt/references/protocol.md b/skills/loop-molt/references/protocol.md
+new file mode 100644
+index 0000000..f11947f
+--- /dev/null
++++ b/skills/loop-molt/references/protocol.md
+@@ -0,0 +1,89 @@
++# Harness-Drift Audit (the "molt" protocol)
++
++This copy is canonical and self-contained; it has no upstream source file.
++
++Distilled 2026-08-15 from the loop-stack-vs-research evaluation session.
++Purpose: a repeatable workflow for re-evaluating any skill or prose instruction against what the harness now does natively, so plumbing gets deleted and policy survives.
++Applies to: SKILL.md files, CLAUDE.md blocks, operating manuals, run-books - any instruction prose an agent consumes.
++
++## The one-line test
++
++Per block of prose, ask: "would the harness or a current frontier model do this unprompted, today?"
++Not "is this correct?" - correct-but-native is still deletable.
++Prose describing HOW to do mechanics is suspect; prose describing WHAT MUST BE TRUE is policy.
++
++## When to run
++
++- After any major harness release or model generation change.
++- Before extending a skill (never add prose to un-audited prose).
++- On a cadence otherwise (quarterly); the 90-day research shows the harness eats plumbing roughly monthly.
++
++## Steps
++
++### 0. Refresh ground truth (never audit against remembered capability)
++
++The auditing session does its own pull, in two tiers:
++
++- **Thin refresh (default, minutes):** changelog scan plus one live probe of any load-bearing feature claim (run the command in a scratch repo). Sufficient for a single artifact.
++- **Deep refresh (occasional):** a full research pull (last30days or equivalent). Warranted for a whole-stack recalibration or a model-generation change, not per artifact.
++
++Date-stamp the snapshot; it is the evidence base and its expiry. After the first audit, the drift ledger lets the next one diff from the last snapshot instead of re-researching from zero.
++
++### 1. Constraint register FIRST (the C1 lesson)
++
++Before classifying anything, ask the owner which design choices are deliberate standing constraints (portability, provider mix, cost, compliance) versus historical accident.
++Never classify a premise as expired without this step; this session initially misread "/workflows off" as a stale premise when it was a live portability requirement, and the reversal changed three recommendations.
++
++### 2. Inventory
++
++Break the artifact into blocks: each instruction, gate, enumerated step, or embedded claim is one classifiable unit.
++For a skill family, also inventory duplication (the same narrative stated in N places counts once, then N-1 deletions).
++
++### 3. Classify every block into one of four bins
++
++| Bin          | Definition                                          | Action                        |
++|--------------|-----------------------------------------------------|-------------------------------|
++| PLUMBING     | Mechanics the harness now performs unprompted       | Delete, or one pointer        |
++| POLICY       | Discipline the harness will not impose on its own   | Keep; sharpen to outcomes     |
++| PREMISE      | An assumption about the world or the harness        | Verify by a second route      |
++| CHOREOGRAPHY | Step-by-step behavior a frontier model does by      | Delete via subtraction test   |
++|              | judgment (probe names, question cadences)           |                               |
++
++Premise sub-rule: expired premise gets rewritten in place (never a bolted-on correction); a deliberate constraint (from step 1) gets kept AND labeled as a constraint so the next audit does not re-litigate it.
++
++POLICY membership test, with or without a principles sheet:
++if the artifact has a principles sheet (like loop-stack's P1-P14), keep = traces to a named principle.
++If it has none, derive as you go: for each block classified POLICY, write the one-line invariant it protects; a block whose broken-without-it invariant cannot be named is choreography in disguise.
++The owner's constraint register seeds the invariant list; the first audit's byproduct is a starter principles sheet the next audit inherits.
++A principles sheet is an accelerator, never a prerequisite.
++Policy examples from the source session: checks-or-stall, validator-never-fixes contracts, per-unit cost routing tables, risk-classed gates, run-state formats, check custody.
++Plumbing examples: fan-out mechanics, background execution, notifications, session resume - all prose re-describing what the harness already does.
++
++### 4. Test by subtraction
++
++Delete the block, run the artifact's existing checks plus one real task, keep the deletion if nothing degrades.
++This requires the artifact to HAVE executable checks; an artifact with no checks gets a check before it gets an audit (loop-stack's gate tests are the model here).
++Fallback for a checkless artifact: delete the block, run the artifact on one real task, compare output against a pre-deletion run - weaker certainty, still workable.
++Per-line tiebreaker, from the research: "would removing this cause a mistake? If not, cut it."
++
++### 5. Emit a drift ledger line (and, first time, a principles sheet)
++
++Append to a small ledger (per artifact or per repo): date, harness snapshot version, blocks deleted by bin, blocks kept as policy, constraints re-confirmed.
++On a first audit of a principles-less artifact, also emit the derived invariants as that artifact's starter principles sheet.
++The next audit diffs from this known point instead of re-deriving everything.
++
++## Expected steady state
++
++Each audited artifact converges toward a policy sheet: constraints, contracts, thresholds, formats - riding on native mechanics.
++Policy survives harness versions; plumbing has a shelf life of about one release cycle.
++An artifact whose audit deletes nothing two cycles running is done molting; an artifact that only ever grows has never been audited.
++
++## Where molt sits in the chain
++
++Molt is the third audit in the family, next to /loop-improve and P10's evolve move, each on a different object: improve audits the product, molt audits the instruction prose, evolve audits the run logs. It exists because the other two never catch harness drift - nothing fails when the harness absorbs plumbing, so the prose silently becomes dead weight.
++
++Small findings apply inline via the subtraction test with a drift ledger line, same session; structural findings (skill merges, gates-to-hooks, re-homing) emit a brief via the shared convergence machinery (brief-pipeline.md) and ride the normal chain: /loop-plan -> /loop-drive -> /loop-review. Self-targeting loop-stack is the dogfood case; molt runs on any prose-shaped artifact (manuals, CLAUDE.md blocks, other skills).
++
++## Wiring it into the stack
++
++One implementation, two entry points: the standalone `/loop-molt` skill owns the audit (this protocol as its reference), invocable directly on any artifact; `/loop-improve --focus harness-drift` delegates with a one-line pointer, never a second copy. Refresh (step 0) maps to a last30days/changelog pull; subtraction (step 4) maps to the artifact's existing test harness where one exists.

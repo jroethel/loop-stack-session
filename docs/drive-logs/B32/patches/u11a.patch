@@ -1,0 +1,77 @@
+diff --git a/NOTES b/NOTES
+new file mode 100644
+index 0000000..d1dd97e
+--- /dev/null
++++ b/NOTES
+@@ -0,0 +1,43 @@
++AGENT STATUS unit=u11a branch=worktree verdict=self-pass repairs=0
++
++## What I read
++
++docs/plans/2026-09-13.B32.jrit-loop-plugin-port-plan.md lines 1025-1056 (Task 11 in full), 400-414 (D12 plus the #3 migration note and the #44 gate), 418-432 (Global constraints), and 37-65 (Verified facts).
++
++## Files created
++
++/home/jjrdar/repos/loop-stack-session/docs/drive-logs/B32/u11a-lss-open-before.json - live starting snapshot, copied from /tmp/lss-open-before.json per step 1.
++/home/jjrdar/repos/loop-stack-session/docs/drive-logs/B32/u11a-sweep-commands.md - the C8 packet: live 24-issue table, D12 table beside it, agreement line, and the ordered command list as a runnable bash block.
++docs/issue-migration-map.md - the mapping skeleton for U11b, 16 rows in execution order, every new-URL cell pending.
++./NOTES - this file.
++No other file in this worktree was created or modified; git status shows only docs/issue-migration-map.md (plus this NOTES, which the check excludes).
++
++## Live open-issue count
++
++24 open issues observed, matching the plan's verified fact and D12 exactly, so no re-derivation of dispositions was needed.
++The live number set and D12's disposition union are identical, with no remainder on either side.
++
++## Acceptance check (run once, per Task 11 step 2)
++
++Exit code 1.
++Message: "expected 5 open in loop-stack-session, found 24".
++Not re-run at the end: passing it requires the twenty-four mutations this unit is forbidden to make, so it must still fail when this unit finishes.
++
++## gh commands executed (reads only)
++
++gh issue list -R jroethel/loop-stack-session --state open --limit 200 --json number,title,labels (step 1 snapshot).
++gh issue list -R jroethel/loop-stack-session --state open --limit 200 --json number -q "length" (inside the single acceptance-check run; set -e aborted before any gh issue view fired).
++gh label list -R jroethel/loop-stack-session --limit 100 (checked whether the six agent labels carry descriptions in the source repo; they do not).
++gh issue list -R jroethel/loop-stack-session --state open --limit 200 --json number -q length (final untouched-proof count: 24).
++gh issue view 39 -R jroethel/loop-stack-session --json state -q .state (final proof: OPEN).
++gh issue view 47 -R jroethel/loop-stack-session --json state -q .state (final proof: OPEN).
++gh issue view 32 -R jroethel/loop-stack-session --json state -q .state (final proof: OPEN).
++
++MUTATIONS EXECUTED: 0
++
++## AMBIGUITIES TAKEN
++
++Step 4 names a description only for the idea label, so the other six label creates are staged bare; this also matches the source repo, where no agent:* label carries a description.
++Steps 9, 10 and 11 give comment intent but not verbatim text, so I composed the five stay-open comment bodies, each linking the plan and naming its gate, and the packet says on its face that these are composed while the close comments and the #3 note are verbatim.
++The step 6 comment must land on #3's transferred copy, whose new number is unknowable at staging time, so the staged block captures the newest issue number in jrit-loop into $n3 immediately after the loop (3 is the last transfer and gh issue list sorts newest-first), keeping the block runnable verbatim with no editing.
++Step 5's dry-run verification is staged as the plan's named command, gh issue list -R jroethel/jrit-loop --state all, with the body-and-comments check as a bash comment line because it needs the new number that list reveals.
+diff --git a/docs/issue-migration-map.md b/docs/issue-migration-map.md
+new file mode 100644
+index 0000000..eafdb55
+--- /dev/null
++++ b/docs/issue-migration-map.md
+@@ -0,0 +1,22 @@
++# Issue migration map: loop-stack-session to jrit-loop
++
++This table is the old-number-to-new-URL record that gets filled in as the sixteen Task 11 transfers run, because sixteen renumbered issues with no record is sixteen dead cross-references in every brief, plan, and commit message that ever cited them.
++
++| Old # | Old title                                                                                                                                         | New URL                            |
++| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
++| 7     | Case for Matt's triage / tdd / prototype skills                                                                                                   | `pending: filled at transfer time` |
++| 15    | github-to-gitlab data migration                                                                                                                   | `pending: filled at transfer time` |
++| 18    | Reconcile the 'who routes, and on what basis' seam across loop-drive, ringer, and the model-intel reference                                       | `pending: filled at transfer time` |
++| 28    | A `/dev/tty`-hardened enforcement gate, if the cooperative-agent assumption ever breaks and an agent-proof import gate is actually wanted         | `pending: filled at transfer time` |
++| 40    | Second amendment direction - human rejection of a bad PASS as a reclassify value, the mirror image barthballard named, schema-ready but unshipped | `pending: filled at transfer time` |
++| 48    | loop-drive pre-run Rubix pass                                                                                                                     | `pending: filled at transfer time` |
++| 51    | Model routing: task_type has no definition, no per-shape model-fit signal, and Agent-tool transport never feeds the evidence loop                 | `pending: filled at transfer time` |
++| 56    | Where does architecture brainstorming/research fit in the loop-stack process?                                                                     | `pending: filled at transfer time` |
++| 45    | Session coordination: check-before-modify + ownership handoff between concurrent sessions                                                         | `pending: filled at transfer time` |
++| 33    | RIT-team turnkey phase with no OS assumption                                                                                                      | `pending: filled at transfer time` |
++| 61    | Fable retirement path - gate the claude-md managed block behind a host flag and split fable-guidelines into model-agnostic and Fable-era content  | `pending: filled at transfer time` |
++| 62    | Role-pin single home - consolidate the three resolves-to-Opus pin declarations into one routing home with pointers                                | `pending: filled at transfer time` |
++| 63    | Worked examples for the orchestrator pin trigger - add one positive and one rejected pin example under the routing chain's step 3                 | `pending: filled at transfer time` |
++| 64    | herdr plugin surface - a herdr plugin manifest pane hosting a drive panel or board view                                                           | `pending: filled at transfer time` |
++| 36    | Decision E remainder: standing glossary (CONTEXT.md) + ADR side-effects from loop-brainstorm                                                      | `pending: filled at transfer time` |
++| 3     | Quota-aware scheduling / unattended auto-resume (third parking)                                                                                   | `pending: filled at transfer time` |

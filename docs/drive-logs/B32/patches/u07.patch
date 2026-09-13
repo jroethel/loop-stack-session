@@ -1,0 +1,422 @@
+diff --git a/NOTES b/NOTES
+new file mode 100644
+index 0000000..b41e587
+--- /dev/null
++++ b/NOTES
+@@ -0,0 +1,44 @@
++AGENT STATUS unit=u07 branch=worktree verdict=self-pass repairs=0
++
++## What I read
++
++Plan 2026-09-13.B32 lines 852-894 (Task 7), 418-432 (global constraints), 104-168 (D2, D3), 170-201 (D4 grammar, needed for loop-track step 2's local-mode prose), 282-306 (D7), 37-65 (verified facts).
++Sources, read-only: loop-stack-session skills/{loop-track,loop-auto,handoff,wayfinder}/ in full, including both retired .sh files and handoff/agents/openai.yaml.
++Worktree check custody: ci/structure-check.sh, ci/budget-check.sh, ci/banned-tokens.txt, ci/reference-allowlist.txt (read-only; one sanctioned append path, unused - see below).
++
++## Files created, edited, deleted
++
++Created: skills/loop-track/SKILL.md, skills/loop-auto/SKILL.md, skills/handoff/SKILL.md, skills/handoff/agents/openai.yaml (copied in, then left byte-identical to source - verified with cmp), skills/wayfinder/SKILL.md.
++Deleted: skills/loop-track/loop-track.sh, skills/loop-auto/loop-auto.sh (copied in by step 1's copy, deleted per step 1; final tree shows no trace - git status lists only the four directories, and the find for the two names is empty).
++Not touched: ci/reference-allowlist.txt (zero appends - every reference in my four files either resolves in-skill, starts with docs/, or hits a seeded allowlist line; the D3 paragraph's `config/repo-state.md` is seeded), everything else in the worktree.
++No em dashes existed in any source file (grepped U+2014, exit 1), so step 20 was confirm-only; the one-sentence-per-line rule is applied to every paragraph I rewrote or added.
++
++## Acceptance command, three real exit codes
++
++Command: `bash ci/structure-check.sh && bash ci/budget-check.sh && claude plugin validate --strict skills && echo PASS`
++
++1. Empty tree (skills/ holding only .gitkeep): structure 0, budget 0, validate 0 - legitimately green, nothing yet to fault, as the briefing predicted.
++2. Post-copy (step 1, after deleting the two .sh): structure exit 1 - `check A: banned token 'scripts/tracker.sh' appears in shipped files: skills/loop-track/SKILL.md:60` (first failure; check exits at first fail, further failures existed: docs/chain-state.md in loop-auto, gen-mirrors/lifecycle-lint in handoff, config/routing/ in wayfinder). Fail-first proof satisfied.
++3. Final: structure 0, budget 0 (info: skills/handoff/agents/openai.yaml SLOC: 5; skip: helper not yet created - U04's file, not mine), validate 0, chained command printed PASS, exit 0.
++
++Also run and clean: `find skills/loop-track skills/loop-auto skills/handoff skills/wayfinder -type f -perm -u+x` prints nothing (step 19), and the D3 paragraph is byte-identical to plan lines 159-162 in all four files (cmp against sed-extracted plan reference; loop-track line 13, loop-auto line 8, handoff line 8, wayfinder line 7). loop-auto's frontmatter description is byte-identical to plan line 877 (cmp). Frontmatter key sets verified exactly: loop-track/loop-auto name+description only; handoff name+description+argument-hint+disable-model-invocation; wayfinder name+description+disable-model-invocation.
++
++## GH/GLAB CHILD-ISSUE FINDINGS:
++
++gh 2.96.0 - `gh issue --help` lists no sub-issue subcommand, but `gh issue create --help` carries native `--parent <number|URL>` (files the new issue as a sub-issue of a parent), `--blocked-by`, and `--blocking` flags; glab 1.112.0 - `glab issue --help` and `glab issue create --help` show no sub-issue or parent flag of any kind, only `--linked-issues` with `--link-type` (default relates_to, values not enumerated in help), so no native hierarchy and no documented blocking type.
++Consequence shipped in wayfinder: GitHub attachment via `gh issue create --parent` plus native blocking flags; GitLab attachment via the wayfinder ticket labels; and the `Blocked by: #N` body convention is the portable mechanism on every backend - exactly what the receipt helper's `next-eligible` resolves - so mechanically-resolved edges are written that way regardless of backend.
++Also corrected: the old claim "(tracker issues have no native blocking)" was false for gh 2.96.0 and is gone.
++
++## Allowlist appends
++
++None. No line appended to ci/reference-allowlist.txt; the file is byte-unchanged (git diff empty against HEAD).
++
++## AMBIGUITIES TAKEN
++
++1. loop-track line 48 named `graduate-parking.sh` (a retired loop-stack-session script): not a banned token, but an unresolvable Check B backtick once its script is not shipped, and no numbered step covers it. Taken: dropped the script name, kept the sentence's meaning ("the same judgment call /loop-brainstorm's graduation step makes"), because allowlisting a retired script is the opposite of last-resort.
++2. D3 paragraph placement: "near the top after the first heading" - handoff and wayfinder sources carry no H1. Taken: placed immediately after the H1 in loop-track and loop-auto, and at the very top of the body (first thing after frontmatter) in handoff and wayfinder.
++3. loop-auto's seven `/loop-auto <verb>` bullets (set/get/status/default get/set/clear) were the runtime chain-state mechanism's interface; step 5 deletes that mechanism, so the list was replaced wholesale with pointer-key + session-override prose. No persistence verb remains; changing the repo default is described as an edit to the `autonomy-default:` key in `docs/loop/pointer.md`.
++4. wayfinder line 89 contained "earning its place" - the banned AI-tell phrase under the global house instructions, though no CI check enforces it. Taken: reworded to "in scope only by unblocking a decision", meaning preserved.
++5. loop-track Step 2's repo-search fallback previously delegated to the deleted script; taken: the agent performs the search itself and reports candidates (or their absence), mirroring the script's old contract, per step 2's "does the same work directly".
++6. loop-track's old closing line said "no separate lookup of the URL" while task step 3 says relay the created issue's URL verbatim; taken: dropped that clause - the relay is the URL gh/glab print, or the file and number in local mode.
++7. loop-auto batch-review home line: taken as `<reviews-home>/YYYY-MM-DD.<tokens>.<slug>-batch-review.md` with `reviews-home:` read from pointer (default `docs/reviews/`), mirroring the handoffs-home default pattern step 9 states explicitly for handoff; the rest of that block and the four gate-class definitions are verbatim from source.
+diff --git a/skills/handoff/SKILL.md b/skills/handoff/SKILL.md
+new file mode 100644
+index 0000000..2989432
+--- /dev/null
++++ b/skills/handoff/SKILL.md
+@@ -0,0 +1,26 @@
++---
++name: handoff
++description: Compact the current conversation into a handoff document for another agent to pick up.
++argument-hint: "What will the next session be used for?"
++disable-model-invocation: true
++---
++
++**Pre-plugin repo check.** Before anything else, look for `config/repo-state.md` in this repo.
++If it exists and `docs/loop/pointer.md` does not, stop.
++Say plainly that this repo is still on the pre-plugin loop-stack layout, name the file you found, and offer to run the loop-setup skill's migration before continuing.
++Never proceed silently on a pre-plugin repo.
++
++Write a handoff document summarising the current conversation so a fresh agent can continue the work.
++
++This skill is user-invoked only: `disable-model-invocation` is set, so it never auto-selects itself and runs only when the human calls it.
++Its `argument-hint` asks "What will the next session be used for?", and that answer shapes the handoff's emphasis.
++
++Decide where it lands based on the repo the session is working in.
++If `docs/loop/pointer.md` exists at the repo root, this is a conforming repo: read its `handoffs-home:` key (default `docs/handoffs/`) and write the handoff to `<handoffs-home>/YYYY-MM-DD.<tokens>.<slug>.md`.
++Otherwise this is a non-conforming repo: create `docs/handoffs/` inside the project on demand and write the handoff to `docs/handoffs/YYYY-MM-DD.<tokens>.<slug>.md` there, never outside the project.
++When the work belongs to a logged tracker item, include its token segment(s) (e.g. .I6 for issue 6, .B4 for backlog item 4, .R1 for roadmap item 1, .W3 for wayfinder ticket 3); when the item is not yet logged, omit the token segments entirely and insert them when the item is created.
++
++Include a "suggested skills" section in the document, which suggests skills that the agent should invoke.
++Include a "## Next actions" section listing one next action per "- " line; that list is what handoff consumption dispositions index into.
++
++Redact any sensitive information, such as API keys, passwords, or personally identifiable information.
+diff --git a/skills/handoff/agents/openai.yaml b/skills/handoff/agents/openai.yaml
+new file mode 100644
+index 0000000..6e1d8da
+--- /dev/null
++++ b/skills/handoff/agents/openai.yaml
+@@ -0,0 +1,5 @@
++interface:
++  display_name: "Handoff"
++  short_description: "Compact a conversation into a handoff"
++policy:
++  allow_implicit_invocation: false
+diff --git a/skills/loop-auto/SKILL.md b/skills/loop-auto/SKILL.md
+new file mode 100644
+index 0000000..592bf04
+--- /dev/null
++++ b/skills/loop-auto/SKILL.md
+@@ -0,0 +1,98 @@
++---
++name: loop-auto
++description: Set or check the chain autonomy knob (/loop-auto), and the home of the four gate classes (ASK, STOP, BATCH, DEFAULT) and the batch-review journal format. Turns a run from human-gated (pause) to autonomous (auto); the repo default is the autonomy-default key in docs/loop/pointer.md, and a session may override it in conversation. Triggers on 'run the rest', 'take it from here', 'go autonomous', 'auto mode', 'full auto'.
++---
++
++# loop-auto
++
++**Pre-plugin repo check.** Before anything else, look for `config/repo-state.md` in this repo.
++If it exists and `docs/loop/pointer.md` does not, stop.
++Say plainly that this repo is still on the pre-plugin loop-stack layout, name the file you found, and offer to run the loop-setup skill's migration before continuing.
++Never proceed silently on a pre-plugin repo.
++
++The autonomy knob for the chain.
++Two modes: `pause` (the unset default - every gate fires live, the human is asked at each ASK) and `auto` (after the last ASK gate passes, the session runs the rest of the chain without further prompts).
++
++## What it does
++
++The mode has one durable home: the `autonomy-default:` key in the target repo's `docs/loop/pointer.md` (`pause` or `auto`; `pause` when the key is absent).
++Checking the knob is reading that key; setting it for this run is a session override held in conversation only, never written to any file.
++Changing the repo default itself is an edit to the `autonomy-default:` key in `docs/loop/pointer.md`, staged and committed like any tracked change.
++Setting the mode always ends with a one-line confirmation of the new mode; it is never silent.
++
++## Consumption is live
++
++Consumption is live: the knob now governs gate behavior per the four gate classes below.
++Setting the mode acts on this run, not on a future build wave.
++This skill is the single home of the autonomy protocol; the managed CLAUDE.md block only points here.
++
++### Knob off or unset
++
++Fully human-gated: every gate fires live, nothing auto-taken - every ASK, STOP, BATCH, and DEFAULT surfaces to the human.
++
++### When autonomy takes effect
++
++Only after the last ASK gate passes. Up to and including that gate the human is in the loop; after it, the active session orchestrates the rest of the chain under the rules below.
++
++A mode change never retroactively answers a question already asked.
++When the knob flips to `auto` mid-session, any offer or choice already on the table - an unaccepted commit offer, a pending route choice - stays the human's to resolve; setting the mode does not convert it into a DEFAULT take.
++On `set auto` the session first presents one consolidated ASK - `outstanding before autonomy commences: X, Y, Z - take all / pick / none` - resolves it, and only then does autonomy govern the rest of the chain.
++
++### The four gate classes under autonomy
++
++- ASK always blocks.
++  It asks the human and waits; autonomy does not auto-answer an ASK.
++  Offers and questions already pending at the moment `auto` is set are ASK-class too: setting the mode never converts them to DEFAULT takes (see "When autonomy takes effect").
++- STOP always halts and states what it needs.
++  A STOP names the missing input or the failing invariant (dirty tree, exceeded effort cap, outward-facing unit) and waits; autonomy never auto-resolves a STOP.
++- BATCH auto-takes the named lean, proceeds, and collects the decision for the end review.
++  The lean was already named in the gate's prose; autonomy takes it, records it, and moves on.
++- DEFAULT auto-takes the default and logs verbosely.
++  The default was already declared at the gate; autonomy takes it, logs the decision in full, and moves on.
++
++Scope narrowing is ASK-class by definition: a decision that narrows the requested scope is never a BATCH lean or a DEFAULT take, wherever inside a step it arises.
++Narrowing is sometimes right, but it is never silent and never auto-taken - it surfaces as its own explicit question.
++
++### Batch-review list format
++
++The batch-review list is the run's gate journal: it is created the moment autonomy takes effect and appended at every gate as it fires, in chronological order, so a run that dies mid-chain still leaves the record of every decision taken so far.
++The list home is `<reviews-home>/YYYY-MM-DD.<tokens>.<slug>-batch-review.md`, where `reviews-home:` is read from `docs/loop/pointer.md` (default `docs/reviews/`).
++When the work belongs to a logged tracker item, include its token segment(s) (e.g. .I6 for issue 6, .B4 for backlog item 4, .R1 for roadmap item 1, .W3 for wayfinder ticket 3); when the item is not yet logged, omit the token segments entirely and insert them when the item is created.
++All four gate classes are logged, but they carry two different obligations.
++ASK and STOP entries are record-only: the human was present for them, so they preserve the chronology and the context around neighboring decisions but need no review.
++BATCH and DEFAULT entries are the review obligation: each is a decision auto-taken for the human, to accept or reverse at the end-of-chain checkpoint.
++Each entry has three fields: the decision (for record-only entries, what was asked or halted and how the human resolved it), the rationale, and a reversal path (record-only entries mark it `n/a - resolved live`).
++The reversal is named honestly by gate type: a DEFAULT or commit reversal is cheap (`git revert`, or undoing the default next pass); a BATCH taste reversal (topology, triage) is a scoped re-run with the alternate lean, since the lean was a judgment, not a fact.
++An entry with no honest reversal path should have been a STOP, not auto-taken.
++
++### Continuation rule
++
++The session active when autonomy takes effect orchestrates the rest of the chain.
++Delegation only goes down-tier - the orchestrator hands work to sonnet, opus, or haiku workers, or to ringer-transported GLM/codex.
++Nobody ever spawns Fable.
++Fable is orchestrator-tier only and never a worker, so the autonomy continuation never delegates to it, not even under full auto.
++
++## Per-repo default
++
++The committed per-repo default is the line-anchored `autonomy-default:` key in `docs/loop/pointer.md`.
++The effective mode is the session override when one is active, else that key, else `pause`.
++Report the effective mode with its source, for example `mode: auto (repo default)` or `mode: pause (session override)`.
++
++## Recognized phrases
++
++Any of these phrases sets the knob to `auto` with a one-line confirmation:
++
++- "run the rest"
++- "run the rest from here"
++- "take it from here"
++- "go autonomous"
++- "auto mode"
++- "full auto"
++
++Recognizing a phrase does not skip the confirmation.
++The human always sees the new mode in the same turn.
++
++## Where it lives
++
++The durable mode is the `autonomy-default:` key in `docs/loop/pointer.md`; a session override lives in conversation only.
++Do not shadow either in a plan artifact or anywhere else a later session would mistake for the source of truth.
+diff --git a/skills/loop-track/SKILL.md b/skills/loop-track/SKILL.md
+new file mode 100644
+index 0000000..b5ff09d
+--- /dev/null
++++ b/skills/loop-track/SKILL.md
+@@ -0,0 +1,63 @@
++---
++name: loop-track
++description: >
++  File one tracker issue (idea, plain issue, or a wayfinder-labeled item) into a loop-setup'd
++  repo from a plain natural-language ask, no mechanism knowledge required. Triggers on "add as
++  an idea/issue to <repo>", "file this as an idea in <repo>", "file this as an issue in <repo>",
++  "add this to wayfinder for <repo>", and loop-track. Not for thinking an idea through (that's
++  loop-brainstorm) and not for capturing a memo (no such destination exists here).
++---
++
++# loop-track: file one tracker issue, no mechanism knowledge required
++
++**Pre-plugin repo check.** Before anything else, look for `config/repo-state.md` in this repo.
++If it exists and `docs/loop/pointer.md` does not, stop.
++Say plainly that this repo is still on the pre-plugin loop-stack layout, name the file you found, and offer to run the loop-setup skill's migration before continuing.
++Never proceed silently on a pre-plugin repo.
++
++A thin skill: resolve the repo, draft one title/body from the ask in hand, file it with the
++right label, report back the number. Nothing else.
++
++<HARD-GATE>
++loop-track only ever creates exactly one tracker issue per invocation.
++It never writes a memo file, never builds a wayfinder map's structured body (Destination /
++Notes / Decisions so far / Not yet specified / Out of scope) or its tickets - a "wayfinder"
++ask here just means attaching the `wayfinder:map` label to a plain issue, the same as idea or
++issue. A real wayfinder map belongs to `/wayfinder`, not here.
++It never invokes loop-brainstorm, loop-plan, or loop-drive.
++</HARD-GATE>
++
++## Step 1 - Resolve the label
++
++Read the ask for which of the three flavors is wanted - they are the same GitHub/GitLab issue
++object, just different labels:
++
++- "idea" -> `idea`
++- "issue" / "bug" / unspecified -> `` (empty; a plain issue)
++- "wayfinder" -> `wayfinder:map`
++
++## Step 2 - Resolve the repo
++
++If the ask names a path, use it as-is.
++If it names cwd (or names nothing and cwd looks right), use cwd.
++Otherwise search under `$HOME` yourself for a loop-setup'd repo (a directory with `docs/loop/pointer.md`) matching that name.
++Zero or multiple matches is not your job to disambiguate: report the candidates (or the absence of any) back to the user and ask for an explicit path.
++
++## Step 3 - Draft title and body
++
++Draft a concise title and a body capturing the substance of the request or finding from the
++surrounding conversation - the same judgment call `/loop-brainstorm`'s graduation step makes,
++just for one item instead of a batch.
++Never ask the user to write the title/body themselves; that defeats the point of a low-friction
++trigger.
++
++## Step 4 - File it
++
++Resolve the target repo by name or path (Step 2), read `docs/loop/pointer.md` in that repo for its `tracker:` mode, then file the issue directly:
++
++- `github` - `gh issue create --label <label> --title <title> --body <body>` (omit `--label` entirely when the label is empty).
++- `gitlab` - `glab issue create --label <label> --title <title> --description <body>`.
++- `local` - append a new `## #<n>` section to the file named by the repo's `local-issues-file:` key (default `docs/issues.md`): the heading, then `state: open`, then `labels:` carrying the label (or an empty list), then the body prose - taking `<n>` from the `<!-- next-number: N -->` marker and bumping that marker in the same write.
++
++Relay the tracker's confirmation verbatim: the issue URL that `gh` or `glab` prints, or for `local` the file and the new number.
++That relay is the verbose-announce convention (`docs/loop/conventions.md`) and the only report-back this skill offers.
+diff --git a/skills/wayfinder/SKILL.md b/skills/wayfinder/SKILL.md
+new file mode 100644
+index 0000000..8a725b4
+--- /dev/null
++++ b/skills/wayfinder/SKILL.md
+@@ -0,0 +1,150 @@
++---
++name: wayfinder
++description: Plan a huge chunk of work - more than one agent session can hold - as a shared map of decision tickets on your issue tracker, and resolve them one at a time until the way to the destination is clear.
++disable-model-invocation: true
++---
++
++**Pre-plugin repo check.** Before anything else, look for `config/repo-state.md` in this repo.
++If it exists and `docs/loop/pointer.md` does not, stop.
++Say plainly that this repo is still on the pre-plugin loop-stack layout, name the file you found, and offer to run the loop-setup skill's migration before continuing.
++Never proceed silently on a pre-plugin repo.
++
++A loose idea has arrived - too big for one agent session, and wrapped in fog: the way to the **destination** isn't visible yet.
++Wayfinding finds that way rather than charging at the destination: this skill charts it as a **shared map** on the repo's issue tracker, then works its **decision tickets** - questions whose resolution is a decision, not slices of a build - one at a time until the route is clear.
++
++This skill is user-invoked only: `disable-model-invocation` is set, so it never auto-selects itself and runs only when the human calls it.
++
++Naming the destination is the first act of charting - it shapes every ticket and fixes the scope.
++It might be a spec to hand off, a decision to lock before planning, or a change made in place (a data-structure migration); the map is domain-agnostic.
++
++Wayfinder requires a remote tracker (`github` or `gitlab`): its map and tickets are tracker issues end to end, no local-tracker variant.
++The `wayfinder:map` label needs no renaming on GitLab (a single colon is ordinary; only `::` marks a scoped label).
++
++## Plan, don't do
++
++Wayfinder is **planning** by default: each ticket resolves a decision, and the map is done when the way is clear - nothing left to decide before someone goes and does the thing.
++The pull to just do the work is usually the signal you've reached the edge of the map and it's time to hand off: when the way is clear, hand the destination to `/loop-plan`.
++An effort can override this in its **Notes** - carrying execution into the map - but absent that, produce decisions, not deliverables.
++
++## Refer by name
++
++Every map and ticket is a tracker issue, so it has a **name** - its title.
++In everything the human reads (narration, the map's Decisions-so-far), refer to it by that name, never a bare id, number, or slug - a wall of `#42, #43, #44` is illegible.
++The id and URL ride *inside* the name (a name wraps its link), never stand in for it.
++
++## The Map
++
++The map is a single tracker issue on this repo, labelled `wayfinder:map` - the canonical artifact; its tickets are the issues attached to it, by the mechanism each backend actually supports (see [Tickets](#tickets)).
++It is an **index**, not a store: a decision lives in exactly one place - its ticket - so the map never restates it, only gists it and links.
++
++### The map body
++
++The whole map at low resolution, loaded once per session.
++Open tickets are **not** listed - they are open ticket issues, found by query.
++
++```markdown
++## Destination
++
++<what reaching the end of this map looks like - the spec, decision, or change this effort is finding its way to. One or two lines; every session orients to it before choosing a ticket.>
++
++## Notes
++
++<domain; skills every session should consult; standing preferences for this effort>
++
++## Decisions so far
++
++<!-- the index - one line per closed ticket: enough to judge relevance, then zoom the link for the detail the ticket holds -->
++
++- [<closed ticket title>](link) - <one-line gist of the answer>
++
++## Not yet specified
++
++<!-- see "Fog of war": in-scope fog you can't ticket yet; graduates as the frontier advances -->
++
++## Out of scope
++
++<!-- see "Out of scope": work ruled beyond the destination; closed, never graduates -->
++```
++
++### Tickets
++
++Each ticket is an issue on the same tracker as the map (the issue number is its identity); its body is the question, sized to one 100K-token agent session:
++
++```markdown
++## Question
++
++<the decision or investigation this ticket resolves>
++```
++
++Each ticket carries one of these labels: `wayfinder:research`, `wayfinder:prototype`, `wayfinder:grilling`, or `wayfinder:task` (see [Ticket Types](#ticket-types)).
++
++A session **claims** a ticket by assigning it to the dev driving the map, **first**, before any work - that assignee _is_ the claim; an open, unassigned ticket is unclaimed.
++Attachment and blocking differ by backend, and this prose claims only what the CLIs actually support: `gh issue create` carries a native `--parent` flag (filing the new issue as a sub-issue of the map) plus native `--blocked-by` and `--blocking` flags, while `glab` has no sub-issue or parent flag at all, so on GitLab the ticket labels are what attach a ticket to its map.
++The portable mechanism on every backend is the issue-body convention: a blocked ticket writes `Blocked by: #N` for each ticket that must close first, and that convention is exactly what the receipt helper's `next-eligible` resolves, so any edge a later session must resolve mechanically is written this way regardless of backend.
++A ticket is **unblocked** when every blocker is closed; the **frontier** is the open, unblocked, unclaimed tickets - the edge of the known.
++
++Per-ticket model choice follows the routing chain, which is owned by the loop-drive skill; do not restate it here.
++The answer isn't part of the body - it's recorded on resolution (see [Work through the map](#work-through-the-map)); assets created while resolving are linked from the issue, not pasted in.
++
++## Ticket Types
++
++Every ticket is either **HITL** - human in the loop, worked *with* a human who speaks for themselves - or **AFK**, driven by the agent alone.
++A HITL ticket only resolves through that live exchange; the agent never stands in for the human's side (a grilling that answers its own questions has broken this).
++
++- **Research** (AFK): reading docs, third-party APIs, or local resources to surface a fact a decision waits on. Resolved by a fresh-context research subagent (clean context so prior decisions don't anchor it). Use when knowledge outside the working directory is required.
++- **Prototype** (HITL): a cheap, rough, throwaway artifact to react to - an outline, a stub, UI/logic code - linked as an asset; must not depend on any uninstalled skill. Use when "how should it look/behave" is the key question.
++- **Grilling** (HITL): conversation via `/loop-brainstorm`, one question at a time; `/loop-brainstorm` owns domain modeling. The default case.
++- **Task** (HITL or AFK): manual work that must happen before a *decision* can be made (sign up for a service so its API can be judged, provision access, move data so its shape can be seen) - the one type that *does* rather than decides, in scope only by unblocking a decision, not delivering the destination. Agent drives it alone where it can (AFK), else hands the human a precise checklist (HITL). Resolved when done; the answer records what was done and any facts (credentials location, URLs, row counts) later tickets depend on.
++
++## Fog of war
++
++The map is _deliberately_ incomplete: don't chart what you can't yet see.
++Beyond the live tickets lies the **fog of war** - decisions and investigations you can tell are coming but can't pin down, because they hang on questions still open.
++Resolving a ticket clears the fog ahead of it, graduating whatever's now specifiable into fresh tickets - one at a time, until the way is clear and no tickets remain.
++
++The map's **Not yet specified** section holds that dim view: the suspected question, the area to revisit.
++Everything here is in scope, just not sharp enough to ticket; write as loosely as the view allows - it doubles as a signpost for where the effort is headed.
++
++**Fog or ticket?** The test is whether you can state the question precisely now - _not_ whether you can answer it now.
++
++- **Ticket when** the question is already sharp - even if blocked and you can't act on it yet.
++- **Not yet specified when** you can't yet phrase it that sharply. Don't pre-slice the fog: it's coarser than a ticket, and one patch may graduate into several tickets, or none.
++
++**Not yet specified** excludes what's already decided (Decisions so far), already a live ticket, or out of scope.
++
++## Out of scope
++
++Fog only ever gathers _toward_ the destination; work beyond it is **out of scope** - not fog, and not for **Not yet specified**.
++It gets its own **Out of scope** section: work consciously ruled out of _this_ effort (scope, not sharpness, lands it here).
++Out-of-scope work never graduates - the frontier stops at the destination - so it returns only if the destination is redrawn, as a fresh effort.
++
++When an existing ticket turns out to sit past the destination (mis-scoped while charting, or exposed by a resolution), **close it** (unambiguously off the frontier) and leave one line in **Out of scope**: the gist, why it's out, linking the closed ticket.
++It stays out of **Decisions so far**, which records the route actually walked - a scope boundary isn't a step on it.
++
++## Invocation
++
++Two modes. Either way, **never resolve more than one ticket per session** - except research tickets.
++
++### Chart the map
++
++User invokes with a loose idea.
++
++1. **Name the destination.** A `/loop-brainstorm` session pins down what the map is finding its way to (spec, decision, or change); it fixes the scope, so it's settled first.
++2. **Map the frontier.** Brainstorm again, **breadth-first**: fan out across the whole space, surfacing the open decisions and the first steps takeable now. **If this surfaces no fog** (the way is already clear, small enough for one session), you don't need a map - stop and ask how the user wants to proceed.
++3. **Create the map** (label `wayfinder:map`): Destination and Notes filled in, Decisions-so-far empty, fog sketched into **Not yet specified**.
++4. **Create the tickets you can specify now**, attached to the map per your backend, then wire `Blocked by: #N` edges in a **second pass** (issues need numbers first). Wiring sorts them into frontier vs blocked; the rest stays in **Not yet specified**.
++5. **Fire the research subagents.** For each `research` ticket, spin up a fresh-context research subagent in parallel, capturing findings on a throwaway `research/<name>` branch with a context pointer from the ticket.
++6. Stop - charting is one session's work; it hand-resolves nothing.
++
++### Work through the map
++
++User invokes with a map (URL or number). A ticket is **optional** - without one, you pick the next decision, not the user.
++
++1. Load the **map** - the low-res view, not every ticket body.
++2. Choose the ticket: the user's if named, else the first frontier ticket in order. **Claim it** - assign to yourself before any work.
++3. Resolve it, **zooming as needed**: fetch the full body of any related/closed ticket on demand, invoke the skills the `## Notes` block names; if in doubt, use `/loop-brainstorm`.
++4. Record the resolution: post the answer as a **resolution comment**, **close** the issue, **append a context pointer** to Decisions-so-far.
++5. Add newly-surfaced tickets (create-then-wire); graduate any now-specifiable fog, clearing each graduated patch from **Not yet specified**. If the answer reveals a ticket sits beyond the destination, **rule it out of scope** rather than resolving it; if it invalidates other tickets, update or delete them.
++6. When the frontier is empty and the way is clear, hand the destination to `/loop-plan`.
++
++The user may run unblocked tickets in parallel, so expect concurrent tracker edits.

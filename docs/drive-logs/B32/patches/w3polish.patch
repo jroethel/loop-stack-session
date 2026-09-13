@@ -1,0 +1,196 @@
+diff --git a/NOTES b/NOTES
+new file mode 100644
+index 0000000..98398e5
+--- /dev/null
++++ b/NOTES
+@@ -0,0 +1,67 @@
++AGENT STATUS unit=w3polish branch=worktree verdict=self-pass repairs=0
++
++# W3POLISH - six adversarial-validation fixes, all applied and verified
++
++## Fixes applied
++
++1. ci/budget-check.sh - the manifest skip arm is now `fail "manifest missing: $p"` (hard fail naming the path); the helper-SLOC skip arm left untouched per scope. The header comment's spent Task-7 parenthetical was removed and the presence sentence updated to "asserted present ... A missing manifest is a hard fail naming its path".
++2. brief-pipeline.md, all three copies - `config/conventions.md` -> `docs/loop/conventions.md` edited in the loop-brainstorm canonical copy, then cp over loop-improve and loop-molt, verified with cmp (below).
++3. skills/loop-plan/SKILL.md line 196 - the older disclosure line rewritten so its clause IS the D6 wording: "**If the rubix-review skill is not available:** the optional Rubix review skill is not installed in this session; continuing without it." D6 block (lines 174-184) untouched. Chose rewrite over delete because lines 197-198 (warn-once, soft-vs-required contrast) are not in the D6 block, so the sentence is not a pure duplicate.
++4. skills/loop-review/SKILL.md - line 12 now "zero loop or issue-tracker conventions"; line 39 now "There is no dependency on any setup file or generated state." (names no path).
++5. skills/loop-setup/SKILL.md - one sentence added directly under the pointer.md render line: "On a fresh (non-migration) setup the `autonomy-default:` slot is written `pause`, matching the loop-auto skill's default when the key is absent; a migration carries the old repo's value forward." Placed in SKILL.md (the fix allowed SKILL.md and/or pointer-templates.md); pointer-templates.md untouched. Verified against loop-auto/SKILL.md line 18: "`pause` or `auto`; `pause` when the key is absent".
++6. skills/loop-setup/SKILL.md migration item 1 - deletion set now described as "the three mirror files `ISSUES.md`, `BACKLOG.md`, and `WAYFINDER.md`, plus the one runtime state file `docs/chain-state.md`"; the count example changed to "found 2: ISSUES.md, BACKLOG.md" so the example no longer re-groups under "mirror files".
++
++## Verification (real outputs)
++
++### bash ci/run-all.sh - exit 0
++
++All five checks plus both plugin validations passed. Check C line, verbatim:
++
++    ok: C - duplicated references byte-identical: loop-brainstorm/references/brief-pipeline.md=loop-improve/references/brief-pipeline.md loop-brainstorm/references/brief-pipeline.md=loop-molt/references/brief-pipeline.md loop-brainstorm/references/tracker-scan.md=loop-improve/references/tracker-scan.md
++
++Final line "PASS: all", exit code 0.
++Note: budget-check still prints "skip: helper SLOC (skills/loop-drive/scripts/receipt.sh not yet created)" on this base because skills/loop-drive has not landed here yet (version-drift likewise reports 10 of 11 skill directories); that arm was explicitly left as-is per scope.
++
++### cmp of the three brief-pipeline copies - byte-identical
++
++    cmp skills/loop-brainstorm/references/brief-pipeline.md skills/loop-improve/references/brief-pipeline.md
++    cmp skills/loop-brainstorm/references/brief-pipeline.md skills/loop-molt/references/brief-pipeline.md
++    -> post-copy: all three byte-identical
++
++Pre-edit baseline was also identical (cmp clean before the edit), and all three git blobs share one post-edit hash in the diff (1e56a95 -> 596e95 on each).
++
++### Probe: openai.yaml moved aside -> FAIL naming it; restored -> PASS
++
++    --- probe (file moved aside):
++    skip: helper SLOC (skills/loop-drive/scripts/receipt.sh not yet created)
++    info: .claude-plugin/plugin.json SLOC: 9
++    info: .claude-plugin/marketplace.json SLOC: 12
++    BUDGET FAIL: manifest missing: skills/handoff/agents/openai.yaml
++    probe exit: 1
++    --- restored:
++    skip: helper SLOC (skills/loop-drive/scripts/receipt.sh not yet created)
++    info: .claude-plugin/plugin.json SLOC: 9
++    info: .claude-plugin/marketplace.json SLOC: 12
++    info: skills/handoff/agents/openai.yaml SLOC: 5
++    PASS: budget
++    restored exit: 0
++
++File restored in place (ls confirms).
++
++### Grep counts
++
++- D6 wording "the optional Rubix review skill is not installed in this session; continuing without it": 2 total occurrences in loop-plan/SKILL.md, of which exactly 1 is an emitted disclosure (line 196, not the `**Disclose:**` prescription line); the other is the D6 block's quoted prescription at line 184, which scope forbids touching. Exactly one disclosure wording ships.
++- Old wording "is unavailable (rubix-review not installed)": 0 in loop-plan/SKILL.md.
++- "loop-stack": 0 in loop-review/SKILL.md.
++- "docs/agents/": 0 in loop-review/SKILL.md, and 0 anywhere under skills/.
++- Em dash U+2014 in any touched file: 0 (Check G also passes repo-wide).
++
++### Scope check
++
++git status --porcelain shows exactly the seven owned files modified: ci/budget-check.sh, the three brief-pipeline.md copies, loop-plan/SKILL.md, loop-review/SKILL.md, loop-setup/SKILL.md. No .git operations performed; nothing committed, added, or pushed.
++
++## AMBIGUITIES TAKEN
++
++- Fix 3, rewrite vs delete: took rewrite (first-listed option); justification in item 3 above.
++- Fix 5, home for the new sentence: took SKILL.md over pointer-templates.md because pointer-templates.md declares its verbatim block "the spec of record" and its conditional-key rules are not where the fresh-vs-migration distinction lives; SKILL.md's "### docs/loop/pointer.md" is where the slots are explained.
++- Fix 6, the count example inside the reworded sentence: changed "found 2 mirror files:" to "found 2:" so the example cannot re-assert the inaccurate grouping it was rewritten to remove. Conservative reading of "reword that one sentence".
+diff --git a/ci/budget-check.sh b/ci/budget-check.sh
+index a88ab09..bdeda31 100644
+--- a/ci/budget-check.sh
++++ b/ci/budget-check.sh
+@@ -6,11 +6,9 @@
+ # 2026-09-13 was measured against skills/loop-drive/scripts/receipt.sh, and
+ # summing the manifests into it would add roughly 25 lines of declarative
+ # overhead the approved number never contemplated. The three manifests are
+-# asserted present once they exist and their SLOC is printed as information
+-# only; they carry no threshold and can never fail this check on size.
+-# (Spec edit approved by Jeremy 2026-09-13: while a manifest does not yet exist
+-# the check prints 'skip: <path> not yet created' instead of failing, because
+-# skills/handoff/agents/openai.yaml is created by parallel Task 7.)
++# asserted present and their SLOC is printed as information only; they carry
++# no threshold and can never fail this check on size. A missing manifest is
++# a hard fail naming its path: all three ship with the plugin.
+ set -uo pipefail
+ cd "$(dirname "$0")/.." || { echo "FAIL: cannot reach the repo root" >&2; exit 1; }
+ 
+@@ -39,7 +37,7 @@ for p in .claude-plugin/plugin.json .claude-plugin/marketplace.json skills/hando
+   if [ -f "$p" ]; then
+     echo "info: $p SLOC: $(sloc "$p")"
+   else
+-    echo "skip: $p not yet created"
++    fail "manifest missing: $p"
+   fi
+ done
+ 
+diff --git a/skills/loop-brainstorm/references/brief-pipeline.md b/skills/loop-brainstorm/references/brief-pipeline.md
+index 1e56a95..5966e95 100644
+--- a/skills/loop-brainstorm/references/brief-pipeline.md
++++ b/skills/loop-brainstorm/references/brief-pipeline.md
+@@ -75,7 +75,7 @@ On an accepted commit, graduate the brief's Parking lot into backlog issues.
+ This contract is shared by loop-brainstorm and loop-improve and lives only here; each caller invokes it from its own terminal step.
+ 
+ - **Preview first.** Announce the parked-item count and each item's derived title, and ask for assent before creating anything.
+-- **Invoke on assent.** Parse the brief's `## Parking lot` section and open one `idea`-labeled issue per parked item with `gh issue create --label idea --title <first sentence, period-free> --body <the bullet plus its restart context and a link to the brief>`, the body following the graduated-item template in `config/conventions.md`.
++- **Invoke on assent.** Parse the brief's `## Parking lot` section and open one `idea`-labeled issue per parked item with `gh issue create --label idea --title <first sentence, period-free> --body <the bullet plus its restart context and a link to the brief>`, the body following the graduated-item template in `docs/loop/conventions.md`.
+ - **Parking-lot bullet shape.** Each parked item is one bullet whose first sentence is the derived issue title and MUST be period-free and filename-free: the title is truncated at the first dot, so a leading filename self-truncates. A `Restart context:` continuation line carries what a later session needs to pick the item back up.
+ - **Verbose announce.** Each created issue is announced with its number and title.
+ - **Reverse.** Undo a graduated issue with `gh issue close <num>` or `glab issue close <num>` per the declared tracker mode.
+diff --git a/skills/loop-improve/references/brief-pipeline.md b/skills/loop-improve/references/brief-pipeline.md
+index 1e56a95..5966e95 100644
+--- a/skills/loop-improve/references/brief-pipeline.md
++++ b/skills/loop-improve/references/brief-pipeline.md
+@@ -75,7 +75,7 @@ On an accepted commit, graduate the brief's Parking lot into backlog issues.
+ This contract is shared by loop-brainstorm and loop-improve and lives only here; each caller invokes it from its own terminal step.
+ 
+ - **Preview first.** Announce the parked-item count and each item's derived title, and ask for assent before creating anything.
+-- **Invoke on assent.** Parse the brief's `## Parking lot` section and open one `idea`-labeled issue per parked item with `gh issue create --label idea --title <first sentence, period-free> --body <the bullet plus its restart context and a link to the brief>`, the body following the graduated-item template in `config/conventions.md`.
++- **Invoke on assent.** Parse the brief's `## Parking lot` section and open one `idea`-labeled issue per parked item with `gh issue create --label idea --title <first sentence, period-free> --body <the bullet plus its restart context and a link to the brief>`, the body following the graduated-item template in `docs/loop/conventions.md`.
+ - **Parking-lot bullet shape.** Each parked item is one bullet whose first sentence is the derived issue title and MUST be period-free and filename-free: the title is truncated at the first dot, so a leading filename self-truncates. A `Restart context:` continuation line carries what a later session needs to pick the item back up.
+ - **Verbose announce.** Each created issue is announced with its number and title.
+ - **Reverse.** Undo a graduated issue with `gh issue close <num>` or `glab issue close <num>` per the declared tracker mode.
+diff --git a/skills/loop-molt/references/brief-pipeline.md b/skills/loop-molt/references/brief-pipeline.md
+index 1e56a95..5966e95 100644
+--- a/skills/loop-molt/references/brief-pipeline.md
++++ b/skills/loop-molt/references/brief-pipeline.md
+@@ -75,7 +75,7 @@ On an accepted commit, graduate the brief's Parking lot into backlog issues.
+ This contract is shared by loop-brainstorm and loop-improve and lives only here; each caller invokes it from its own terminal step.
+ 
+ - **Preview first.** Announce the parked-item count and each item's derived title, and ask for assent before creating anything.
+-- **Invoke on assent.** Parse the brief's `## Parking lot` section and open one `idea`-labeled issue per parked item with `gh issue create --label idea --title <first sentence, period-free> --body <the bullet plus its restart context and a link to the brief>`, the body following the graduated-item template in `config/conventions.md`.
++- **Invoke on assent.** Parse the brief's `## Parking lot` section and open one `idea`-labeled issue per parked item with `gh issue create --label idea --title <first sentence, period-free> --body <the bullet plus its restart context and a link to the brief>`, the body following the graduated-item template in `docs/loop/conventions.md`.
+ - **Parking-lot bullet shape.** Each parked item is one bullet whose first sentence is the derived issue title and MUST be period-free and filename-free: the title is truncated at the first dot, so a leading filename self-truncates. A `Restart context:` continuation line carries what a later session needs to pick the item back up.
+ - **Verbose announce.** Each created issue is announced with its number and title.
+ - **Reverse.** Undo a graduated issue with `gh issue close <num>` or `glab issue close <num>` per the declared tracker mode.
+diff --git a/skills/loop-plan/SKILL.md b/skills/loop-plan/SKILL.md
+index a6ff82a..f0bebe6 100644
+--- a/skills/loop-plan/SKILL.md
++++ b/skills/loop-plan/SKILL.md
+@@ -193,7 +193,7 @@ Read `rubix-autorun` from `docs/loop/pointer.md` (default `ask` when the key is
+ 
+ On acceptance (or auto), invoke the rubix-review skill on the plan file, then triage its findings as below.
+ 
+-**If the rubix-review skill is not available:** the optional Rubix review is unavailable (rubix-review not installed); continuing without it.
++**If the rubix-review skill is not available:** the optional Rubix review skill is not installed in this session; continuing without it.
+ Warn once per context, never per plan, and fall back to Step 7 directly - never a hard failure.
+ This is the soft, optional review being skipped, unlike the reviewer-conduct contract, which is a required co-install that fails closed.
+ 
+diff --git a/skills/loop-review/SKILL.md b/skills/loop-review/SKILL.md
+index ae070af..73e525b 100644
+--- a/skills/loop-review/SKILL.md
++++ b/skills/loop-review/SKILL.md
+@@ -9,7 +9,7 @@ Two-axis review of the diff between `HEAD` and a fixed point the user supplies.
+ - **Standards** - does the code conform to this repo's documented coding standards, plus a baseline set of code smells?
+ 
+ Both axes run as parallel fresh-context subagents so they don't pollute each other's context, then this skill aggregates their findings side by side, never merged.
+-It has no setup dependency - runs in any repo, even one with zero loop-stack or issue-tracker conventions.
++It has no setup dependency - runs in any repo, even one with zero loop or issue-tracker conventions.
+ 
+ ## Process
+ 
+@@ -36,7 +36,7 @@ Resolve the spec source in this fixed order, stopping at the first hit.
+    The disclosure reports the no-spec state plainly, always with the exact phrase "no spec available": as "no spec available (confirmed: none exists)" when the user's own invocation already said no spec exists, otherwise as a "no spec available" warning that says how discovery failed and how to fix it (pass an explicit path, or confirm none exists).
+    If plans or briefs exist but none matched the branch, name the most recent by `YYYY-MM-DD` filename date as a labeled suggestion inside that warning, but do not auto-resolve to it.
+ 
+-There is no dependency on `docs/agents/` or any setup file.
++There is no dependency on any setup file or generated state.
+ When rung 2 or 3 resolves the source, name it with the exact phrase "matched by branch name" in the disclosure (see step 4).
+ Discovery is internal bookkeeping: if rung 2 or 3 matches, state only the one resolved source - never name or describe any other candidate plan or brief file, in the disclosure or either axis's findings.
+ 
+diff --git a/skills/loop-setup/SKILL.md b/skills/loop-setup/SKILL.md
+index c3b82de..0a33882 100644
+--- a/skills/loop-setup/SKILL.md
++++ b/skills/loop-setup/SKILL.md
+@@ -42,6 +42,7 @@ The offer is silenced by a `tracker-remote-ack:` line in the pointer doc - a han
+ ### docs/loop/pointer.md
+ 
+ Render the pointer template carried in `references/pointer-templates.md` with the angle-bracket slots filled from this run's answers.
++On a fresh (non-migration) setup the `autonomy-default:` slot is written `pause`, matching the loop-auto skill's default when the key is absent; a migration carries the old repo's value forward.
+ Write `local-issues-file:` only when `tracker:` is `local`.
+ Omit `tracker-remote-ack:` when rendering: it appears in the file only when the repo pairs a remote codebase with local tracking, and when it appears it was written by hand; on a re-run, preserve an existing `tracker-remote-ack:` line rather than dropping it.
+ 
+@@ -123,7 +124,7 @@ Read the old file's `tracker:`, `rubix-autorun:`, `autonomy-default:`, and Lanes
+ Render `docs/loop/pointer.md` and `docs/loop/conventions.md` from them using the templates in `references/pointer-templates.md`: `rubix-autorun:` and `autonomy-default:` keep their names and values, and each old lane becomes the tracker read named in the Lanes table, with no mirror.
+ Then handle the generated mirrors, preview-then-assent and never silent:
+ 
+-1. List the mirror files actually found - `ISSUES.md`, `BACKLOG.md`, `WAYFINDER.md`, and `docs/chain-state.md` - with a count, for example "found 2 mirror files: ISSUES.md, BACKLOG.md".
++1. List the files actually found - the three mirror files `ISSUES.md`, `BACKLOG.md`, and `WAYFINDER.md`, plus the one runtime state file `docs/chain-state.md` - with a count, for example "found 2: ISSUES.md, BACKLOG.md".
+ 2. State plainly that they are untracked and therefore unrecoverable once removed, and that they are deleted rather than frozen because the tracker's own UI is now the view.
+ 3. Delete them only after explicit assent.
+    A decline leaves every file in place and ends the migration with nothing removed.

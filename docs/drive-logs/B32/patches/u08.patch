@@ -1,0 +1,599 @@
+diff --git a/NOTES b/NOTES
+new file mode 100644
+index 0000000..e5cb457
+--- /dev/null
++++ b/NOTES
+@@ -0,0 +1,90 @@
++AGENT STATUS unit=u08 branch=worktree verdict=self-pass repairs=1
++
++## Repair attempt 2: no repo file changed; the relayed scope violation is a false positive in check u08.sh step 1
++
++The worktree contains exactly the six owned deliverables plus this NOTES and nothing else.
++The relayed verdict "scope violation: tests/ is outside U08's ownership list" comes from u08.sh line 29, whose `git status --porcelain` collapses the wholly-untracked `tests/` tree into the single entry `?? tests/`.
++`awk '{print $NF}'` then yields the string `tests/`, which matches none of the audit's allowed patterns (`tests/fixtures/pre-plugin-repo/*`, `tests/local-mode-grammar.sh`).
++The sibling entry `?? skills/loop-setup/` passes only by the accident of glob shape, because `skills/loop-setup/*` happens to match the collapsed directory string.
++Every individual file under `tests/` is in bounds; the defect is in how the audit renders the tree, not in what the tree contains.
++
++Observed reproduction, worktree root, this session:
++
++```
++$ git status --porcelain
++?? NOTES
++?? skills/loop-setup/
++?? tests/
++
++$ git status --porcelain -uall
++?? NOTES
++?? skills/loop-setup/SKILL.md
++?? skills/loop-setup/references/import-triage.md
++?? skills/loop-setup/references/pointer-templates.md
++?? tests/fixtures/pre-plugin-repo/README.md
++?? tests/fixtures/pre-plugin-repo/config/repo-state.md
++?? tests/local-mode-grammar.sh
++```
++
++Replaying the check's own case patterns over the default output: ALLOWED `NOTES`, ALLOWED `skills/loop-setup/`, VIOLATION `tests/`.
++The same replay over the `-uall` output allows all seven entries.
++
++One-line fix, and it is the orchestrator's, because u08.sh is authored by the orchestrator and outside this unit's ownership: line 29, change `git status --porcelain` to `git status --porcelain -uall`.
++The identical defect is latent in u04.sh line 19, whose allowed set is `tests/receipt-gates.sh`; that unit's worktree will print `?? tests/` the same way.
++u05/u06/u07 passed only because their `skills/<dir>/*` globs match the collapsed entries, and u11a passes because `docs/` already contains a tracked file and so never collapses.
++
++Worker-side alternatives were enumerated and rejected: pre-staging the deliverables is the only other state that passes step 1, and the task brief forbids it outright ("do NOT run git add yourself"); ignoring the files would hide them from the check's own step-15 `git add -A` and corrupt the exported patch.
++The deliverables are therefore left untracked for the check to stage itself at step 15, exactly as the brief prescribes.
++
++Proof that everything else passes: I ran a copy of u08.sh under /tmp with exactly two edits, line 29 given `-uall` and step 15's `git add`/patch export removed (both actions are forbidden to me), and it printed `PASS: u08-loop-setup` with exit 0.
++The real u08.sh was not modified, no patch was self-exported, and no git add, commit, or push was run in this session.
++The /tmp copy was deleted after the run.
++
++## What I read
++
++Attempt 1: plan lines 896-937 (Task 8, spec of record), 418-432 (global constraints), 104-152 (D2), 154-168 (D3), 170-201 (D4), 37-65 (verified facts); the source skill at loop-stack-session skills/loop-setup/SKILL.md and references/import-triage.md; ci/structure-check.sh, ci/banned-tokens.txt, ci/reference-allowlist.txt, all read-only.
++Attempt 2 (this session): the same plan sections re-read from source, plus manifests/checks/u08.sh (and the sibling checks' step-1 audits) read-only to diagnose the relayed failure.
++
++## Files created or edited
++
++Attempt 1 created the six deliverables, all inside the ownership list: skills/loop-setup/SKILL.md, skills/loop-setup/references/import-triage.md, skills/loop-setup/references/pointer-templates.md, tests/local-mode-grammar.sh, tests/fixtures/pre-plugin-repo/config/repo-state.md, tests/fixtures/pre-plugin-repo/README.md.
++Attempt 2 edited only this NOTES; no deliverable, no allow-list line, and no file outside the ownership list was touched.
++`tests/fixtures/pre-plugin-repo/docs/loop/pointer.md` does not exist, and `find skills/loop-setup -type f -perm -u+x` prints nothing, both re-verified this session.
++
++## Acceptance command, observed exit codes
++
++bash ci/structure-check.sh && claude plugin validate --strict skills && bash tests/local-mode-grammar.sh && bash -c 'grep -q "jrit-loop:begin" skills/loop-setup/SKILL.md && grep -q "@AGENTS.md" skills/loop-setup/SKILL.md && grep -q "gh label create" skills/loop-setup/SKILL.md && grep -q "next-number" skills/loop-setup/references/pointer-templates.md && test -f tests/fixtures/pre-plugin-repo/config/repo-state.md && test ! -f tests/fixtures/pre-plugin-repo/docs/loop/pointer.md && test -z "$(find skills/loop-setup -type f -perm -u+x)"' && echo PASS
++
++Attempt 1: exit 127 before any work (tests/local-mode-grammar.sh absent), exit 0 after, final line PASS.
++Attempt 2, re-run verbatim from the worktree root this session: exit 0, final line PASS, with PASS: structure, Validation passed, and PASS: local-mode grammar round-trip in sequence.
++
++## Grammar test on its own
++
++`bash tests/local-mode-grammar.sh` prints exactly `PASS: local-mode grammar round-trip`, exit 0.
++Non-vacuity re-derived this session, not carried from attempt 1's claim: four corrupted copies in /tmp, each firing its own rule's failure path with exit 1 and a WHY.
++Rule 1, section renumbered out of order: `FAIL: rule 1 (ascending sections): section #2 follows #9, so numbers do not ascend`.
++Rule 2, state/labels swapped in section 1: `FAIL: rule 2 (state then labels as the first two lines after each heading): after heading ## #1 Fix the export job the first two lines are 'labels: idea, agent:todo' and 'state: open'`.
++Rule 3, state set to in-progress: `FAIL: rule 3 (state is open or closed): offending state line(s): 6:state: in-progress`.
++Rule 4, marker bumped to 5 instead of 4: `FAIL: rule 4 (marker = max + 1): marker is 5, but the max section number is 3, so the marker should be 4`.
++The file greps clean of `gh`, `glab`, `curl`, and `wget` as commands, carries `set -uo pipefail`, a `fail()` helper, and no assertion ending in `|| true`.
++
++## Verbatim-block verification, re-derived this session
++
++The D2 `docs/loop/pointer.md` template and the D4 local-issues grammar block were extracted by marker from both the plan and the shipped pointer-templates.md and diffed: both IDENTICAL, byte for byte.
++The D2 description of `docs/loop/conventions.md` (the "prose surface" paragraph) is present in the shipped file.
++
++## Allow-list appends
++
++None, in either attempt; every backticked path token resolves inside its owning skill, starts with docs/, or was already seeded in ci/reference-allowlist.txt.
++
++## AMBIGUITIES TAKEN
++
++Entries 1 through 6 are attempt 1's and still stand; entry 7 is this session's.
++
++1. "Exactly six things and nothing else" (step 3) versus an unreferenced reference file being undiscoverable: SKILL.md carries one three-line "The import sweep" pointer section framing the sweep as a post-setup, attended-only offer that files tracker issues and writes no repo files.
++2. The source local-mode caveat said issues live in `docs/issues/` (a directory) while the D4 grammar declares one file, `docs/issues.md`; the caveat was kept verbatim with only that tail updated to the single file.
++3. tracker-remote-ack: D2 says the line is written only in local-plus-remote repos while step 5 says the skill never writes it; the skill omits the key when rendering, preserves it on a re-run, and both statements appear verbatim in their sanctioned places.
++4. D2's successor-key note names `docs/chain-state.md`, which Check A bans outside skills/loop-setup/SKILL.md; pointer-templates.md omits that one sentence and the context lives in SKILL.md's migration section where Check A exempts it.
++5. import-triage.md: beyond the three mandated line edits, the two setup.sh-mechanics sentences were rewritten because setup.sh dies with this port, and the create step names the local-mode branch since "per the declared mode" includes local.
++6. The AGENTS.md managed-section rendered example shows github mode; the per-mode first line is specified in the prose immediately above it.
++7. This session: the relayed "scope violation" cannot be corrected from the worker side without breaking an explicit prohibition (no git add, no touching .git, no editing the orchestrator's check), so the conservative reading is taken: the tree is left exactly as the brief prescribes, the false positive is documented with reproduction above, and the one-line fix (`-uall` at u08.sh line 29, and the same at u04.sh line 19) is left to the check's owner.
+diff --git a/skills/loop-setup/SKILL.md b/skills/loop-setup/SKILL.md
+new file mode 100644
+index 0000000..c3b82de
+--- /dev/null
++++ b/skills/loop-setup/SKILL.md
+@@ -0,0 +1,145 @@
++---
++name: loop-setup
++description: Declare a repo's tracker mode once, write the two pointer docs docs/loop/pointer.md and docs/loop/conventions.md, write the managed instructions section into AGENTS.md with its CLAUDE.md import line, and ensure the tracker label set. Run once per repo, safe to re-run, and it migrates a pre-plugin repo.
++---
++
++# loop-setup
++
++Bootstraps the loop convention in the current repo by writing the files itself.
++There is no setup script to invoke: this skill creates no executable files and no mirror files, and every artifact it writes is markdown.
++It does exactly six things and nothing else:
++
++1. Asks the tracker mode once.
++2. Writes `docs/loop/pointer.md`.
++3. Writes `docs/loop/conventions.md`.
++4. Writes or updates the managed section in `AGENTS.md`.
++5. Writes or appends the one-line `@AGENTS.md` import to `CLAUDE.md`.
++6. In `github` or `gitlab` mode, ensures the label set exists.
++
++## Tracker modes
++
++Three tracker modes exist: `github`, `gitlab`, and `local`.
++When fronting the mode question, present all three verbatim - never paraphrasing the list or silently dropping one - and state each one's viability caveat so the user can see which are usable in this environment:
++
++- `github` - needs an authenticated `gh` CLI (`gh auth status`).
++- `gitlab` - needs an origin remote to resolve the host, plus `glab` authenticated to that host (`glab auth status --hostname <host>`) and `jq` on PATH.
++- `local` - no external dependency; issues live in the single file `docs/issues.md`.
++
++There is deliberately no `none` (tracker-off) mode: `local` already runs with zero external dependency, so a repo that wants no remote tracker chooses `local`, which supersedes `none` in every case.
++
++Remote for code, local tracking: to run a repo whose code lives on a github or gitlab remote but whose issues stay local, choose `local` and add a `tracker-remote-ack: <github|gitlab>` line to `docs/loop/pointer.md`.
++That line acknowledges the deliberate mode-versus-remote split and silences the switch offer; it is the supported way to pair a remote codebase with local issue tracking, and no multi-backend "combination" mode exists or is planned.
++
++## The mode question, idempotent
++
++The tracker mode is declared, never inferred from `git remote`.
++If `docs/loop/pointer.md` already carries a `tracker:` key, never re-ask the mode: the existing declaration stands and the run continues with the remaining actions.
++When the declared mode disagrees with a github or gitlab remote, say "declared tracker: X, but the remote is Y" and offer a declinable switch to the remote's backend.
++The offer is silenced by a `tracker-remote-ack:` line in the pointer doc - a hand-written acknowledgment of a deliberate mode-versus-remote disagreement that this skill never writes itself.
++
++## What it writes
++
++### docs/loop/pointer.md
++
++Render the pointer template carried in `references/pointer-templates.md` with the angle-bracket slots filled from this run's answers.
++Write `local-issues-file:` only when `tracker:` is `local`.
++Omit `tracker-remote-ack:` when rendering: it appears in the file only when the repo pairs a remote codebase with local tracking, and when it appears it was written by hand; on a re-run, preserve an existing `tracker-remote-ack:` line rather than dropping it.
++
++### docs/loop/conventions.md
++
++Write the prose surface so it carries exactly what the conventions description in `references/pointer-templates.md` requires: the `agent:` label vocabulary and its fixed semantics, the filename grammar, the archive and graduation rules, and the verbose-announce convention.
++In `local` mode it also names `docs/issues.md` and the grammar it follows there.
++
++### The managed section in AGENTS.md
++
++Write into `AGENTS.md` at the target repo root a block delimited by `<!-- jrit-loop:begin -->` and `<!-- jrit-loop:end -->`.
++If the markers do not exist, append the block at the end of the file; if the file does not exist, create it holding the block.
++On a re-run, rewrite only the content between those markers and never touch anything outside them.
++The block contains, in this order:
++
++1. The declared tracker mode and the one command that lists open issues in that mode.
++2. The pointer-doc path `docs/loop/pointer.md`.
++3. The `agent:` label vocabulary in one line.
++4. The sentence that claim, done, status, and next-eligible run through the receipt helper shipped inside the loop-drive skill.
++
++The list command is `gh issue list --state open` in `github` mode, `glab issue list --opened` in `gitlab` mode, and in `local` mode a pointer to the `docs/issues.md` sections whose `state:` is `open`.
++Rendered shape, github mode:
++
++```markdown
++<!-- jrit-loop:begin -->
++Tracker: github. Open issues: `gh issue list --state open`.
++Pointer doc: `docs/loop/pointer.md`.
++Labels: `agent:todo`, `agent:working`, `agent:needs-input`, `agent:review`, `agent:done` - exactly one active at a time, `agent:done` only through the receipt helper.
++Claim, done, status, and next-eligible run through the receipt helper shipped inside the loop-drive skill.
++<!-- jrit-loop:end -->
++```
++
++### The import line in CLAUDE.md
++
++Verified 2026-09-13: Claude Code does not read `AGENTS.md` natively, and the documented pattern is a `CLAUDE.md` that imports it.
++Write `CLAUDE.md` at the target repo root containing the single line `@AGENTS.md` when the file does not exist.
++Append that line when the file exists and does not already contain it.
++Never rewrite any other line of an existing `CLAUDE.md`.
++
++## The label set
++
++The sixth action exists because nothing else in the system creates the labels.
++The `agent:` vocabulary is load-bearing in the pointer docs, the receipt helper's four verbs (claim, done, status, next-eligible) all manipulate it, and no verb provisions it; without this step every label the toolkit depends on has no creator and the first `status` call on a fresh repo fails on a missing label.
++The label set is exactly `idea`, `agent:todo`, `agent:working`, `agent:needs-input`, `agent:review`, `agent:done`, `wayfinder:map`.
++Provision it idempotently, one command per label, the `|| true` because an already-existing label is a success condition here and not an error.
++
++In `github` mode run this block, which is the label-provisioning command block given in full and in this one place:
++
++```bash
++gh label create idea --description "Parked backlog item, not active work" || true
++gh label create agent:todo --description "Open and unclaimed" || true
++gh label create agent:working --description "Claimed and in progress" || true
++gh label create agent:needs-input --description "Blocked on a human answer" || true
++gh label create agent:review --description "Work done, awaiting review" || true
++gh label create agent:done --description "Closed only through the receipt helper's done verb" || true
++gh label create wayfinder:map --description "Wayfinder mapping item" || true
++```
++
++In `gitlab` mode run the same seven labels with the `glab` equivalent:
++
++```bash
++glab label create idea --description "Parked backlog item, not active work" || true
++glab label create agent:todo --description "Open and unclaimed" || true
++glab label create agent:working --description "Claimed and in progress" || true
++glab label create agent:needs-input --description "Blocked on a human answer" || true
++glab label create agent:review --description "Work done, awaiting review" || true
++glab label create agent:done --description "Closed only through the receipt helper's done verb" || true
++glab label create wayfinder:map --description "Wayfinder mapping item" || true
++```
++
++In `local` mode no labels exist to create and this step is skipped.
++Say so in one line: local mode has no tracker labels, so label provisioning is skipped.
++
++## Migrating a pre-plugin repo
++
++Detect the pre-plugin layout: `config/repo-state.md` exists and `docs/loop/pointer.md` does not.
++This skill owns the migration; the other loop skills detect the same shape and refuse to proceed silently, pointing here.
++Read the old file's `tracker:`, `rubix-autorun:`, `autonomy-default:`, and Lanes table.
++Render `docs/loop/pointer.md` and `docs/loop/conventions.md` from them using the templates in `references/pointer-templates.md`: `rubix-autorun:` and `autonomy-default:` keep their names and values, and each old lane becomes the tracker read named in the Lanes table, with no mirror.
++Then handle the generated mirrors, preview-then-assent and never silent:
++
++1. List the mirror files actually found - `ISSUES.md`, `BACKLOG.md`, `WAYFINDER.md`, and `docs/chain-state.md` - with a count, for example "found 2 mirror files: ISSUES.md, BACKLOG.md".
++2. State plainly that they are untracked and therefore unrecoverable once removed, and that they are deleted rather than frozen because the tracker's own UI is now the view.
++3. Delete them only after explicit assent.
++   A decline leaves every file in place and ends the migration with nothing removed.
++
++Finally, leave `config/repo-state.md` and `config/conventions.md` in place for the human to remove.
++Announce this as the one thing migration does not do for them.
++
++After the pointer docs are rendered, the run continues with the remaining actions as normal: the `AGENTS.md` managed section, the `CLAUDE.md` import line, and, in `github` or `gitlab` mode, the label set.
++
++## The import sweep
++
++After the six actions, offer the import sweep: scan for pre-existing work files and file the outstanding items as tracker issues.
++The recommended default is the triage workflow in `references/import-triage.md`.
++The sweep runs in all three modes, loop-setup is attended-only and ignores the loop-auto autonomy knob, and there is no unattended triage mode.
++
++## Re-running
++
++Re-running is safe: the mode question is never re-asked, an existing `tracker-remote-ack:` line is preserved, the managed section rewrites only between its markers, and the label commands treat an existing label as success.
++The skill never writes mirror files, never creates an executable, and never touches a file outside the six actions and the migration named above.
+diff --git a/skills/loop-setup/references/import-triage.md b/skills/loop-setup/references/import-triage.md
+new file mode 100644
+index 0000000..38db1b4
+--- /dev/null
++++ b/skills/loop-setup/references/import-triage.md
+@@ -0,0 +1,114 @@
++# Import triage
++
++## This is the default import workflow
++
++Triage is the import workflow, not an exception to it: after loop-setup writes the pointer docs, the agent scans for pre-existing work files, classifies, verifies, and files the outstanding items.
++The hard cases - a file mixing many items, work already built, reference prose that is not actionable - are handled by judgment instead of being mangled by the mechanical sweep.
++The per-item offer is unchanged, still offering the two fallbacks verbatim (import this one file as one issue, or skip it); triage is what the agent does when neither fallback fits.
++
++## The workflow
++
++Run the steps in order; blast radius grows down the list, and each step narrows what reaches the next.
++
++1. Scan candidates: the repo root (depth 1) and the standard roots (`docs/`, `.planning/`, `.ralph/`, `.scratch/*/issues`), skipping governed lanes and root project files.
++   List one normalized path per line, no side effects.
++2. Classify each discrete item in each candidate: active work is an issue with no label, and a parked backlog item takes the `idea` label.
++3. Verify every item as outstanding or already-built against the codebase and git history; a dropped item, already-built or noise, carries disclosed evidence, a `file:line` or a commit.
++4. Present one batch disclosure table, then offer a per-candidate walkthrough for any item the human picks.
++5. On approval, file each outstanding item, archive each source doc, and write the record doc.
++
++## The batch disclosure table
++
++One table, shown once, holds the whole run's decisions.
++Its columns are source-doc, item, classification, verdict plus evidence, and proposed-action.
++Keep the raw table under 110 characters wide.
++Put long evidence or prose outside the table when a cell would exceed it.
++
++Example shape, short cells with the long evidence carried below:
++
++| source-doc        | item           | class | verdict       | action        |
++| ----------------- | -------------- | ----- | ------------- | ------------- |
++| docs/notes.md     | fix export job | issue | outstanding   | file, archive |
++| .planning/next.md | retry on 504   | idea  | already-built | drop (E1)     |
++| docs/notes.md     | glossary move  | -     | noise         | drop (E2)     |
++
++Dropped evidence, outside the table:
++
++- E1: the retry shipped in `scripts/pull.sh:42`, commit a1b2c3d.
++- E2: the glossary move is reference prose, not an actionable item.
++
++## On approval
++
++Approval is the human's explicit assent at the batch-disclosure step of this run, nothing else.
++A pre-supplied classification (a `Label:` line, a `Status:` line, a human-written "proposed lane entries" section) says what an item is, not that its issue may be created - never approval to file.
++Approval covers the issue bodies the agent writes, not just the classification: the human has not seen those bodies until the disclosure table, so the proposed body (or at minimum its pointer-back footer) is shown for assent before any create.
++
++In this order:
++
++1. File each outstanding item per the declared tracker mode: `gh issue create --label <label> --title <title> --body <body>` in github mode, `glab issue create --label <label> --title <title> --body <body>` in gitlab mode, and in local mode append a new section to `docs/issues.md` per the grammar in `references/pointer-templates.md`, numbered from the `<!-- next-number: N -->` marker and with the marker bumped in the same write.
++   The remote command prints the new issue number; capture it for the record doc.
++   Pass the `idea` label for a parked backlog item and no label for active work.
++2. Archive each source doc to `docs/archive/`.
++   Use `git mv` when the file is tracked and plain `mv` otherwise.
++3. Write the D1 triage record doc described below.
++
++## Issue body pointer-back footer
++
++Every filed issue body ends with the graduated-item template shape from `docs/loop/conventions.md`, adapted for import.
++The footer is the verbatim item prose, then a `---` rule, then three metadata lines.
++
++```
++<verbatim item prose from the source doc>
++---
++Source doc: docs/archive/<original-path>
++Imported: YYYY-MM-DD
++Restart context: <one line>
++```
++
++The verbatim prose lets the issue stand on its own after the source doc is archived.
++`Source doc:` points at the archived copy, `Imported:` is today's date, and `Restart context:` is the one line a future session needs to pick the work back up.
++
++## The triage record doc (D1)
++
++Path: `docs/archive/YYYY-MM-DD-import-triage.md`.
++
++Write one record doc per run that had candidates.
++A run with zero candidates writes none.
++The agent writes it, never bash.
++
++The record holds a triage table with columns source-doc, item, classification (`issue`/`idea`), verdict (`outstanding`/`already-built`/`noise`), evidence, and action, followed by the filed issue numbers.
++Every dropped row carries its evidence, so the record contains no drop without evidence (same shape as the batch disclosure table above, with an evidence column and the filed numbers).
++
++## Judgment rules
++
++These carry over unchanged in intent from the exception-only reference this file replaced.
++
++### Split
++
++One issue names one actionable item.
++Split a candidate when it is a list, when its sections are independently actionable, or when its title needs an "and" to describe it.
++A doc holding N discrete items yields N issues, never one.
++
++### Merge
++
++Merge when two candidates restate the same work, or when one is strictly a subset of the other.
++Merge into the one with the better restart context and drop the other.
++
++### Leave in place
++
++Decline the file and leave it where it is when it is reference material, a log, or a completed record.
++It will be offered again on the next run, and that repeat is the design speaking up about a live loose end, not a bug.
++
++### Titling
++
++The title is the action, in the imperative, readable without the body.
++
++### Labelling
++
++The `idea` label is the one load-bearing label.
++Use `idea` for anything parked by decision and no label for active work.
++
++### Disclosure
++
++Every proposed split is shown to the human with its proposed titles before any issue is created.
++This is a judgment, not a check, so it stays with the agent, never in bash.
+diff --git a/skills/loop-setup/references/pointer-templates.md b/skills/loop-setup/references/pointer-templates.md
+new file mode 100644
+index 0000000..a3f5503
+--- /dev/null
++++ b/skills/loop-setup/references/pointer-templates.md
+@@ -0,0 +1,87 @@
++# Pointer templates
++
++This reference carries the two templates loop-setup renders into a target repo and the grammar its local issues file follows.
++Everything verbatim here is the spec of record: render it with the angle-bracket slots filled, never paraphrased.
++
++## The docs/loop/pointer.md template
++
++```markdown
++# Loop pointer
++
++This file is the machine surface: the line-anchored keys below are what the loop skills read.
++Prose conventions live in the sibling `docs/loop/conventions.md`.
++
++pointer-version: 1
++tracker: <github|gitlab|local>
++autonomy-default: <pause|auto>
++rubix-autorun: <ask|off|on>
++handoffs-home: docs/handoffs/
++briefs-home: docs/briefs/
++plans-home: docs/plans/
++reviews-home: docs/reviews/
++archive-home: docs/archive/
++local-issues-file: docs/issues.md
++tracker-remote-ack: <github|gitlab>
++
++## Lanes
++
++| Lane      | Home                               | How                                             |
++| ---       | ---                                | ---                                             |
++| Issues    | the tracker, open, no `idea`       | Read with `gh` or `glab` directly; no mirror.   |
++| Backlog   | the tracker, label `idea`          | Read with `gh` or `glab` directly; no mirror.   |
++| Wayfinder | the tracker, label `wayfinder:map` | Read with `gh` or `glab` directly; no mirror.   |
++| Handoffs  | `docs/handoffs/`                   | Per unit and per session.                       |
++| Briefs    | `docs/briefs/`                     | One file per brief.                             |
++| Plans     | `docs/plans/`                      | One file per plan.                              |
++| Reviews   | `docs/reviews/`                    | One file per review run.                        |
++| Archive   | `docs/archive/`                    | Moved work lands here.                          |
++
++The tracker is the single source of truth; no generated mirror files exist.
++Claim, done, status, and next-eligible run through the receipt helper shipped inside the loop-drive skill.
++In `local` mode the receipt helper does not run: claim ordering and evidence-gated done are unenforced, and this repo is single-machine only.
++```
++
++Rendering rules for the conditional keys:
++
++`local-issues-file:` is written only when `tracker:` is `local`.
++`tracker-remote-ack:` is written only when `tracker:` is `local` and the repo has a github or gitlab remote; it is a hand-written line, never something loop-setup writes itself.
++`rubix-autorun:` is the successor of the old `config/repo-state.md` key of the same name, same values (`ask` default, `off`, `on`).
++
++## What docs/loop/conventions.md must contain
++
++`docs/loop/conventions.md` is the prose surface.
++It carries, ported from `config/conventions.md`: the `agent:` label vocabulary and its fixed semantics, the filename grammar, the archive and graduation rules, and the verbose-announce convention.
++The `agent:` family semantics are unchanged: `agent:todo`, `agent:working`, `agent:needs-input`, `agent:review`, `agent:done`, exactly one active at a time, `agent:done` reachable only through the receipt helper's `done` verb.
++
++## The local-issues grammar (docs/issues.md)
++
++One file, at the path `local-issues-file:` declares (default `docs/issues.md`).
++
++```markdown
++# Issues
++
++<!-- next-number: 4 -->
++
++## #1 Short title, no trailing period
++state: open
++labels: idea, agent:todo
++
++Body prose for issue 1.
++
++> receipt 2026-09-13T14:02:11Z: AGENT STATUS branch=x worktree=y verdict=pass repairs=0
++
++## #2 Another title
++state: closed
++labels: agent:done
++
++Body prose for issue 2.
++```
++
++Rules, exactly:
++Sections appear in ascending number order.
++`state:` and `labels:` are the first two lines after the heading, in that order, each on its own line.
++`state:` is `open` or `closed`.
++`labels:` is a comma-plus-space list, possibly empty, and `agent:` states are ordinary members of it.
++Issue numbers are monotonically increasing and assigned at create from the `<!-- next-number: N -->` marker, which is bumped in the same write.
++Comments and receipts append to the body as `> receipt <UTC ISO-8601>: <text>` lines.
++The receipt helper does not run in local mode; the pointer doc discloses that claim and done enforcement are absent there.
+diff --git a/tests/fixtures/pre-plugin-repo/README.md b/tests/fixtures/pre-plugin-repo/README.md
+new file mode 100644
+index 0000000..2a0a9dc
+--- /dev/null
++++ b/tests/fixtures/pre-plugin-repo/README.md
+@@ -0,0 +1 @@
++This directory is a fixture representing a repo still on the pre-plugin layout, and it must never gain a `docs/loop/pointer.md`.
+diff --git a/tests/fixtures/pre-plugin-repo/config/repo-state.md b/tests/fixtures/pre-plugin-repo/config/repo-state.md
+new file mode 100644
+index 0000000..3c54f2b
+--- /dev/null
++++ b/tests/fixtures/pre-plugin-repo/config/repo-state.md
+@@ -0,0 +1,12 @@
++# Repo State Map
++
++template-version: 7
++rubix-autorun: ask
++tracker: github
++
++## Lanes
++
++| Lane    | Home       | Status      |
++| ---     | ---        | ---         |
++| Issues  | ISSUES.md  | mirror kept |
++| Backlog | BACKLOG.md | mirror kept |
+diff --git a/tests/local-mode-grammar.sh b/tests/local-mode-grammar.sh
+new file mode 100644
+index 0000000..a70ed9e
+--- /dev/null
++++ b/tests/local-mode-grammar.sh
+@@ -0,0 +1,108 @@
++#!/usr/bin/env bash
++# tests/local-mode-grammar.sh - the D4 local-issues grammar round-trip.
++# Pure-file test: everything happens inside one scratch directory this script
++# creates and removes; no network and no tracker of any kind is consulted.
++# Spec of record: plan 2026-09-13 B32, Task 8 step 12.
++#
++# Round-trip, not just render: build a docs/issues.md per the D4 grammar,
++# simulate a create (append a new section AND bump the next-number marker in
++# the same write), simulate a receipt (append one receipt line to a body),
++# then parse the result back and assert all four grammar rules:
++#   rule 1 - section numbers ascend;
++#   rule 2 - state: then labels: are the first two lines after each heading;
++#   rule 3 - state: is open or closed;
++#   rule 4 - the marker equals the max section number plus one.
++set -uo pipefail
++
++fail() { echo "FAIL: $1" >&2; exit 1; }
++
++TMP=$(mktemp -d) || fail "cannot create scratch directory"
++trap 'rm -rf "$TMP"' EXIT
++mkdir -p "$TMP/docs" || fail "cannot create scratch docs directory"
++ISSUES="$TMP/docs/issues.md"
++
++# ---------------------------------------------------------------------------
++# Render the initial file per the D4 grammar: two sections, marker at 3.
++# ---------------------------------------------------------------------------
++cat > "$ISSUES" <<'EOF'
++# Issues
++
++<!-- next-number: 3 -->
++
++## #1 Fix the export job
++state: open
++labels: idea, agent:todo
++
++Body prose for issue 1.
++
++## #2 Glossary move
++state: closed
++labels: agent:done
++
++Body prose for issue 2.
++EOF
++
++# ---------------------------------------------------------------------------
++# Simulate a create: section #3 is appended and the marker is bumped 3 -> 4
++# in the SAME write (one read, one transformed write, never two edits).
++# ---------------------------------------------------------------------------
++content=$(cat "$ISSUES") || fail "cannot read $ISSUES"
++bumped=${content//<!-- next-number: 3 -->/<!-- next-number: 4 -->}
++[ "$bumped" != "$content" ] || fail "create simulation: the marker rewrite matched nothing, so the bump did not happen"
++new_section='## #3 Retry on 504
++state: open
++labels: agent:todo
++
++Body prose for issue 3.'
++printf '%s\n\n%s\n' "$bumped" "$new_section" > "$ISSUES" || fail "cannot write $ISSUES back after the create"
++
++# ---------------------------------------------------------------------------
++# Simulate a receipt: append one receipt line to the body of the last section.
++# ---------------------------------------------------------------------------
++ts=$(date -u '+%Y-%m-%dT%H:%M:%SZ') || fail "cannot produce a UTC ISO-8601 timestamp"
++printf '> receipt %s: AGENT STATUS unit=test verdict=pass repairs=0\n' "$ts" >> "$ISSUES" \
++  || fail "cannot append the receipt line to the body"
++
++# ---------------------------------------------------------------------------
++# Parse the result back and assert the four grammar rules.
++# ---------------------------------------------------------------------------
++
++# Rule 1: sections appear in ascending number order.
++prev=0
++while IFS= read -r n; do
++  [ -n "$n" ] || continue
++  [ "$n" -gt "$prev" ] || fail "rule 1 (ascending sections): section #$n follows #$prev, so numbers do not ascend"
++  prev=$n
++done < <(grep -oE '^## #[0-9]+' "$ISSUES" | grep -oE '[0-9]+$')
++[ "$prev" -ge 1 ] || fail "rule 1 (ascending sections): no '## #<n>' headings parsed back from the file"
++max=$prev
++
++# Rule 2: state: and labels: are the first two lines after each heading, in that order.
++r2=$(awk '/^## #/ { s = ""; l = ""
++  if ((getline s) <= 0 || (getline l) <= 0 || s !~ /^state: / || l !~ /^labels: /)
++    printf "after heading '%s' the first two lines are '%s' and '%s'\n", $0, s, l
++}' "$ISSUES")
++[ -z "$r2" ] || fail "rule 2 (state then labels as the first two lines after each heading): $r2"
++
++# Rule 3: state: is open or closed.
++r3=$(grep -n '^state: ' "$ISSUES" | grep -v -E '^[0-9]+:state: (open|closed)$')
++if [ -n "$r3" ]; then
++  fail "rule 3 (state is open or closed): offending state line(s):
++$r3"
++fi
++
++# Rule 4: the marker equals the max section number plus one.
++marker_count=$(sed -n 's/^<!-- next-number: [0-9][0-9]* -->$/x/p' "$ISSUES" | wc -l)
++[ "$marker_count" -eq 1 ] || fail "rule 4 (marker = max + 1): expected exactly one next-number marker line, found $marker_count"
++marker=$(sed -n 's/^<!-- next-number: \([0-9][0-9]*\) -->$/\1/p' "$ISSUES")
++[ "$marker" -eq $((max + 1)) ] \
++  || fail "rule 4 (marker = max + 1): marker is $marker, but the max section number is $max, so the marker should be $((max + 1))"
++
++# Round-trip evidence: the create landed as a third section, and the receipt
++# line sits in a body in the mandated shape.
++sections=$(grep -c '^## #' "$ISSUES")
++[ "$sections" -eq 3 ] || fail "create round-trip: expected 3 sections after the simulated create, found $sections"
++grep -qE '^> receipt [0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z: ' "$ISSUES" \
++  || fail "receipt round-trip: no '> receipt <UTC ISO-8601>: <text>' line found in a body after the append"
++
++echo "PASS: local-mode grammar round-trip"

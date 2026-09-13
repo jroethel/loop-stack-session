@@ -1,0 +1,599 @@
+diff --git a/NOTES b/NOTES
+new file mode 100644
+index 0000000..a2508d4
+--- /dev/null
++++ b/NOTES
+@@ -0,0 +1,93 @@
++AGENT STATUS unit=u04 branch=worktree verdict=self-pass repairs=2
++
++ATTEMPT 2: THE CHECK TIMEOUT
++
++Attempt 1 exited rc=0 with gates 0-7 green in ~25 min, but ringer's check killed at its 60 s ceiling.
++Root cause, measured live in this session: this host's WSL resolver (10.255.255.254) stalls ~10 s on every AAAA query while A-only lookups answer in milliseconds.
++
++  $ time getent ahostsv4 api.github.com   -> real 0m0.005s
++  $ time getent ahostsv6 api.github.com   -> real 0m11.611s
++  $ time getent hosts codeload.github.com -> real 0m10.031s  (A+AAAA combined)
++
++gh is a statically built Go binary, so GODEBUG=netdns=cgo and RES_OPTIONS cannot steer it (both measured: no effect, still 10-11 s), and Go's resolver always issues A+AAAA in parallel, so every gh process paid the stall.
++The suite makes 163 gh process calls (profiled), which is the whole ~25 min: 163 x ~10 s.
++Pinning api.github.com in a namespace-private /etc/hosts drops a gh call from 11.7 s to 0.199 s (both measured).
++
++WHAT I FIXED (repair 2)
++
++tests/receipt-gates.sh only: a preamble before Gate 0 that resolves api.github.com and github.com A-only, writes them into a mount-namespace-private /etc/hosts, and re-execs the suite inside `unshare -rm` with that bind mount.
++No system file is touched, addresses are re-resolved on every run, and a host without unprivileged namespaces falls through unpinned with a loud note (same assertions, only slower).
++The helper is untouched this attempt; no gate byte is touched (diff against the u04.patch original shows exactly: preamble + Gate 7 + final PASS line, nothing else).
++
++Measured result: `bash tests/receipt-gates.sh` went from ~25 min to 1m15.3s, exit 0, full output:
++
++  == Gate 0: an unprovisioned repo names its provisioner
++  PASS: status
++  == Gate 1: failing done --ran routes to review
++  PASS: status
++  == Gate 2: contested claim is refused
++  PASS: claim
++  == Gate 3: --reclaim overrides
++  PASS: claim
++  == Gate 4: exactly one status
++  PASS: status
++  PASS: status
++  == Gate 5: done without evidence is refused
++  == Gate 6: next-eligible respects blocking
++  (issue urls, then) PASS: next-eligible
++  PASS: next-eligible
++  == Gate 7: successful done closes and labels
++  session-gate7
++  PASS: claim
++  PASS: status
++  skip: gitlab gates (GITLAB_TEST_PROJECT unset)
++  PASS: receipt gates 0-7
++
++The opening sweep also deleted jrit-loop-scratch-1789330041-508, the repo ringer's killed check run leaked (SIGKILL at 60 s cannot fire the EXIT trap), so the sweep gate did its job on real data.
++Post-fix `gh repo list jroethel --limit 200 | grep jrit-loop-scratch` prints nothing (grep rc=1).
++`bash ci/budget-check.sh` exit 0: helper SLOC 196 (budget 200), PASS: budget.
++
++Post-fix profile of the 163 gh calls (where the remaining 75 s lives):
++
++  33771 ms  51 calls  issue edit     (helper-internal: do_label add/remove)
++  19697 ms  67 calls  auth status    (helper-internal: gh_guard before every op)
++   3891 ms  17 calls  issue view
++   3471 ms   7 calls  issue create
++   3423 ms   6 calls  issue comment
++   2283 ms   1 calls  repo create
++   1833 ms   7 calls  label create
++   1411 ms   2 calls  issue close
++    561 ms   1 calls  repo clone
++    544 ms   1 calls  repo list
++    484 ms   2 calls  issue list
++    408 ms   1 calls  repo delete
++
++WHY THE CHECK STILL CANNOT FIT ITS 60 S CEILING (arithmetic, all measured)
++
++The two dominant blocks are inside receipt.sh, which the spec locks with "Change nothing else in the helper": 51 issue edits x 0.66 s + 67 auth guards x 0.29 s = 53.5 s.
++The check's own step 10 runs `gh repo list` in the check process, unpinned, costing ~10.5 s (0.54 s pinned, ~11 s unpinned, both measured).
++Structural steps plus budget-check plus export add ~2 s.
++Total ~87 s against CHECK_TIMEOUT_S = 60, hardcoded at ringer.py line 55 with no env override (verified by grep).
++Dead ends, measured rather than assumed: GH_TOKEN makes auth status slower (0.54 s vs 0.33 s), GODEBUG/RES_OPTIONS are no-ops on static Go, replacing the clone saves only 0.56 s.
++Even with every compliant squeeze the suite floor is ~73 s, so the ceiling is unreachable from this unit's file ownership without violating the helper/gate locks.
++
++OWNER-SIDE FIX (one line, his to fire, not mine)
++
++ringer.py line 55: CHECK_TIMEOUT_S = 60 -> 300 (or 120).
++Optional second squeeze, also outside my ownership: pin the two hostnames in checks/u04.sh step 10 the same way the test does, dropping that step from ~10.5 s to ~0.5 s.
++The timeout raise alone is sufficient; the pin just widens the margin.
++
++ATTEMPT 1 RECORD (repair 1, unchanged and still in force)
++
++Fix 1, receipt.sh clear_status (the blocking defect): restored the optional-arg guard at skills/loop-drive/scripts/receipt.sh:72,74, `local keep="${2:-}" s` and `[ "$s" = "$keep" ]`, so the done verb's one-argument success path no longer dies with '$2: unbound variable' after posting its receipt.
++Zero lines added; helper SLOC stays 196 (budget 200).
++Reproduction before the fix, stubbed with the production bytes of clear_status under set -uo pipefail, calling `clear_status 42` exactly as the done success path does: `environment: line 7: $2: unbound variable`, stub exit 127; after the fix the same stub returns 0.
++Fix 2, Gate 7 (the proof gap): added per plan step 9 (claim + status working, then done --receipt 'suite green' --ran 'true'; asserts exit 0, CLOSED, agent:done as the only agent: label, receipt comment present) and updated the final line to PASS: receipt gates 0-7.
++Existing gates 0-6 byte-untouched: verified this attempt by regenerating the patch's original test file and diffing, which shows only the preamble, Gate 7, and the final PASS line.
++
++AMBIGUITIES TAKEN
++
++repairs=2: attempt 1's two spec fixes counted as repair 1, the check-timeout root cause and its fix as repair 2; the check's NOTES regex allows any count and honesty wins over replaying the attempt-1 template's literal "repairs=1".
++verdict stays self-pass: the unit's own acceptance criteria are met live (gates 0-7 green at 1m15s, budget green at 196/200, no scratch leaks, NOTES contract held); the residual check timeout is a harness-ceiling arithmetic documented above, not a defect in the deliverables, and fixing it requires files outside this unit's ownership.
++The DNS pin adds 26 lines above Gate 0 with no gate byte touched, which reads as compliant with "keep every existing gate byte-untouched": the constraint guards gate assertions, and every assertion is unchanged.
++Gate 7 placement and receipt-line reading are as attempt 1 recorded them (after Gate 6 before the gitlab conditional; full composed line asserted, subsuming the looser reading).
+diff --git a/skills/loop-drive/scripts/receipt.sh b/skills/loop-drive/scripts/receipt.sh
+new file mode 100755
+index 0000000..3fcab8a
+--- /dev/null
++++ b/skills/loop-drive/scripts/receipt.sh
+@@ -0,0 +1,225 @@
++#!/usr/bin/env bash
++# receipt.sh - the receipt helper shipped inside the loop-drive skill.
++# Reads the tracker mode from the CALLER's cwd docs/loop/pointer.md and dispatches
++# four verbs (status, claim, done, next-eligible) to github (gh) or gitlab (glab).
++# It operates on the caller's cwd repo, never on this script's own location, and
++# the invocation form is fixed everywhere: bash scripts/receipt.sh <verb> ...
++set -uo pipefail
++fail() { echo "receipt: $1" >&2; exit 1; }
++PTR="docs/loop/pointer.md"
++
++mode_read() {            # prints github|gitlab; exit 3 when the key is absent, exit 2 on local
++  local v="$(grep -E '^tracker:' "$PTR" 2>/dev/null | head -1 | sed -E 's/^tracker:[[:space:]]*//; s/[[:space:]]*$//')"
++  case "$v" in
++    github|gitlab) printf '%s\n' "$v" ;;
++    local)  echo "receipt: the receipt helper does not support local mode; claim and done enforcement are absent there" >&2; exit 2 ;;
++    "")    echo "receipt: no tracker: key in $PTR; the loop-setup skill writes that file" >&2; exit 3 ;;
++    *)     fail "unknown tracker mode '$v' in $PTR (expected github or gitlab)" ;;
++  esac
++}
++
++gh_guard() {             # fail-fast: covers gh-absent AND unauthenticated
++  command -v gh >/dev/null 2>&1 || fail "github mode requires the gh CLI, which is not on PATH"
++  gh auth status >/dev/null 2>&1 || fail "github mode requires an authenticated gh CLI (run: gh auth login)"
++}
++
++# --- gitlab backend helpers ---
++gitlab_host() {          # prints the host of origin; nothing + non-zero when origin is absent
++  local url
++  url="$(git remote get-url origin 2>/dev/null)" || return 1
++  [ -n "$url" ] || return 1
++  printf '%s\n' "$url" | sed -E 's#^[a-z+]+://##; s#^[^@]*@##; s#[:/].*$##'
++}
++glab_guard() {           # fail-fast: host-scoped auth check (never bare `glab auth status`)
++  local host
++  command -v glab >/dev/null 2>&1 || fail "gitlab mode requires the glab CLI, which is not on PATH"
++  host="$(gitlab_host)" || fail "gitlab mode requires an origin remote to resolve the GitLab host (found none)"
++  glab auth status --hostname "$host" >/dev/null 2>&1 \
++    || fail "gitlab mode requires glab authenticated to $host (run: glab auth login --hostname $host)"
++}
++
++# --- cross-backend dispatch helpers ---
++label_missing() {        # args: name captured-stderr - a failed add that names a missing label
++  if printf '%s' "$2" | grep -qiF "$1" && printf '%s' "$2" | grep -qiE 'not found|not exist|no such label'; then
++    printf 'label `%s` does not exist in this repo; the loop-setup skill provisions the `agent:` label set, run it against this repo first\n' "$1" >&2
++    exit 1
++  fi
++  fail "add label '$1' failed: $2"
++}
++do_label() {             # args: num name add|remove - raw op; the agent:done guard lives in the done verb
++  local num="$1" name="$2" err
++  if [ "$MODE" = github ]; then gh_guard
++    if [ "$3" = add ]; then err="$(gh issue edit "$num" --add-label "$name" 2>&1)" || label_missing "$name" "$err"
++    else gh issue edit "$num" --remove-label "$name" >/dev/null; fi
++  else glab_guard
++    if [ "$3" = add ]; then err="$(glab issue update "$num" --label "$name" 2>&1)" || label_missing "$name" "$err"
++    else glab issue update "$num" --unlabel "$name" >/dev/null; fi
++  fi
++}
++do_comment() {           # args: num text
++  if [ "$MODE" = github ]; then gh_guard; gh issue comment "$1" --body "$2" >/dev/null
++  else glab_guard; glab issue note "$1" --message "$2" >/dev/null; fi
++}
++do_state() {             # args: num close|reopen
++  if [ "$MODE" = github ]; then gh_guard; gh issue "$2" "$1" >/dev/null
++  else glab_guard; glab issue "$2" "$1" >/dev/null; fi
++}
++set_status() {           # args: num state - siblings removed BEFORE the add, so exactly one is active
++  clear_status "$1" "$2"
++  do_label "$1" "agent:$2" add
++}
++clear_status() {         # args: num [keep] - remove every agent: status label except `keep`
++  local keep="${2:-}" s
++  for s in todo working needs-input review; do
++    [ "$s" = "$keep" ] && continue
++    # blind remove: safe without a current-labels fetch (an absent label is the common case)
++    do_label "$1" "agent:$s" remove || true
++  done
++}
++gather_receipts() {      # arg: num - prints canonical "AGENT CLAIMED|RECLAIMED <sid> <ts>" lines,
++                        # line-anchored so a receipt merely quoting the phrase is not counted
++  if [ "$MODE" = github ]; then gh_guard; gh issue view "$1" --json comments -q '.comments[].body' \
++      | grep -E '^AGENT (CLAIMED|RECLAIMED) [^ ]+ [^ ]+$'
++  else glab_guard; glab issue view "$1" --comments 2>/dev/null \
++      | grep -E '^AGENT (CLAIMED|RECLAIMED) [^ ]+ [^ ]+$'; fi
++}
++compute_owner() {        # stdin: canonical receipt lines -> owner sid; active window at or after
++  awk '                  # the most recent RECLAIMED (else all); earliest ts, ties lex-least sid
++    { sid[NR]=$3; ts[NR]=$4; if ($2 == "RECLAIMED") last = NR }
++    END { if (NR == 0) exit 0
++      for (i = (last ? last : 1); i <= NR; i++)
++        if (bs == "" || ts[i] < bt || (ts[i] == bt && sid[i] < bs)) { bt = ts[i]; bs = sid[i] }
++      print bs }'
++}
++fetch_body() {           # arg: num -> only that issue's body (the blocker scan is candidate-scoped)
++  if [ "$MODE" = github ]; then gh_guard; gh issue view "$1" --json body -q .body
++  else glab_guard; glab issue view "$1"; fi
++}
++do_list() {              # prints "<num><TAB><labels>" rows for open issues; ONE snapshot per run
++  if [ "$MODE" = github ]; then gh_guard; gh issue list --state open --limit 1000 --json number,labels \
++      -q '.[] | "\(.number)\t\([.labels[].name] | join(","))"'
++  else glab_guard; glab issue list --all --output json --per-page 100 \
++      | jq -r '.[] | "\(.iid)\t\([.labels[]] | join(","))"'; fi
++}
++next_eligible() {        # arg: optional session-id; prints one SELECTED/NONE ELIGIBLE line, always rc 0
++  local sid="${1:-}" num labels rts newest owner blines blocked m cutoff rows
++  local open_ids="," work_nums="" todo_nums="" total=0 nw=0 nt=0 nblk=0
++  # STALE_CLAIM_SECS is a wall-clock heuristic for auto-resurfacing a dead session's
++  # ticket; explicit 'claim --reclaim' is the operator's zero-wait override. Receipt
++  # timestamps share the fixed %Y-%m-%dT%H:%M:%SZ shape, so a lexical compare against
++  # a pre-rendered cutoff string equals the epoch compare.
++  cutoff="$(date -u -r "$(( $(date +%s) - ${STALE_CLAIM_SECS:-3600} ))" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null)" \
++    || cutoff="$(date -u -d "@$(( $(date +%s) - ${STALE_CLAIM_SECS:-3600} ))" +%Y-%m-%dT%H:%M:%SZ)"
++  rows="$(do_list | sort -t$'\t' -k1,1n)"
++  while IFS=$'\t' read -r num labels; do
++    [ -n "$num" ] || continue
++    total=$((total + 1)); open_ids="$open_ids$num,"
++    case ",$labels," in *",agent:working,"*) work_nums="$work_nums$num "; nw=$((nw + 1)) ;; esac
++    case ",$labels," in *",agent:todo,"*)    todo_nums="$todo_nums$num " ;; esac
++  done <<< "$rows"
++  # lane 1 - stale working: newest claim/reclaim receipt past the cutoff, owned by another session
++  for num in $work_nums; do
++    rts="$(gather_receipts "$num" 2>/dev/null || true)"
++    [ -n "$rts" ] || continue    # receiptless working ticket: age unknowable, not judgeable as stale
++    newest="$(printf '%s\n' "$rts" | awk '{print $4}' | sort | tail -1)"
++    [ "$newest" \< "$cutoff" ] || continue
++    owner="$(printf '%s\n' "$rts" | compute_owner)"
++    if [ -z "$sid" ] || [ "$owner" != "$sid" ]; then printf 'SELECTED #%s: stale working, relaunch\n' "$num"; return 0; fi
++  done
++  # lane 2 - lowest open agent:todo, not working, blocked by no OPEN issue
++  for num in $todo_nums; do
++    case " $work_nums " in *" $num "*) continue ;; esac
++    nt=$((nt + 1))
++    blines="$(fetch_body "$num" 2>/dev/null | grep -E '^Blocked by:' || true)"   # anchored: quoted mentions cannot block
++    blocked=0
++    for m in $(printf '%s\n' "$blines" | grep -oE '#[0-9]+' | sed 's/#//'); do
++      case "$open_ids" in *",$m,"*) blocked=1; break ;; esac     # unresolved iff still in the open set
++    done
++    [ "$blocked" -eq 1 ] && { nblk=$((nblk + 1)); continue; }
++    printf 'SELECTED #%s: agent:todo, unblocked\n' "$num"
++    return 0
++  done
++  printf 'NONE ELIGIBLE: %d open, %d agent:working, %d of %d agent:todo blocked\n' "$total" "$nw" "$nblk" "$nt"
++  return 0
++}
++
++usage() {
++  cat >&2 <<EOF
++Usage: bash scripts/receipt.sh <verb> [args]   (tracker mode read from docs/loop/pointer.md)
++  status <num> <todo|working|needs-input|review>  set exactly one agent: status ('done' routes through 'done')
++  claim <num> <session-id> [--reclaim]            receipt-before-flip; prints owner; exit 4 on lost race
++  done <num> --receipt <text> [--ran <cmd>]       exit 5 without evidence, exit 7 on failed --ran (routes to review)
++  next-eligible [<session-id>]                    print the one actionable ticket (always exit 0)
++EOF
++}
++
++case "${1:-}" in -h|--help) usage; exit 0 ;; esac
++[ $# -ge 1 ] || { usage >&2; exit 1; }
++MODE="$(mode_read)" || exit $?
++[ "$MODE" = gitlab ] && { command -v jq >/dev/null 2>&1 || fail "gitlab mode requires jq on PATH (issue-list parsing)"; }
++
++sub="$1"; shift
++case "$sub" in
++  status)
++    [ $# -ge 2 ] || fail "status: requires an issue number and a state (todo|working|needs-input|review)"
++    case "$2" in todo|working|needs-input|review) ;; *) fail "status: state must be todo|working|needs-input|review (got '$2'; 'done' routes through 'receipt.sh done')" ;; esac
++    set_status "$1" "$2"
++    ;;
++  claim)
++    [ $# -ge 2 ] || fail "claim: requires an issue number and a session id"
++    num="$1"; sid="$2"; shift 2; reclaim=0
++    while [ $# -ge 1 ]; do case "$1" in --reclaim) reclaim=1; shift ;; *) fail "claim: unknown argument '$1'" ;; esac; done
++    now="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
++    verb=CLAIMED; [ "$reclaim" -eq 1 ] && verb=RECLAIMED
++    # receipt BEFORE flip: a mid-claim death never leaves a receiptless working ticket
++    do_comment "$num" "AGENT $verb $sid $now"
++    set_status "$num" working
++    owner="$(gather_receipts "$num" | compute_owner)"
++    if [ -z "$owner" ] || [ "$owner" = "$sid" ] || [ "$reclaim" -eq 1 ]; then
++      printf '%s\n' "$sid"
++    else
++      echo "RACE: #$num owned by $owner" >&2; exit 4
++    fi
++    ;;
++  done)
++    [ $# -ge 2 ] || fail "done: requires an issue number and --receipt <text>"
++    num="$1"; shift; receipt=""; rancmd=""
++    while [ $# -ge 2 ]; do
++      case "$1" in
++        --receipt) receipt="$2"; shift 2 ;;
++        --ran)     rancmd="$2";  shift 2 ;;
++        *) fail "done: unknown argument '$1'" ;;
++      esac
++    done
++    [ $# -eq 0 ] || fail "done: unpaired arguments"
++    [ -n "$receipt" ] || fail "done: --receipt is required"
++    if [ -n "$rancmd" ]; then
++      # strong path: re-execute the cited command and capture the REAL exit, not a pasted claim
++      sh -c "$rancmd" >/dev/null 2>&1
++      rc=$?
++      receipt="$receipt --ran $rancmd exit $rc"
++      if [ "$rc" -ne 0 ]; then
++        do_comment "$num" "$receipt"
++        set_status "$num" review
++        echo "receipt: --ran command exited $rc; #$num routed to review, not done" >&2
++        exit 7
++      fi
++    elif ! printf '%s\n' "$receipt" | grep -qE '(exit( status)? 0( |$)|[1-9][0-9]* passed|(^| )0 failed|https?://[^ ]+)'; then
++      # without --ran the receipt must CITE a passing run; --ran remains the strong path
++      echo "agent:done requires executed-check evidence of a PASSING run (exit 0 / N passed / 0 failed / artifact link)" >&2
++      exit 5
++    fi
++    do_comment "$num" "$receipt"
++    clear_status "$num"   # 'done' is not a status verb: clear the four siblings, then the evidence-gated add
++    do_label "$num" agent:done add
++    do_state "$num" close
++    ;;
++  next-eligible)
++    next_eligible "${1:-}"
++    ;;
++  *) usage; exit 1 ;;
++esac
++
++# Every verb's stdout is a machine surface (owner sid, SELECTED lines) that callers
++# capture, so the house-style PASS: line goes to stderr and cannot corrupt a capture.
++echo "PASS: $sub" >&2
+diff --git a/tests/receipt-gates.sh b/tests/receipt-gates.sh
+new file mode 100755
+index 0000000..1191074
+--- /dev/null
++++ b/tests/receipt-gates.sh
+@@ -0,0 +1,263 @@
++#!/usr/bin/env bash
++# tests/receipt-gates.sh - Gate 0 plus the six behaviour gates over the receipt
++# helper, run against a real throwaway private scratch repo under jroethel
++# (explicit consent; delete_repo scope verified on the token).
++# Spec of record: plan 2026-09-13 B32, Task 4 step 9.
++# Every helper invocation uses the D8-fixed 'bash scripts/receipt.sh ...' form,
++# so the test never depends on the execute bit.
++set -uo pipefail
++fail() { echo "FAIL: $1" >&2; exit 1; }
++REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++
++# --- DNS pin: the suite re-execs one mount namespace deep -----------------------
++# This host's WSL resolver stalls ~10s on every AAAA query while A-only lookups
++# answer in milliseconds, and gh (a static Go binary, so GODEBUG/RES_OPTIONS
++# cannot steer it) resolves A+AAAA in parallel: every gh process paid the stall,
++# ~25 min for a full run. Scoped to this run only: resolve both GitHub hostnames
++# A-only, pin them in a namespace-private /etc/hosts, re-exec the suite inside.
++# No system file is touched, addresses are re-resolved every run, and a host
++# without unprivileged namespaces runs unpinned (same assertions, just slower).
++if [ -z "${GATES_DNS_PINNED:-}" ] && command -v unshare >/dev/null 2>&1; then
++  pin=""
++  for h in api.github.com github.com; do
++    a="$(getent ahostsv4 "$h" 2>/dev/null | awk '{print $1; exit}')"
++    [ -n "$a" ] && pin="${pin}${a} ${h}\n"
++  done
++  if [ -n "$pin" ] && unshare -rm true 2>/dev/null; then
++    GATES_HOSTS="$(mktemp)"
++    { cat /etc/hosts; printf '%b' "$pin"; } > "$GATES_HOSTS"
++    unshare -rm env GATES_DNS_PINNED=1 GATES_HOSTS="$GATES_HOSTS" \
++      GATES_SCRIPT="$REPO_ROOT/tests/receipt-gates.sh" \
++      bash -c 'mount --bind "$GATES_HOSTS" /etc/hosts && rm -f "$GATES_HOSTS" \
++               && exec bash "$GATES_SCRIPT" "$@"' x "$@"
++    exit $?
++  fi
++  echo "note: no namespace DNS pin (unshare or A lookup unavailable); each gh call may stall ~10s" >&2
++fi
++
++SCRATCH_NAME=""
++CLONE=""
++GL_CLONE=""
++
++cleanup() {
++  rc=$?
++  if [ -n "$SCRATCH_NAME" ]; then
++    if ! gh repo delete "jroethel/$SCRATCH_NAME" --yes >/dev/null 2>&1; then
++      cat >&2 <<EOF
++
++!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
++!! WARNING: scratch repo delete FAILED, manual cleanup is required  !!
++!! Run exactly this command:                                        !!
++!!   gh repo delete jroethel/$SCRATCH_NAME --yes                    !!
++!! A private test repo nobody remembers must not be left behind.    !!
++!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
++EOF
++    fi
++  fi
++  [ -n "$CLONE" ] && rm -rf "$CLONE"
++  [ -n "$GL_CLONE" ] && rm -rf "$GL_CLONE"
++  exit "$rc"
++}
++trap cleanup EXIT
++
++# --- setup, part 1: sweep stale scratch repos left by earlier failed runs ------
++# First action, before creating anything: a run that crashed yesterday must not
++# accumulate repos forever. Delete targets are only jrit-loop-scratch-* under
++# jroethel, never anything else.
++gh repo list jroethel --limit 200 --json name -q '.[].name' 2>/dev/null \
++  | grep '^jrit-loop-scratch-' | while read -r stale; do
++    echo "sweep: deleting stale scratch repo jroethel/$stale left by an earlier run"
++    gh repo delete "jroethel/$stale" --yes || true
++  done
++
++# --- setup, part 2: the throwaway repo this run owns ---------------------------
++# Name uses date +%s and $RANDOM, never $$: a PID collides across hosts and
++# across a reboot, and a collision would make the trap delete a repo this run
++# did not create.
++SCRATCH_NAME="jrit-loop-scratch-$(date +%s)-$RANDOM"
++gh repo create "jroethel/$SCRATCH_NAME" --private >/dev/null \
++  || fail "could not create scratch repo jroethel/$SCRATCH_NAME"
++CLONE="$(mktemp -d)"
++gh repo clone "jroethel/$SCRATCH_NAME" "$CLONE" 2>/dev/null \
++  || fail "could not clone jroethel/$SCRATCH_NAME into $CLONE"
++mkdir -p "$CLONE/docs/loop" "$CLONE/scripts"
++printf '# Loop pointer\n\ntracker: github\n' > "$CLONE/docs/loop/pointer.md"
++# The helper is copied into the clone so the D8-fixed 'bash scripts/receipt.sh'
++# form resolves from the scratch repo cwd, exactly as loop-drive's prose resolves
++# it relative to the skill's own directory. Same bytes, no execute bit involved.
++cp "$REPO_ROOT/skills/loop-drive/scripts/receipt.sh" "$CLONE/scripts/receipt.sh"
++cd "$CLONE" || fail "could not enter the clone at $CLONE"
++
++mkissue() {                   # args: title body -> prints the new issue number
++  local url
++  url="$(gh issue create --title "$1" --body "$2")" || fail "gh issue create failed for '$1'"
++  printf '%s' "${url##*/}"
++}
++gh_labels() {                 # arg: num -> comma-joined label names
++  gh issue view "$1" --json labels -q '[.labels[].name] | join(",")'
++}
++gh_state() {                  # arg: num -> OPEN or CLOSED
++  gh issue view "$1" --json state -q .state
++}
++
++# --- Gate 0, an unprovisioned repo names its provisioner -----------------------
++# No agent: labels exist yet: nothing in the helper creates them, and a repo that
++# has never been through loop-setup has none of them.
++echo "== Gate 0: an unprovisioned repo names its provisioner"
++N0="$(mkissue 'gate 0 unprovisioned probe' 'no labels exist yet')"
++out="$(bash scripts/receipt.sh status "$N0" working 2>&1)"; rc=$?
++[ "$rc" -ne 0 ] || fail "Gate 0: status on an unprovisioned repo exited 0, expected failure (got: $out)"
++case "$out" in
++  *"loop-setup skill provisions"*) ;;
++  *) fail "Gate 0: failure message does not name the loop-setup skill as the provisioner: $out" ;;
++esac
++# Simulates loop-setup rather than substituting for it: this is the exact
++# label-provisioning command block loop-setup's setup prose prescribes. If the
++# skill's prose and this block ever diverge, one of them is wrong and the
++# divergence is the finding.
++gh label create idea --description "Backlog lane candidate" || true
++gh label create agent:todo --description "Open, unclaimed work" || true
++gh label create agent:working --description "Actively claimed by a session" || true
++gh label create agent:needs-input --description "Waiting on a human decision" || true
++gh label create agent:review --description "Work done, awaiting review" || true
++gh label create agent:done --description "Completed through the receipt helper's done verb" || true
++gh label create wayfinder:map --description "Wayfinder map issue" || true
++bash scripts/receipt.sh status "$N0" working || fail "Gate 0: status working still fails after loop-setup's label block ran"
++
++# --- Gate 1, failing `done --ran` routes to review -----------------------------
++echo "== Gate 1: failing done --ran routes to review"
++N1="$(mkissue 'gate 1 failing ran' 'the cited command fails')"
++bash scripts/receipt.sh status "$N1" working || fail "Gate 1: status working failed"
++out="$(bash scripts/receipt.sh done "$N1" --receipt 'work claimed done' --ran 'exit 3' 2>&1)"; rc=$?
++[ "$rc" -eq 7 ] || fail "Gate 1: done --ran with a failing command exited $rc, expected 7 (got: $out)"
++[ "$(gh_state "$N1")" = "OPEN" ] || fail "Gate 1: issue #$N1 must stay open on a failed --ran, state is $(gh_state "$N1")"
++labels="$(gh_labels "$N1")"
++case ",$labels," in *,agent:review,*) ;; *) fail "Gate 1: labels '$labels' lack agent:review" ;; esac
++case ",$labels," in *,agent:done,*) fail "Gate 1: labels '$labels' must not carry agent:done on a failed --ran" ;; esac
++body="$(gh issue view "$N1" --json comments -q '.comments[].body')"
++printf '%s\n' "$body" | grep -qF -- '--ran exit 3 exit 3' || fail "Gate 1: no receipt comment carrying the --ran exit tail"
++printf '%s\n' "$body" | grep -q 'exit 3' || fail "Gate 1: no receipt comment naming exit 3"
++
++# --- Gate 2, contested claim is refused -----------------------------------------
++echo "== Gate 2: contested claim is refused"
++N2="$(mkissue 'gate 2 contested claim' 'two sessions claim the same ticket')"
++out="$(bash scripts/receipt.sh claim "$N2" session-aaa)"; rc=$?
++[ "$rc" -eq 0 ] || fail "Gate 2: first claim exited $rc, expected 0"
++[ "$out" = "session-aaa" ] || fail "Gate 2: first claim printed '$out', expected session-aaa"
++sleep 1
++err="$(bash scripts/receipt.sh claim "$N2" session-bbb 2>&1 1>/dev/null)"; rc=$?
++[ "$rc" -eq 4 ] || fail "Gate 2: second claim exited $rc, expected 4"
++case "$err" in
++  *RACE:*) ;;
++  *) fail "Gate 2: second claim stderr lacks RACE: ($err)" ;;
++esac
++case "$err" in
++  *session-aaa*) ;;
++  *) fail "Gate 2: reported owner is not session-aaa ($err)" ;;
++esac
++
++# --- Gate 3, `--reclaim` overrides ----------------------------------------------
++echo "== Gate 3: --reclaim overrides"
++out="$(bash scripts/receipt.sh claim "$N2" session-bbb --reclaim)"; rc=$?
++[ "$rc" -eq 0 ] || fail "Gate 3: reclaim exited $rc, expected 0"
++[ "$out" = "session-bbb" ] || fail "Gate 3: reclaim printed '$out', expected session-bbb"
++
++# --- Gate 4, exactly one status ---------------------------------------------------
++echo "== Gate 4: exactly one status"
++bash scripts/receipt.sh status "$N2" todo || fail "Gate 4: status todo failed"
++bash scripts/receipt.sh status "$N2" review || fail "Gate 4: status review failed"
++labels="$(gh_labels "$N2")"
++n="$(printf '%s\n' "$labels" | tr ',' '\n' | grep -c '^agent:')"
++[ "$n" -eq 1 ] || fail "Gate 4: expected exactly one agent: label on #$N2, found $n ('$labels')"
++[ "$labels" = "agent:review" ] || fail "Gate 4: the one agent: label is '$labels', expected agent:review"
++
++# --- Gate 5, done without evidence is refused -------------------------------------
++echo "== Gate 5: done without evidence is refused"
++out="$(bash scripts/receipt.sh done "$N2" --receipt 'looks good to me' 2>&1)"; rc=$?
++[ "$rc" -eq 5 ] || fail "Gate 5: done without executed-check evidence exited $rc, expected 5 (got: $out)"
++[ "$(gh_state "$N2")" = "OPEN" ] || fail "Gate 5: issue #$N2 must stay open without evidence, state is $(gh_state "$N2")"
++
++# --- Gate 6, `next-eligible` respects blocking ------------------------------------
++echo "== Gate 6: next-eligible respects blocking"
++NB="$(mkissue 'gate 6 blocker' 'still open, blocks A')"
++NA="$(mkissue 'gate 6 A' "Blocked by: #$NB")"
++gh issue edit "$NA" --add-label agent:todo || fail "Gate 6: could not label #$NA agent:todo"
++NC="$(mkissue 'gate 6 C' 'no blockers, higher number than A')"
++gh issue edit "$NC" --add-label agent:todo || fail "Gate 6: could not label #$NC agent:todo"
++[ "$NC" -gt "$NA" ] || fail "Gate 6: setup ordering is wrong, C ($NC) must number higher than A ($NA)"
++out="$(bash scripts/receipt.sh next-eligible)"
++case "$out" in
++  *"SELECTED #$NC:"*) ;;
++  *) fail "Gate 6: expected SELECTED #$NC with #$NB open, got: $out" ;;
++esac
++gh issue close "$NB" || fail "Gate 6: could not close blocker #$NB"
++out="$(bash scripts/receipt.sh next-eligible)"
++case "$out" in
++  *"SELECTED #$NA:"*) ;;
++  *) fail "Gate 6: expected SELECTED #$NA after closing #$NB, got: $out" ;;
++esac
++
++# --- Gate 7, successful `done` closes and labels ----------------------------------
++# Added at the wave-3 gate 2026-09-13: gates 1 and 5 exercised exit 7 and exit 5
++# but never the success path, and a defect there shipped invisibly.
++echo "== Gate 7: successful done closes and labels"
++N7="$(mkissue 'gate 7 successful done' 'the cited command passes')"
++bash scripts/receipt.sh claim "$N7" session-gate7 || fail "Gate 7: claim failed"
++bash scripts/receipt.sh status "$N7" working || fail "Gate 7: status working failed"
++out="$(bash scripts/receipt.sh done "$N7" --receipt 'suite green' --ran 'true' 2>&1)"; rc=$?
++[ "$rc" -eq 0 ] || fail "Gate 7: successful done exited $rc, expected 0 (got: $out)"
++[ "$(gh_state "$N7")" = "CLOSED" ] || fail "Gate 7: issue #$N7 must be CLOSED after done, state is $(gh_state "$N7")"
++labels="$(gh_labels "$N7")"
++case ",$labels," in *,agent:done,*) ;; *) fail "Gate 7: labels '$labels' lack agent:done" ;; esac
++n="$(printf '%s\n' "$labels" | tr ',' '\n' | grep -c '^agent:')"
++[ "$n" -eq 1 ] || fail "Gate 7: expected only agent:done on #$N7, found $n agent: labels ('$labels')"
++body="$(gh issue view "$N7" --json comments -q '.comments[].body')"
++printf '%s\n' "$body" | grep -qF -- 'suite green --ran true exit 0' || fail "Gate 7: no receipt comment carrying the done receipt line"
++
++# --- GitLab coverage, conditional -------------------------------------------------
++# The helper dispatches to two backends and the gates above exercise one of them,
++# so a glab regression would ship unnoticed. Set GITLAB_TEST_PROJECT to a
++# group/project path to run Gates 1 and 2 against the gitlab backend too.
++if [ -n "${GITLAB_TEST_PROJECT:-}" ]; then
++  echo "== GitLab gates 1-2 against $GITLAB_TEST_PROJECT"
++  GL_CLONE="$(mktemp -d)"
++  glab repo clone "$GITLAB_TEST_PROJECT" "$GL_CLONE" 2>/dev/null \
++    || fail "gitlab gates: could not clone $GITLAB_TEST_PROJECT"
++  mkdir -p "$GL_CLONE/docs/loop" "$GL_CLONE/scripts"
++  printf '# Loop pointer\n\ntracker: gitlab\n' > "$GL_CLONE/docs/loop/pointer.md"
++  cp "$REPO_ROOT/skills/loop-drive/scripts/receipt.sh" "$GL_CLONE/scripts/receipt.sh"
++  HERE="$PWD"
++  cd "$GL_CLONE" || fail "gitlab gates: could not enter the clone"
++  for l in idea agent:todo agent:working agent:needs-input agent:review agent:done wayfinder:map; do
++    glab label create --name "$l" 2>/dev/null || true
++  done
++  gl_issue() {               # args: title body -> prints the new issue iid
++    local gout
++    gout="$(glab issue create --yes --no-editor -t "$1" -d "$2")" || fail "glab issue create failed for '$1'"
++    printf '%s' "$gout" | grep -oE '/issues/[0-9]+' | tail -1 | sed 's#.*/##'
++  }
++  G1="$(gl_issue 'gl gate 1 failing ran' 'the cited command fails')"
++  bash scripts/receipt.sh status "$G1" working || fail "gitlab gate 1: status working failed"
++  out="$(bash scripts/receipt.sh done "$G1" --receipt 'work claimed done' --ran 'exit 3' 2>&1)"; rc=$?
++  [ "$rc" -eq 7 ] || fail "gitlab gate 1: done --ran exited $rc, expected 7 (got: $out)"
++  glab issue view "$G1" --comments | grep -qF -- '--ran exit 3 exit 3' \
++    || fail "gitlab gate 1: no receipt comment carrying the --ran exit tail"
++  G2="$(gl_issue 'gl gate 2 contested claim' 'two sessions claim the same ticket')"
++  out="$(bash scripts/receipt.sh claim "$G2" session-gla)"; rc=$?
++  [ "$rc" -eq 0 ] || fail "gitlab gate 2: first claim exited $rc, expected 0"
++  sleep 1
++  err="$(bash scripts/receipt.sh claim "$G2" session-glb 2>&1 1>/dev/null)"; rc=$?
++  [ "$rc" -eq 4 ] || fail "gitlab gate 2: second claim exited $rc, expected 4"
++  case "$err" in
++    *RACE:*) ;;
++    *) fail "gitlab gate 2: second claim stderr lacks RACE: ($err)" ;;
++  esac
++  glab issue close "$G1" 2>/dev/null || true
++  glab issue close "$G2" 2>/dev/null || true
++  cd "$HERE" || fail "gitlab gates: could not return to $HERE"
++  echo "PASS: gitlab gates 1-2 against $GITLAB_TEST_PROJECT"
++else
++  echo "skip: gitlab gates (GITLAB_TEST_PROJECT unset)"
++fi
++
++echo "PASS: receipt gates 0-7"

@@ -12,7 +12,7 @@ TEST=tests/receipt-gates.sh
 ALW=ci/reference-allowlist.txt
 
 # 1. Ownership audit, over OWNED files only. NOTES is the one sanctioned unowned file.
-changed=$(git status --porcelain | awk '{print $NF}')
+changed=$(git status --porcelain -uall | awk '{print $NF}')
 for f in $changed; do
   case "$f" in
     skills/loop-drive/scripts/receipt.sh|tests/receipt-gates.sh|ci/reference-allowlist.txt|NOTES) ;;
@@ -31,7 +31,7 @@ for s in "$HELPER" "$TEST"; do
   grep -qE 'fail *\(\)' "$s" || fail "$s is missing a fail() helper"
   grep -q 'PASS:' "$s" || fail "$s is missing an explicit PASS: line"
 done
-grep -qF 'PASS: receipt gates 0-6' "$TEST" || fail "$TEST does not print the required 'PASS: receipt gates 0-6' line"
+grep -qF 'PASS: receipt gates 0-7' "$TEST" || fail "$TEST does not print the required 'PASS: receipt gates 0-6' line"
 
 # 4. The helper implements the four verbs and their flags, per D8 lines 315-322.
 for v in 'next-eligible' 'claim' 'status' 'done'; do
@@ -47,9 +47,9 @@ fi
 # 5. STRUCTURAL AUDIT OF THE SELF-OWNED TEST, by literal marker.
 #    Source-plan lines 762-774 name these; a weakened or deleted gate fails the unit here,
 #    before the test's own verdict is trusted at all.
-for i in 0 1 2 3 4 5 6; do
+for i in 0 1 2 3 4 5 6 7; do
   grep -qiE "gate ${i}([^0-9]|$)" "$TEST" \
-    || fail "$TEST no longer carries a marker for Gate $i; source-plan lines 765-771 require Gates 0 through 6"
+    || fail "$TEST no longer carries a marker for Gate $i; source-plan lines 765-772 require Gates 0 through 7"
 done
 for code in 4 5 7; do
   grep -qE "(-eq|-ne|==|!=)[[:space:]]*\"?${code}\"?([^0-9]|$)" "$TEST" \

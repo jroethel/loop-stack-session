@@ -1,0 +1,22 @@
+{
+  "run_name": "jrit-loop-port",
+  "workdir": "/home/jjrdar/repos/loop-stack-session/docs/drive-logs/B32/ringer/wave-3c",
+  "repo": "/home/jjrdar/repos/jrit/jrit-loop",
+  "worktrees": true,
+  "max_parallel": 1,
+  "tasks": [
+    {
+      "key": "u04fix",
+      "engine": "claude-zai",
+      "model": "glm-5.3",
+      "task_type": "code-fix",
+      "timeout_s": 3000,
+      "expect_files": [
+        "/home/jjrdar/repos/loop-stack-session/docs/drive-logs/B32/patches/u04.patch"
+      ],
+      "spec": "You are U04FIX, a scoped fix implementer on the jrit-loop plugin port. You work alone in an isolated git worktree of /home/jjrdar/repos/jrit/jrit-loop; treat the worktree root as the repo root.\n\nDO NOT git commit, push, or add; do NOT touch .git. The orchestrator commits from the patch your check exports.\n\nSTEP 0, before anything: the U04 work is not on main yet. Apply it into your worktree with:\ngit apply /home/jjrdar/repos/loop-stack-session/docs/drive-logs/B32/patches/u04.patch\n(git apply only; no add, no commit). This gives you skills/loop-drive/scripts/receipt.sh, tests/receipt-gates.sh, and a NOTES file you will overwrite with your own.\n\nCONTEXT: an adversarial validation proved one blocking defect in the helper and one proof gap in the test. Read /home/jjrdar/repos/loop-stack-session/docs/plans/2026-09-13.B32.jrit-loop-plugin-port-plan.md lines 736-778 (Task 4, whose step 9 now specifies Gate 7) and D8 at 308-346.\n\nFILES YOU OWN: skills/loop-drive/scripts/receipt.sh, tests/receipt-gates.sh, ./NOTES. Nothing else.\n\nTHE TWO FIXES:\n1. receipt.sh clear_status (around lines 71-74): the port dropped the reference's optional second positional. `local s` with a later `[ \"$s\" = \"$2\" ]` dies under set -u when clear_status is called with one argument, which is exactly what the done verb's success path does at line ~213 - so done posts its receipt then dies with '$2: unbound variable' before closing the issue or adding agent:done. Restore the guard: `local keep=\"${2:-}\" s` and compare `[ \"$s\" = \"$keep\" ]`. Change nothing else in the helper. The SLOC must stay under 200 (it is 196 now and this fix adds zero lines).\n2. tests/receipt-gates.sh: add Gate 7 exactly as plan step 9 now specifies (successful done: create an issue, claim it, status working, then done with --receipt 'suite green' --ran 'true'; assert exit 0, issue CLOSED, labels contain agent:done and no other agent: label, comments contain the receipt line). Update the final line to `PASS: receipt gates 0-7`. Keep every existing gate byte-untouched except that final PASS line.\n\nVERIFY YOURSELF, recording real outputs in ./NOTES:\n- Run `bash tests/receipt-gates.sh` live; all gates 0-7 must pass; then `gh repo list jroethel --limit 200 | grep jrit-loop-scratch` must print nothing.\n- Run `bash ci/budget-check.sh`; record the printed helper SLOC (must stay under 200).\n- Before the fix, reproduce the defect once with the test or a stub and paste the unbound-variable error into ./NOTES; after the fix, paste Gate 7's passing output.\n\nHARD RULE, verbatim from the original spec: never run gh repo delete against anything except a repo your own run created and named jrit-loop-scratch-<epoch>-<random>.\nHOUSE STYLE: no em dash U+2014; scripts keep set -uo pipefail, fail(), loud failures.\n./NOTES first line: \"AGENT STATUS unit=u04 branch=worktree verdict=self-pass repairs=1\"; then what you fixed, the reproduction, the passing outputs, ambiguities under AMBIGUITIES TAKEN.\nWHEN GATES 0-7 PASS LIVE AND BUDGET-CHECK IS GREEN, STOP IMMEDIATELY AND RETURN.\n",
+      "check": "bash /home/jjrdar/repos/loop-stack-session/docs/drive-logs/B32/manifests/checks/u04.sh",
+      "verified": "done success path fixed (keep default restored), Gate 7 added and passing live with gates 0-6, SLOC under 200, scratch repos cleaned"
+    }
+  ]
+}

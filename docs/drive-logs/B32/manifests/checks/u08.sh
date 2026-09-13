@@ -26,7 +26,7 @@ tests/fixtures/pre-plugin-repo/README.md
 tests/local-mode-grammar.sh"
 
 # 1. Ownership audit, over OWNED files only. NOTES is the one sanctioned unowned file.
-changed=$(git status --porcelain | awk '{print $NF}')
+changed=$(git status --porcelain -uall | awk '{print $NF}')
 for f in $changed; do
   case "$f" in
     skills/loop-setup/*|tests/fixtures/pre-plugin-repo/*|tests/local-mode-grammar.sh|ci/reference-allowlist.txt|NOTES) ;;
