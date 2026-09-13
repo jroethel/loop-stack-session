@@ -23,6 +23,19 @@ The driving session keeps Step 0 (route and scope), a pin review of the compiled
 **Start from an existing `_loop.md`.**
 When the orchestration plan already exists, skip compilation entirely and go straight to the pin review of that file, then Step 7.
 
+## Conditional reads
+
+Nothing under `references/` is an always-read; each file is pulled at its trigger below, and an invocation whose path never fires a trigger reads none of them (molt verdict 2026-09-13; this block is the single home of the triggers).
+
+- `config/routing/model-benchmarks.md`: read when a routing decision arises - Step 2 unit assignment, a runtime re-route at a gate, or human-paced per-unit model choice. Step 0 triage, a CHAT or DON'T BOTHER exit, and the pin review of an existing `_loop.md` do not read it.
+- `references/ringer-substrate.md`: read when at least one unit takes the ringer transport; never read in degraded mode (ringer absent).
+- `references/native-orchestration.md`: read when at least one unit takes the Agent-tool transport.
+- `references/fable-guidelines.md`: read only in human-paced output mode, before drafting the run-book.
+- `references/reviewer-conduct-contract.md`: read when validators are about to be dispatched (compiling Step 4 templates, or launching from an existing `_loop.md`); the fail-closed stop on a missing file is unchanged.
+- `skills/loop-brainstorm/references/one-minute-test.md`: read on every fresh-plan entry at Step 0; the existing-`_loop.md` entry point skips it.
+
+`references/queue-runner.md` is not a read for this skill at all: it is a standalone pasteable operator prompt homed here, pinned by its own gate test.
+
 ## Step 0 - Route and scope
 
 Before compiling anything, decide whether this plan should be a loop at all, and at what size.
@@ -50,7 +63,7 @@ If two shapes are close (roughly 60/40 or tighter), diagram both, name your lean
 
 When the user wants a run-book they execute by hand across sessions (paste a prompt, review, repeat) rather than a session that orchestrates the loop, emit that instead of the wave machinery.
 The invariant is the sandwich: frontier judgment before and after cheap execution, never frontier keystrokes in the middle - a Strong/Fast explore feeds a Frontier plan, then Strong/Fast execution, then a Frontier review, then a human ship.
-Tier vocabulary (Frontier/Strong/Fast) and the effort defaults live in `references/fable-guidelines.md`; read it before drafting the run-book. Per-unit model choice still follows the routing chain (`config/routing/model-benchmarks.md`).
+Tier vocabulary (Frontier/Strong/Fast) and the effort defaults live in `references/fable-guidelines.md`. Per-unit model choice still follows the routing chain (`config/routing/model-benchmarks.md`).
 Output shape: a simple plan (roughly five steps or fewer) is one file, each step carrying its model tier, effort, copy-paste prompt, and verification check; a complex plan is a directory with an index Order table plus one numbered prompt file per step, so each file hands whole to a fresh session. Handoffs go through files, never conversation memory, so a quota death resumes by re-running the unfinished step.
 
 ## Step 1 - Extract the plan's skeleton
