@@ -36,5 +36,3 @@ Defaults:
 
 - **Tell it why.** Give the reason behind the task, who it is for, what it feeds into. Context beats micromanagement.
 - **Ground claims in tool results.** On long or autonomous runs, instruct the model to audit progress claims against actual tool output (tests, diffs); this nearly eliminates fabricated status reports.
-- **Never ask for hidden reasoning.** Prompts like "show your full chain of thought step by step" trigger Fable's reasoning-extraction safeguards and can cause silent fallback to Opus (billed as Opus, performing as Opus). Ask instead for: conclusion, key evidence, tradeoffs, risks, recommended next action. Audit skills and system prompts for show-your-thinking instructions.
-- **Security work: be explicit and defensive.** State legitimate defensive scope clearly; vague vulnerability/exploit phrasing can trigger fallback.
