@@ -22,7 +22,7 @@ Tier vocabulary is Frontier / Strong / Fast / Specialty (loop-which's tiers).
 ## Routing chain
 
 This section is the single home of the routing-chain narrative.
-Every skill that routes a unit (loop-drive, wayfinder, ringer-substrate) carries one pointer line to here - `Per-unit model choice follows the routing chain (config/routing/model-benchmarks.md).` - never a restatement.
+Every skill that routes a unit (loop-drive, wayfinder, ringer-substrate) carries one pointer line to here, naming this file as the routing chain's single home - never a restatement of the chain itself.
 
 Per-unit model choice is one chain, in order (P7: route by evidence, not vibes):
 
