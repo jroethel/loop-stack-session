@@ -4,19 +4,20 @@
 
 Waves 0-8 are DONE and merged; jroethel/jrit-loop is PUBLIC at eab9d8e with a --strict-clean tree, run-all green, and docs/community-submission.md staged and pushed.
 C6 fired 2026-09-14: criterion 14 recorded in docs/2026-09-13.proof-pass-receipts.md (commit e52d14e) from the Windows 11 desktop-app marketplace-install loop (jrit-persona, five units, plugin-cache provenance verified in all three session transcripts).
-All fourteen criteria are banked with executed evidence except the Mac's per-host criterion 12 run.
+All fourteen criteria are banked with executed evidence, including the Mac's per-host criterion 12 run (closed at C3, 2026-09-14).
 Tracker end state holds: loop-stack-session open issues are exactly {53, 54, 55}.
 The advisory /loop-review b811337 (B32_BASE, U02's skeleton commit) runs from main at the C7 handoff; findings are recorded there, non-blocking.
 
 ## Blocked on Jeremy, in order
 
-1. C7, TO BE FIRED FROM THE MAC (RIT-UADV2213), his call 2026-09-14: paste docs/community-submission.md into https://platform.claude.com/plugins/submit and fire it. The doc is on public main at eab9d8e (github.com/jroethel/jrit-loop/blob/main/docs/community-submission.md), ready verbatim; nothing has been submitted. A WSL attempt on 2026-09-14 stopped at the RIT SSO wall (platform.claude.com sign-in via jjrdar@g.rit.edu requires Shibboleth plus Duo); the WSL browser tabs were left open but the Mac path supersedes them.
-2. Independent, same Mac visit: C3 there - run docs/decommission.md Section 2; the sweep must include ~/create/ at depth reaching create/skills/rubix-review; then bash ci/single-resolution.sh on that host, and its line lands in the receipts doc Part 2 with the host named.
+1. C7 - FIRED by Jeremy on the Mac (RIT-UADV2213), 2026-09-14. The submit URL is a Console wizard, not a paste box, and gated behind Claude Console onboarding (org-creation + Stripe billing), which Jeremy cleared as "Jeremy's Individual Org". The orchestrator filled the plugin-information step from docs/community-submission.md (plus a drafted "Example use cases" field); Jeremy completed the step-3 checkboxes, the terms acknowledgment, and submitted. Recorded as journal STOP entry #41; not independently verified from this host (a community-directory submission exposes no public receipt).
+2. C3 Section 2 - FIRED by Jeremy on the Mac (RIT-UADV2213), 2026-09-14, plugin path. Verified by the orchestrator: single-resolution PASS 11/11 exit 0 (hostname RIT-UADV2213 in-session), both farm hops removed, sole resolution the plugin cache (jrit-loop@jrit-loop 0.1.0, eab9d8e). Recorded in docs/2026-09-13.proof-pass-receipts.md ("Criterion 12 closed, RIT-UADV2213") and journal STOP entry #42. Criterion 12 is CLOSED; both C3 hosts (RIT-UADV2223, RIT-UADV2213) banked.
 
-## After both fire
+## Run status: COMPLETE
 
-- Record C7 in the journal (STOP, record-only) and append the Mac's single-resolution line to the receipts doc; that closes criterion 12's per-host record and the run.
-- No further waves exist; the drive is complete.
+- All fourteen criteria banked with executed evidence. C7 journaled at #41, C3/criterion-12 at #42. No further waves exist; the drive is done.
+- Still open but OUTSIDE the run (Jeremy's, whenever): on this Mac, C3 Section 4 (orphaned global CLAUDE.md managed block, Option A keep-by-hand vs B drop) and Section 5 (per-repo mirror deletion across the ~/create/ repos, sweep must reach create/skills/rubix-review). Neither blocks criterion 12 or the run.
+- Held, not built: the single-resolution.sh amendment spec (accept the skills-CLI .agents layout as one resolution) - specced in chat, not filed anywhere yet.
 
 ## Mechanics a fresh session needs
 
