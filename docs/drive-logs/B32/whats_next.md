@@ -10,8 +10,8 @@ The advisory /loop-review b811337 (B32_BASE, U02's skeleton commit) runs from ma
 
 ## Blocked on Jeremy, in order
 
-1. C7: paste docs/community-submission.md into https://platform.claude.com/plugins/submit and fire it. The doc is ready verbatim; nothing has been submitted.
-2. Independent: Mac (RIT-UADV2213) C3 - run docs/decommission.md Section 2 there; the sweep must include ~/create/ at depth reaching create/skills/rubix-review; then bash ci/single-resolution.sh on that host, and its line lands in the receipts doc Part 2 with the host named.
+1. C7, TO BE FIRED FROM THE MAC (RIT-UADV2213), his call 2026-09-14: paste docs/community-submission.md into https://platform.claude.com/plugins/submit and fire it. The doc is on public main at eab9d8e (github.com/jroethel/jrit-loop/blob/main/docs/community-submission.md), ready verbatim; nothing has been submitted. A WSL attempt on 2026-09-14 stopped at the RIT SSO wall (platform.claude.com sign-in via jjrdar@g.rit.edu requires Shibboleth plus Duo); the WSL browser tabs were left open but the Mac path supersedes them.
+2. Independent, same Mac visit: C3 there - run docs/decommission.md Section 2; the sweep must include ~/create/ at depth reaching create/skills/rubix-review; then bash ci/single-resolution.sh on that host, and its line lands in the receipts doc Part 2 with the host named.
 
 ## After both fire
 
