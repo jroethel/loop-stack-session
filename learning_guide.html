@@ -437,6 +437,7 @@
     <a href="#bc-build-run">18. B+C build run</a>
     <a href="#rubix-standalone">19. Rubix standalone</a>
     <a href="#architecture-home">20. Architecture's home</a>
+    <a href="#plugin-port">21. Plugin-form port</a>
   </div>
 </nav>
 
@@ -1702,6 +1703,153 @@
   </table>
 </section>
 
+<section id="plugin-port">
+  <h2><span class="num">21</span>The plugin-form port: prose is the product, one script survives (2026-09-12)</h2>
+  <p>
+    The prep doc (<code class="inline">docs/2026-09-11.plugin-form-port-prep.md</code>) proposed steering loop-stack
+    to marketplace/plugin form. This session (Fable 5 + Jeremy) brainstormed it into the committed brief
+    <code class="inline">docs/briefs/2026-09-12.B32.jrit-loop-plugin-port-brief.md</code> (commit
+    <code class="inline">27da7b8</code>): a fresh repo at <code class="inline">~/repos/jrit/jrit-loop</code>, all 11
+    skills ported 1:1 as prose, a two-lens Rubix review whose 21 findings all folded, and a per-script trust audit
+    of the 3,724-line non-test shell layer that settled the single exception to "zero executables".
+  </p>
+
+  <div class="aha">
+    <div class="aha-label">Aha: the enforcement was always cooperative at the boundary - its real property is a non-forgeable sanctioned path</div>
+    <p>
+      The trust audit's pivotal finding: every script routes its writes through <code class="inline">tracker.sh</code>,
+      and any agent could always bypass tracker.sh entirely with raw <code class="inline">gh</code>. So the
+      <code class="inline">agent:done</code> chokepoint never physically stopped a defector - what it guarantees is
+      that the sanctioned path, when used, cannot forge a receipt: <code class="inline">done --ran</code> re-executes
+      the cited check itself and captures the real exit code (tracker.sh:594-604), routing failures to
+      <code class="inline">agent:review</code>. That reframing shrank the port question from "keep 625 lines or lose
+      evidence-gated done" to "keep the four non-forgeable verbs (~180 lines: done --ran, claim, status swap,
+      next-eligible) and let everything else go prose". The receipt helper is now the brief's one sanctioned
+      executable exception.
+    </p>
+    <p class="why">
+      Surfaced when Jeremy extrapolated Rubix finding 2 into "for each .sh script: purpose, actions, gates - which
+      can an agent be trusted to do?" The per-script itemization ran as two parallel fresh-context readers; the
+      delegation-concentration fact made the one-helper answer safe.
+    </p>
+  </div>
+
+  <div class="aha">
+    <div class="aha-label">Aha: verification expires fast enough to watch it happen inside one session</div>
+    <p>
+      Three dated facts went stale during the work itself: the B32 brief's "this private repo" premise was already
+      false (one <code class="inline">gh repo view</code> showed loop-stack-session public, dissolving B32's main
+      argument for the two-repo split); the prep doc's "herdr 0.8.2" was 0.9.0 by the time a Rubix lens checked;
+      and "<code class="inline">~/repos/jrit/</code> is empty, verified 2026-09-11" was invalidated on 2026-09-12
+      by this session's own architecture HTML plus Windows download residue. The brief now treats dated facts as
+      consumables: re-verify at the seam that consumes them, and pin versions as probe-time checks, never strings.
+    </p>
+  </div>
+
+  <div class="aha">
+    <div class="aha-label">Aha: fresh-context review lenses that buy their own observations catch what the author cannot</div>
+    <p>
+      The Rubix pass (Lens A: Jeremy-as-operator of the eight rolled repos, on Opus; Lens B: cold craft read, on
+      Sonnet) returned 21 findings, 2 critical. The sharpest came from observations the lenses ran themselves, not
+      from reading the brief: the live symlink farm that would make every skill name resolve twice after
+      <code class="inline">/plugin install</code>; the herdr version drift; <code class="inline">handoff</code>'s
+      <code class="inline">disable-model-invocation: true</code> frontmatter proving the #52 replacement was manual
+      where the retired convention was automatic. The author's session had all of these in reach and surfaced none.
+    </p>
+  </div>
+
+  <div class="aha">
+    <div class="aha-label">Aha: retirement of an interlocked script web is all-or-nothing</div>
+    <p>
+      The recording-convention scripts form a machine-interface web: <code class="inline">handoff-log.sh state</code>
+      feeds take-stock and lifecycle-lint, <code class="inline">take-stock --cards</code> feeds the board,
+      <code class="inline">tidy.sh</code>'s <code class="inline">byproduct:</code> stdout prefix backs setup.sh's
+      "nothing to do" invariant. Porting any one consumer to prose silently breaks a producer's contract, so the
+      convention retires as a unit and the rolled repos cut over lazily but wholly - and their generated mirrors are
+      deleted, not frozen, because a stale file claiming "source of truth" is worse than dead code.
+    </p>
+  </div>
+
+  <div class="aha">
+    <div class="aha-label">Near-miss: the portability doctrine almost stayed prose-only</div>
+    <p>
+      After the seven Claude-Code lock-ins were worked through (portable core vs adapters), the architecture HTML
+      got only a one-line doctrine mention - Jeremy caught it: "you didnt reflect any of the generalizations..?"
+      The fix was a fourth diagram making the layering structural: portable core (skills prose, tracker as
+      coordination bus, handoff, engine-neutral checks, AGENTS.md, skills-first tree) adapted by the Claude Code
+      layer on one side and other engines (npx skills, run-book mode, ringer transport) on the other. Lesson: a
+      doctrine that exists only as a sentence has not been reflected; the artifact must carry the structure.
+    </p>
+  </div>
+
+  <div class="aha">
+    <div class="aha-label">Operational: mermaid layout for unconnected node groups</div>
+    <p>
+      Unconnected nodes inside a subgraph pile into one enormous column under <code class="inline">flowchart TB</code>
+      and one enormous row under <code class="inline">LR</code>; the working shape is top-level LR with per-subgraph
+      <code class="inline">direction TB</code> plus invisible <code class="inline">~~~</code> chains. Edge labels on
+      edges exiting a subgraph's top collide with the subgraph title - route subgraph-to-subgraph with the semantics
+      in the caption instead. And diagrams "zoom badly" when mermaid's default <code class="inline">useMaxWidth</code>
+      downscales them to fit; <code class="inline">useMaxWidth: false</code> with container
+      <code class="inline">overflow-x: auto</code> renders natural size.
+    </p>
+  </div>
+
+  <h3>Key decisions register</h3>
+  <table>
+    <tr><th>Decision</th><th>Alternatives considered</th><th>Why</th></tr>
+    <tr>
+      <td>Supersede the day-old B32 brief with this one</td>
+      <td>Keep separate; amend B32 in place; stop and resolve first</td>
+      <td>The prep doc contradicted B32's chosen shape; B32 was never planned, so brief-stage supersede was cheap</td>
+    </tr>
+    <tr>
+      <td>Fresh repo <code class="inline">~/repos/jrit/jrit-loop</code>; loop-stack-session stays live, history only</td>
+      <td>In-place restructure (prep doc's rec); B32's two-repo split with session repo as dev home</td>
+      <td>Template shape by construction, not by filtering; the jrit umbrella was the stated destination - a third
+          shape neither prior doc had named</td>
+    </tr>
+    <tr>
+      <td>All 11 skills port 1:1; full B32 stranger scope now</td>
+      <td>Fold to ~8 (prep doc rec); personal-first phasing (session rec)</td>
+      <td>Jeremy's calls against both recommendations; ringer going external-optional dissolved the PolyForm
+          authorization gate that full scope would otherwise carry</td>
+    </tr>
+    <tr>
+      <td>One sanctioned executable: the receipt helper (done --ran, claim, status, next-eligible)</td>
+      <td>Fully script-free port; keep tracker.sh whole</td>
+      <td>The trust audit showed enforcement concentrates in four verbs an agent cannot be trusted to replicate;
+          everything else was passthrough</td>
+    </tr>
+    <tr>
+      <td>Recording convention retired; durable resume pointer becomes a named deliverable (criterion 13)</td>
+      <td>Keep prose-only; keep as-is; close #52 with the board work</td>
+      <td>Rubix found the replacement (manual handoff + harness-local auto-memory) regressed #52 at the moment of
+          closing it; the deliverable closes the gap</td>
+    </tr>
+    <tr>
+      <td>rubix-review stays a standalone sister repo; the offer becomes a stub with a missing-callout</td>
+      <td>Ship as skill 12 (session rec); strip the offer</td>
+      <td>Jeremy's call: the repo is independent; the probe/use/degrade/disclose pattern already covers it</td>
+    </tr>
+    <tr>
+      <td>Autonomy knob lives as a pointer-doc key; preflight survives as one exact prose command</td>
+      <td>Re-ask each chain; defer to planning</td>
+      <td>loop-auto.sh and chain-state die; the repo default needs exactly one home the model can read</td>
+    </tr>
+  </table>
+
+  <h3>Preferences observed (carry forward)</h3>
+  <p>
+    Diagrams render at natural size - Jeremy's laptop zoom fights downscaled SVGs. Generalizations and doctrines must
+    appear in the artifact's structure, not only its prose. When a question round offers shapes, expect the real
+    answer to be a shape not listed (the jrit umbrella). Recommendations get overridden without friction - keep
+    making them (11-vs-8 and full-scope-now both went against the rec and the session moved on immediately).
+    Analysis requests ("report back in session, do not update html yet") mean exactly that: findings first,
+    artifacts on explicit go.
+  </p>
+</section>
+
 </main>
 
 <footer>
@@ -1715,7 +1863,10 @@
   seam B+C build run (Fable 5 + Jeremy); section 19 added 2026-08-23 after the Rubix standalone-extraction
   planning session (Opus + Jeremy), which produced <code class="inline">docs/plans/2026-08-23.rubix-standalone-skill-plan.md</code>;
   section 20 added 2026-09-01 after the #56 architecture-language session (Fable 5 + Jeremy), which edited
-  <code class="inline">loop-brainstorm</code> and its shared convergence reference.
+  <code class="inline">loop-brainstorm</code> and its shared convergence reference;
+  section 21 added 2026-09-12 after the jrit-loop plugin-form port brainstorm (Fable 5 + Jeremy), which committed
+  the port brief (<code class="inline">27da7b8</code>), graduated backlog items #61-64, and produced
+  <code class="inline">~/repos/jrit/docs/architecture/jrit-loop-architecture.html</code>.
   Skill names in sections 0-10 are the historical (pre-rename) names; see section 13 for the mapping.
 </footer>
 
