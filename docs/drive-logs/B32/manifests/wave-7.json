@@ -1,0 +1,22 @@
+{
+  "run_name": "jrit-loop-port",
+  "workdir": "/home/jjrdar/repos/loop-stack-session/docs/drive-logs/B32/ringer/wave-7",
+  "repo": "/home/jjrdar/repos/jrit/jrit-loop",
+  "worktrees": true,
+  "max_parallel": 1,
+  "tasks": [
+    {
+      "key": "u14-proof-2",
+      "engine": "claude-zai",
+      "model": "glm-5.2",
+      "task_type": "docs",
+      "timeout_s": 2400,
+      "expect_files": [
+        "/home/jjrdar/repos/loop-stack-session/docs/drive-logs/B32/patches/u14.patch"
+      ],
+      "spec": "You are U14, an implementer on the jrit-loop plugin port. You work alone in an isolated git worktree of /home/jjrdar/repos/jrit/jrit-loop; treat the worktree root as the repo root.\n\nDO NOT git commit, push, or add; do NOT touch .git. The orchestrator commits from the patch your check exports; your step 8 commit is the orchestrator's. Step 9's two gh issue close calls are the ORCHESTRATOR'S to fire at the gate - you never close, comment on, or touch any tracker issue.\n\nREAD FIRST, read-only:\n1. /home/jjrdar/repos/loop-stack-session/docs/plans/2026-09-13.B32.jrit-loop-plugin-port-plan.md lines 1142-1166 - YOUR task (Task 14), steps 1-7 (8 and 9 are the orchestrator's).\n2. The same file, lines 418-432 (Global constraints).\n\nGATE FACTS, verified by the orchestrator before this launch and re-verified by your own step 1: C4 fired (repo PUBLIC), C3 fired on this host (farm gone, ls $HOME/.claude/skills/loop-drive must fail; plugin installed at v0.1.0; single-resolution passed 11/11 at the C3 firing). The C3 host list currently confirmed: THIS HOST ONLY so far; Jeremy may name others later, and your receipts record this host by name (use hostname) with that caveat, per step 5's per-host rule.\n\nFILES YOU OWN, exclusively: README.md (the npx version pin line ONLY - one placeholder token replaced, nothing else in the file), docs/2026-09-13.proof-pass-receipts.md (the \"## Part 2, post-flip\" section ONLY - append under it, touch nothing in Part 1), ./NOTES.\n\nEXECUTE AND RECORD (each: command, real observed exit code):\n1. Step 1's two gate confirmations (PUBLIC; ls fails).\n2. Step 2: the acceptance compound (bash ci/run-all.sh && bash ci/clean-room-npx.sh && bash ci/single-resolution.sh) - record that it FAILS on the README placeholder, per the plan.\n3. Step 3: bash ci/clean-room-npx.sh alone; capture the skills-package-version: line, the two installed-copy assertions about scripts/receipt.sh, and the informational execute-bit line. (Expect non-zero on this first run - the placeholder assertion is last; the capture happens before it.)\n4. Step 4: pin README's npx line to exactly npx skills@<captured version> add jroethel/jrit-loop - only a version you READ from step 3's output.\n5. Step 5: bash ci/single-resolution.sh - record with this host named (hostname).\n6. Step 6: re-run the full acceptance compound - exit 0 required.\n7. Step 7: complete \"## Part 2, post-flip\" with every line above, same iron rule as Part 1: only commands you executed, real exit codes, engine and version strings quoted from output.\n\nHOUSE STYLE: no em dash U+2014; one sentence per line; aligned tables.\nIF AMBIGUOUS: ./NOTES under AMBIGUITIES TAKEN, conservative reading, continue.\n./NOTES first line: \"AGENT STATUS unit=u14 branch=worktree verdict=self-pass repairs=0\".\nWHEN STEP 6 EXITS 0 AND PART 2 IS COMPLETE, STOP IMMEDIATELY AND RETURN.\n",
+      "check": "bash /home/jjrdar/repos/loop-stack-session/docs/drive-logs/B32/manifests/checks/u14.sh",
+      "verified": "README pinned to the captured version only, Part 2 complete with real exit codes and this host named, Part 1 untouched, run-all and single-resolution green at check time"
+    }
+  ]
+}
