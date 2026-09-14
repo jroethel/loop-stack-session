@@ -1,0 +1,47 @@
+Failed to check repo structure, pointer doc, and legacy repo-state file
+ls -la && echo "---" && ls docs 2>/dev/null && echo "---pointer---" && cat docs/loop/pointer.md 2>/dev/null && echo "---repo-state---" && cat config/repo-state.md 2>/dev/null
+Exit code 1
+total 6
+drwxr-xr-x 1 MAIN+jjrdar 4096   0 Sep 13 22:37 .
+drwxr-xr-x 1 MAIN+jjrdar 4096   0 Sep 13 22:35 ..
+-rw-r--r-- 1 MAIN+jjrdar 4096 437 Sep 13 22:37 AGENTS.md
+-rw-r--r-- 1 MAIN+jjrdar 4096  11 Sep 13 22:37 CLAUDE.md
+drwxr-xr-x 1 MAIN+jjrdar 4096   0 Sep 13 23:01 docs
+---
+briefs
+issues.md
+loop
+---pointer---
+# Loop pointer
+
+This file is the machine surface: the line-anchored keys below are what the loop skills read.
+Prose conventions live in the sibling `docs/loop/conventions.md`.
+
+pointer-version: 1
+tracker: local
+autonomy-default: pause
+rubix-autorun: ask
+handoffs-home: docs/handoffs/
+briefs-home: docs/briefs/
+plans-home: docs/plans/
+reviews-home: docs/reviews/
+archive-home: docs/archive/
+local-issues-file: docs/issues.md
+
+## Lanes
+
+| Lane      | Home                               | How                                             |
+| ---       | ---                                | ---                                             |
+| Issues    | the tracker, open, no `idea`       | Read with `gh` or `glab` directly; no mirror.   |
+| Backlog   | the tracker, label `idea`          | Read with `gh` or `glab` directly; no mirror.   |
+| Wayfinder | the tracker, label `wayfinder:map` | Read with `gh` or `glab` directly; no mirror.   |
+| Handoffs  | `docs/handoffs/`                   | Per unit and per session.                       |
+| Briefs    | `docs/briefs/`                     | One file per brief.                             |
+| Plans     | `docs/plans/`                      | One file per plan.                              |
+| Reviews   | `docs/reviews/`                    | One file per review run.                        |
+| Archive   | `docs/archive/`                    | Moved work lands here.                          |
+
+The tracker is the single source of truth; no generated mirror files exist.
+Claim, done, status, and next-eligible run through the receipt helper shipped inside the loop-drive skill.
+In `local` mode the receipt helper does not run: claim ordering and evidence-gated done are unenforced, and this repo is single-machine only.
+---repo-state---

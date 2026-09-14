@@ -1,31 +1,26 @@
-# B32 jrit-loop port - resume state (written 2026-09-14 at the wave-7/8 boundary)
+# B32 jrit-loop port - resume state (written 2026-09-14 after the wave-8 gate)
 
 ## Where the run is
 
-Waves 0-7 are DONE and merged; jroethel/jrit-loop is PUBLIC at 5e683c9 with a --strict-clean tree and run-all green.
-All criteria banked with executed evidence except criterion 14 (C6) and the Mac's per-host criterion 12.
-loop-stack-session tracker holds exactly #53, #54, #55 (board extraction, out of scope by design).
-C1, C2, C8, C4, C3-on-WSL all fired and receipted; C5 never triggered (helper SLOC 196).
+Waves 0-8 are DONE and merged; jroethel/jrit-loop is PUBLIC at eab9d8e with a --strict-clean tree, run-all green, and docs/community-submission.md staged and pushed.
+C6 fired 2026-09-14: criterion 14 recorded in docs/2026-09-13.proof-pass-receipts.md (commit e52d14e) from the Windows 11 desktop-app marketplace-install loop (jrit-persona, five units, plugin-cache provenance verified in all three session transcripts).
+All fourteen criteria are banked with executed evidence except the Mac's per-host criterion 12 run.
+Tracker end state holds: loop-stack-session open issues are exactly {53, 54, 55}.
+The advisory /loop-review b811337 (B32_BASE, U02's skeleton commit) runs from main at the C7 handoff; findings are recorded there, non-blocking.
 
 ## Blocked on Jeremy, in order
 
-1. C6 (criterion 14): one real loop from a marketplace install on the Windows 11 desktop app; he reports repo, unit, and receipt location.
-2. After C6: the orchestrator records the criterion-14 line in docs/2026-09-13.proof-pass-receipts.md, then launches U15 (Task 15, plan lines 1168-1190: stage docs/community-submission.md; ringer glm-5.2 docs; check must assert the acceptance compound at line 1180 and the C6 line's presence; eval-report publish decision defaults to unpublished unless Jeremy says otherwise).
-3. C7: hand Jeremy docs/community-submission.md and https://platform.claude.com/plugins/submit; he fires; then the advisory /loop-review b32-w2-base (B32_BASE = b811337) from main, non-blocking, findings recorded at the C7 handoff.
-4. Independent: Mac (RIT-UADV2213) C3 - docs/decommission.md Section 2 there, sweep must include ~/create/ at depth reaching create/skills/rubix-review; its single-resolution line lands in the receipts doc Part 2.
+1. C7: paste docs/community-submission.md into https://platform.claude.com/plugins/submit and fire it. The doc is ready verbatim; nothing has been submitted.
+2. Independent: Mac (RIT-UADV2213) C3 - run docs/decommission.md Section 2 there; the sweep must include ~/create/ at depth reaching create/skills/rubix-review; then bash ci/single-resolution.sh on that host, and its line lands in the receipts doc Part 2 with the host named.
+
+## After both fire
+
+- Record C7 in the journal (STOP, record-only) and append the Mac's single-resolution line to the receipts doc; that closes criterion 12's per-host record and the run.
+- No further waves exist; the drive is complete.
 
 ## Mechanics a fresh session needs
 
-- Wave materials pattern: manifests + orchestrator-owned checks live in loop-stack-session/docs/drive-logs/B32/manifests/; every check starts TASKDIR="${TASKDIR:-$PWD}" and gets a fail-first probe before gating a worker; patches export to drive-logs/B32/patches/ and merge with --exclude=NOTES.
-- Ringer check ceiling is 60s hardcoded; long checks are harvested by running the check standalone with TASKDIR pointed at the surviving worktree.
-- The harness memory watchdog kills background shells under pressure; long ringer runs go detached (setsid) with a featherweight pgrep watcher.
-- Four check-bug classes hit this run (unset TASKDIR, porcelain without -uall, unanchored sed, prose-matching negative greps) - all fixed in the live check files; do not reintroduce.
-- MODEL-NOTES receipts are owed per (model, task_type) per wave in ~/repos/ringer/docs/MODEL-NOTES.md, committed before advancing.
-
-## The paste-ready resume prompt
-
-Resume the B32 jrit-loop plugin port drive.
-Read, in order: /home/jjrdar/repos/loop-stack-session/docs/plans/2026-09-13.B32.jrit-loop-plugin-port-plan_loop.md (orchestration plan), /home/jjrdar/repos/loop-stack-session/docs/drive-logs/B32/whats_next.md (current state, supersedes the generic reconciliation for position), /home/jjrdar/repos/loop-stack-session/docs/reviews/2026-09-13.B32.jrit-loop-plugin-port-batch-review.md (journal), and the source plan beside the _loop.md.
-Then run the _loop.md Section 6 reconciliation (git is truth; verify C4 via gh repo view, C3-WSL via ls $HOME/.claude/skills/loop-drive failing, tracker end state {53,54,55} open).
-The run waits at C6; when Jeremy supplies the C6 result, proceed per the Blocked-on-Jeremy list above.
-Autonomy: the knob was auto (session-only) and dies with the old session; ask Jeremy whether to re-set auto or run the tail human-gated (three steps remain, so pause costs little).
+- Reconciliation: git -C ~/repos/jrit/jrit-loop log (HEAD eab9d8e), gh repo view jroethel/jrit-loop (PUBLIC), ls $HOME/.claude/skills/loop-drive (must fail), gh issue list open count in loop-stack-session (3: #53-#55), bash ci/run-all.sh (exit 0).
+- Wave materials: loop-stack-session/docs/drive-logs/B32/ (manifests, checks, patches, unit logs, wave summaries, journal mirror in docs/reviews/).
+- MODEL-NOTES receipts through wave 8 committed in ~/repos/ringer (2b00b1b).
+- Jeremy's saved C6 probe transcript is preserved at drive-logs/B32/c6-issue-note.txt; disposition surfaced at the C7 handoff (cosmetic desktop-app display, not a shipped defect; optional backlog item to soften the pre-plugin probe wording in eleven SKILL.md files).

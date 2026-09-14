@@ -1,0 +1,23 @@
+Ringside: http://127.0.0.1:8700
+⚠ claude.ai connectors are disabled because ANTHROPIC_API_KEY or another auth source is set and takes precedence over your claude.ai login · Unset it to load your organization's connectors
+"glm-5.2" isn't described by this version's model catalog; update Claude Code, or map it with behavesAs on a modelPicker row (or modelOverrides, if it is a provider id of a model this version knows). Until then auto-compact keeps this session within 200k tokens (the context window it assumes); if the model accepts more, append [1m] to the model name for 1M, or set CLAUDE_CODE_MAX_CONTEXT_TOKENS to its real window; CLAUDE_CODE_DISABLE_UNKNOWN_MODEL_WINDOW_ENFORCEMENT=1 restores the previous wait-for-the-API behavior.
+[claude-code:unrecognized_model] {"model":"glm-5.2","query_source":"sdk"}
+Task 15 steps 1-8 complete, all executed and recorded in ./NOTES.
+
+- Steps 1-2: repo prints PUBLIC (exit 0); criterion-14 section present in the receipts doc.
+- Step 3: compound failed on the missing `docs/community-submission.md` (grep exit 2), everything before it green.
+- Step 4: both validates exit 0.
+- Steps 5-7: wrote `docs/community-submission.md` with all required fields (version 0.1.0 from plugin.json, eleven skill lines from their own SKILL.md descriptions, requirements, MIT), a verbatim-quoted Evidence section from both Part 1 and Part 2 of the receipts doc, and the one-line eval-report decision: left unpublished per the plan's default.
+- Step 8: acceptance compound exits 0 with `PASS` printed; zero em dashes in the new doc; table columns aligned.
+
+Steps 9-10 are not mine. Stopping here.
+
+Summary
+run_id: jrit-loop-port-20260914T131232Z-p1607814
+task                     status   verdict  attempts     tokens  elapsed_s
+-------------------------------------------------------------------------
+u15-submission           pass     PASS            1                 232.1
+Model log updated; run './ringer.py models' for the per-model scoreboard.
+
+Your results: /home/jjrdar/.ringer/artifacts/live/jrit-loop-port.html
+Open it in a browser, or run './ringer.py hud' for the full Ringside view (http://127.0.0.1:8700).
